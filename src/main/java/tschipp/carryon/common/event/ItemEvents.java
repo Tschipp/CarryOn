@@ -79,12 +79,13 @@ public class ItemEvents
 	{
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack main = player.getHeldItemMainhand();
+		ItemStack off = player.getHeldItemOffhand();
 		World world = event.getWorld();
 		BlockPos pos = event.getPos();
 		Block block = world.getBlockState(pos).getBlock();
 		IBlockState state = world.getBlockState(pos);
 
-		if (main.isEmpty() && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
+		if (main.isEmpty() && off.isEmpty() && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
 		{
 			ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 

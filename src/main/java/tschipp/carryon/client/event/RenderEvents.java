@@ -16,6 +16,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -110,26 +111,25 @@ public class RenderEvents
 			BlockPos pos = player.getPosition();
 			stack = ItemTile.getItemStack(stack);
 
-			int light = world.getLight(player.getPosition());
+			
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 			GlStateManager.pushMatrix();
 			GlStateManager.scale(2.5, 2.5, 2.5);
-
-			GlStateManager.translate(0, -0.5, -1);
+			GlStateManager.translate(0, -0.6, -1);
 
 			if (CarryOnConfig.settings.facePlayer ? !isChest(block) : isChest(block))
 			{
 				GlStateManager.rotate(180, 0, 1f, 0);
-				GlStateManager.rotate(-15, 1f, 0, 0);
+				GlStateManager.rotate(-8, 1f, 0, 0);
 			}
 			else
-				GlStateManager.rotate(15, 1f, 0, 0);
+				GlStateManager.rotate(8, 1f, 0, 0);
 
-			RenderHelper.enableStandardItemLighting();
 
 			if (perspective == 0)
 				Minecraft.getMinecraft().getRenderItem().renderItem(stack, Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(stack, world, player));
+			
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 
