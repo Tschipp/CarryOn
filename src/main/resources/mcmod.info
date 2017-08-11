@@ -1,0 +1,16 @@
+[
+{
+  "modid" : "carryon",
+  "name" : "Carry On",
+  "version" : "1.0", "mcversion" : "1.11.2",
+  "url" : "",
+  "credits" : "Game concept, creative direction, models, textures, animation, sound design, and development by RazzleberryFox, Purplicious_Cow, cy4n, Tschipp, ZeAmateis, Timmypote, vroulas, and TheJurassicAlien",
+  "authorList" : ["RazzleberryFox, Purplicious_Cow, cy4n, Tschipp, ZeAmateis, Timmypote, vroulas, and TheJurassicAlien"],
+  "description": "Immersive and realistic animals in Minecraft, with improved models, textures, animation, behaviors, and drops.",
+  "logoFile" : "assets/carryon/textures/logo.png",
+  "updateUrl" : "",
+  "parent" : "",
+  "dependencies": [],
+  "screenshots": []
+}
+]

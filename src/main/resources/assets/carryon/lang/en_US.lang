@@ -1,0 +1,4 @@
+carryon.category.settings=Settings
+carryon.category.forbiddentiles=Forbidden Tile Entities
+
+carryon.general.forbiddentiles.forbiddentiles=Tile Entities that the Player cannot pick up
