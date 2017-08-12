@@ -170,6 +170,7 @@ public class RenderEvents
 	{
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = event.getEntityPlayer();
+		ModelBiped modelBiped = event.getRenderer().getMainModel();
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
@@ -215,6 +216,9 @@ public class RenderEvents
 			GlStateManager.scale(1, 1, 1);
 
 			GlStateManager.popMatrix();
+		} else {
+			modelBiped.bipedLeftArm.isHidden = false;
+			modelBiped.bipedRightArm.isHidden = false;
 		}
 	}
 

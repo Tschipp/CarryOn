@@ -5,6 +5,7 @@ bin
 .metadata
 .classpath
 .project
+.DS_Store
 
 # idea
 out
