@@ -1,5 +1,6 @@
 package tschipp.carryon.common.item;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,7 +27,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import scala.actors.threadpool.Arrays;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 

@@ -17,6 +17,7 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.IntHashMap;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 import net.minecraftforge.fml.common.registry.IForgeRegistryEntry.Impl;
 import net.minecraftforge.fml.relauncher.Side;
@@ -30,8 +31,8 @@ public class ModelOverridesHandler
 	public static HashMap<NBTTagCompound, Object> OVERRIDE_OBJECTS = new HashMap<NBTTagCompound, Object>();
 
 	/*
-	 * This class is really ugly, will probably be replaced by something else 
-	 * - Tschipp
+	 * This class is really ugly, will probably be replaced by something else -
+	 * Tschipp
 	 */
 	public static void initOverrides()
 	{
@@ -80,30 +81,43 @@ public class ModelOverridesHandler
 			else if (toOverride.contains("}"))
 				throw new InvalidConfigException("Missing { at line " + i + " : " + currentline);
 
-			int meta = StringParser.getMeta(toOverride);
-			if (meta == 0)
-				toOverrideObject = StringParser.getBlock(toOverride);
-			else
-				toOverrideObject = StringParser.getBlockState(toOverride);
+			String modidToOverride = "minecraft";
+			String modidOverride = "minecraft";
 
-			overrideObject = StringParser.getItem(override);
-			if (Block.getBlockFromItem((Item) overrideObject) != Blocks.AIR)
-				overrideObject = StringParser.getItemStack(override);
-			else
-				overrideObject = StringParser.getBlockState(override);
+			if (toOverride.contains(":"))
+				modidToOverride = toOverride.replace(toOverride.substring(toOverride.indexOf(":")), "");
 
-			NBTTagCompound keyComp = new NBTTagCompound();
-			keyComp.setTag("nbttag", tag);
-			if (toOverrideObject instanceof Block)
+			if (override.contains(":"))
+				modidOverride = override.replace(override.substring(override.indexOf(":")), "");
+
+			if (Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride))
 			{
-				keyComp.setString("block", ((Block) toOverrideObject).getRegistryName().toString());
+
+				int meta = StringParser.getMeta(toOverride);
+				if (meta == 0)
+					toOverrideObject = StringParser.getBlock(toOverride);
+				else
+					toOverrideObject = StringParser.getBlockState(toOverride);
+
+				overrideObject = StringParser.getItem(override);
+				if (Block.getBlockFromItem((Item) overrideObject) != Blocks.AIR)
+					overrideObject = StringParser.getItemStack(override);
+				else
+					overrideObject = StringParser.getBlockState(override);
+
+				NBTTagCompound keyComp = new NBTTagCompound();
+				keyComp.setTag("nbttag", tag);
+				if (toOverrideObject instanceof Block)
+				{
+					keyComp.setString("block", ((Block) toOverrideObject).getRegistryName().toString());
+				}
+				else
+				{
+					keyComp.setInteger("stateid", Block.getStateId((IBlockState) toOverrideObject));
+					keyComp.setString("block", ((IBlockState) toOverrideObject).getBlock().getRegistryName().toString());
+				}
+				OVERRIDE_OBJECTS.put(keyComp, overrideObject);
 			}
-			else
-			{
-				keyComp.setInteger("stateid", Block.getStateId((IBlockState) toOverrideObject));
-				keyComp.setString("block", ((IBlockState) toOverrideObject).getBlock().getRegistryName().toString());
-			}
-			OVERRIDE_OBJECTS.put(keyComp, overrideObject);
 		}
 	}
 

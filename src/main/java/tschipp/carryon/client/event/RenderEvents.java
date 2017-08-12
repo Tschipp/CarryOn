@@ -31,6 +31,7 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.config.CarryOnConfig;
@@ -90,7 +91,7 @@ public class RenderEvents
 	public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
-		Field field = KeyBinding.class.getDeclaredField("pressed");
+		Field field = KeyBinding.class.getDeclaredFields()[7];
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
