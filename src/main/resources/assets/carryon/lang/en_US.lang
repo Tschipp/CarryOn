@@ -1,4 +1,5 @@
 carryon.category.settings=Settings
 carryon.category.forbiddentiles=Forbidden Tile Entities
+carryon.category.modeloverrides=Model Overrides (Advanced)
 
-carryon.general.forbiddentiles.forbiddentiles=Tile Entities that the Player cannot pick up
+carryon.general.modeloverrides.modeloverrides=Model Overrides

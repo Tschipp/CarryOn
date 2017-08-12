@@ -3,20 +3,27 @@ package tschipp.carryon.client.event;
 import java.lang.reflect.Field;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -27,12 +34,16 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemTile;
 
 public class RenderEvents
 {
 
+	/*
+	 * Prevents the Player from scrolling
+	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onScroll(MouseEvent event)
@@ -48,6 +59,9 @@ public class RenderEvents
 		}
 	}
 
+	/*
+	 * Prevents the Player from opening Guis
+	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onGuiOpen(GuiOpenEvent event)
@@ -61,13 +75,16 @@ public class RenderEvents
 				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
 				if (inventory && !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 				{
-					event.setCanceled(true);
-					Minecraft.getMinecraft().currentScreen = null;
+					 event.setCanceled(true);
+					 Minecraft.getMinecraft().currentScreen = null;
 				}
 			}
 		}
 	}
 
+	/*
+	 * Prevents the Player from switching Slots
+	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
@@ -96,11 +113,13 @@ public class RenderEvents
 		}
 	}
 
+	/*
+	 * Renders the Block in First Person
+	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		ItemStack stack = player.getHeldItemMainhand();
@@ -109,9 +128,11 @@ public class RenderEvents
 		{
 			Block block = ItemTile.getBlock(stack);
 			BlockPos pos = player.getPosition();
-			stack = ItemTile.getItemStack(stack);
+			NBTTagCompound tag = ItemTile.getTileData(stack);
+			IBlockState state = ItemTile.getBlockState(stack);
 
-			
+			ItemStack tileStack = ItemTile.getItemStack(stack);
+
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 			GlStateManager.pushMatrix();
@@ -126,18 +147,19 @@ public class RenderEvents
 			else
 				GlStateManager.rotate(8, 1f, 0, 0);
 
-
 			if (perspective == 0)
-				Minecraft.getMinecraft().getRenderItem().renderItem(stack, Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(stack, world, player));
-			
+				Minecraft.getMinecraft().getRenderItem().renderItem(tileStack.isEmpty() ? stack : tileStack, ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player));
+
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 
 			event.setCanceled(true);
-
 		}
 	}
 
+	/*
+	 * Renders the Block in Third Person
+	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
@@ -145,60 +167,121 @@ public class RenderEvents
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		ItemStack stack = player.getHeldItemMainhand();
-
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			Block block = ItemTile.getBlock(stack);
-			stack = ItemTile.getItemStack(stack);
+			IBlockState state = ItemTile.getBlockState(stack);
+			NBTTagCompound tag = ItemTile.getTileData(stack);
+
+			ItemStack tileItem = ItemTile.getItemStack(stack);
 
 			EntityItem entityItem = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0);
 			entityItem.hoverStart = 0;
 
-			entityItem.setEntityItemStack(stack);
+			entityItem.setEntityItemStack(tileItem);
 			float rotation = -player.renderYawOffset;
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 			GlStateManager.pushMatrix();
-			GlStateManager.scale(2.2, 2.2, 2.2);
+			GlStateManager.scale(0.6, 0.6, 0.6);
 
 			if (CarryOnConfig.settings.facePlayer ? !isChest(block) : isChest(block))
 			{
 				GlStateManager.rotate(rotation, 0, 1.0f, 0);
-				GlStateManager.translate(0, 0.1, 0.2);
+				GlStateManager.translate(0, 1.6, 0.65);
 			}
 			else
 			{
 				GlStateManager.rotate(rotation + 180, 0, 1.0f, 0);
-				GlStateManager.translate(0, 0.1, -0.2);
+				GlStateManager.translate(0, 1.6, -0.65);
 			}
 
 			if (player.isSneaking())
-				GlStateManager.translate(0, -0.08, 0);
+				GlStateManager.translate(0, -0.3, 0);
 
-			Minecraft.getMinecraft().getRenderManager().doRenderEntity(entityItem, event.getX(), event.getY(), event.getZ(), 0, 0, true);
+			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
+			Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
+
 			GlStateManager.scale(1, 1, 1);
-			GlStateManager.popMatrix();
 
+			GlStateManager.popMatrix();
 		}
 	}
 
+	/*
+	 * Renders correct arm rotation
+	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
 	{
 		EntityPlayer player = Minecraft.getMinecraft().player;
+		AbstractClientPlayer aplayer = Minecraft.getMinecraft().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		RenderPlayer renderer = event.getRenderer();
+		ModelBiped model = getPlayerModel(aplayer);
+
+		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
-		{
+		{ 
+			model.bipedLeftArm.isHidden = true;
+			model.bipedRightArm.isHidden = true;
+		
+			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
+			RenderPlayer renderPlayer = (RenderPlayer)renderer;
+			float rotation = -player.renderYawOffset;
+			ModelRenderer fakeLeftArm = new ModelRenderer(model, 40, 16);
+			fakeLeftArm.mirror = true;
+			if (aplayer.getSkinType().equals("default")) {
+				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
+			} else {
+				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
+			}
 
+			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
+			fakeRightArm.mirror = true;
+			if (aplayer.getSkinType().equals("default")) {
+				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
+			} else {
+				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
+			}
+
+			fakeRightArm.rotateAngleX = -.9F;
+			fakeLeftArm.rotateAngleX = -.9F;
+			model.bipedBody.addChild(fakeLeftArm);
+			model.bipedBody.addChild(fakeRightArm);
+		
+		} else {
+			model.bipedLeftArm.isHidden = false;
+			model.bipedRightArm.isHidden = false;
+			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty()) {
+				model.bipedBody.childModels.clear();
+				model.bipedBody.childModels.add(model.bipedLeftArm);
+				model.bipedBody.childModels.add(model.bipedRightArm);
+
+			}
 		}
+
 	}
 
 	private boolean isChest(Block block)
 	{
 		return block == Blocks.CHEST || block == Blocks.ENDER_CHEST || block == Blocks.TRAPPED_CHEST;
+	}
+
+	@SideOnly(Side.CLIENT)
+	private static RenderPlayer getRenderPlayer(AbstractClientPlayer player)
+	{
+		Minecraft mc = Minecraft.getMinecraft();
+		RenderManager manager = mc.getRenderManager();
+		return manager.getSkinMap().get(player.getSkinType());
+	}
+
+	@SideOnly(Side.CLIENT)
+	private static ModelBiped getPlayerModel(AbstractClientPlayer player)
+	{
+		return getRenderPlayer(player).getMainModel();
 	}
 
 }

@@ -11,7 +11,7 @@ public class Configs {
 		public boolean facePlayer = false;
 		
 		@Comment("More complex Tile Entities slow down the player more")
-		public boolean heavyTiles = false;
+		public boolean heavyTiles = true;
 	}
 	
 	public static class ForbiddenTiles
@@ -20,9 +20,15 @@ public class Configs {
 		@Comment("Tile Entities that cannot be picked up")
     	public String[] forbiddenTiles = new String[]
     			{
+    					"minecraft:end_portal",
+    					"minecraft:end_gateway",
     					"animania:block_trough",
     					"animania:block_invisiblock",
+    					"colossalchests:*",
     					"ic2:*",
+    					"bigreactors:*",
+    					"forestry:*",
+    					"tconstruct:*",
     					"immersiveengineering:*",
     					"embers:block_furnace",
     					"embers:ember_bore",
@@ -36,10 +42,54 @@ public class Configs {
     					"embers:combustor",
     					"embers:catalzyer",
     					"embers:field_chart",
-    					"embers:inferno_forge"
-
+    					"embers:inferno_forge",
+    					"storagedrawers:framingtable",
     			};
+	}
 	
+	public static class ModelOverrides
+	{
+		@Config.RequiresMcRestart()
+		@Comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
+    	public String[] modelOverrides = new String[]
+    			{
+    				"minecraft:lit_furnace->minecraft:furnace",
+    	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
+    	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
+    	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
+    	            "quark:custom_chest{type:\"acacia\"}->quark:custom_chest;3",
+    	            "quark:custom_chest{type:\"dark_oak\"}->quark:custom_chest;4",
+    	            "quark:custom_chest_trap{type:\"spruce\"}->quark:custom_chest_trap;0",
+    	            "quark:custom_chest_trap{type:\"birch\"}->quark:custom_chest_trap;1",
+    	            "quark:custom_chest_trap{type:\"jungle\"}->quark:custom_chest_trap;2",
+    	            "quark:custom_chest_trap{type:\"acacia\"}->quark:custom_chest_trap;3",
+    	            "quark:custom_chest_trap{type:\"dark_oak\"}->quark:custom_chest_trap;4",
+    	            "storagedrawers:basicdrawers;0{Mat:\"spruce\"}->storagedrawers:basicdrawers;0{material:\"spruce\"}",
+    	            "storagedrawers:basicdrawers;0{Mat:\"birch\"}->storagedrawers:basicdrawers;0{material:\"birch\"}",
+    	            "storagedrawers:basicdrawers;0{Mat:\"jungle\"}->storagedrawers:basicdrawers;0{material:\"jungle\"}",
+    	            "storagedrawers:basicdrawers;0{Mat:\"acacia\"}->storagedrawers:basicdrawers;0{material:\"acacia\"}",
+    	            "storagedrawers:basicdrawers;0{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;0{material:\"dark_oak\"}",
+    	            "storagedrawers:basicdrawers;1{Mat:\"spruce\"}->storagedrawers:basicdrawers;1{material:\"spruce\"}",
+    	            "storagedrawers:basicdrawers;1{Mat:\"birch\"}->storagedrawers:basicdrawers;1{material:\"birch\"}",
+    	            "storagedrawers:basicdrawers;1{Mat:\"jungle\"}->storagedrawers:basicdrawers;1{material:\"jungle\"}",
+    	            "storagedrawers:basicdrawers;1{Mat:\"acacia\"}->storagedrawers:basicdrawers;1{material:\"acacia\"}",
+    	            "storagedrawers:basicdrawers;1{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;1{material:\"dark_oak\"}",
+    	            "storagedrawers:basicdrawers;2{Mat:\"spruce\"}->storagedrawers:basicdrawers;2{material:\"spruce\"}",
+    	            "storagedrawers:basicdrawers;2{Mat:\"birch\"}->storagedrawers:basicdrawers;2{material:\"birch\"}",
+    	            "storagedrawers:basicdrawers;2{Mat:\"jungle\"}->storagedrawers:basicdrawers;2{material:\"jungle\"}",
+    	            "storagedrawers:basicdrawers;2{Mat:\"acacia\"}->storagedrawers:basicdrawers;2{material:\"acacia\"}",
+    	            "storagedrawers:basicdrawers;2{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;2{material:\"dark_oak\"}",
+    	            "storagedrawers:basicdrawers;3{Mat:\"spruce\"}->storagedrawers:basicdrawers;3{material:\"spruce\"}",
+    	            "storagedrawers:basicdrawers;3{Mat:\"birch\"}->storagedrawers:basicdrawers;3{material:\"birch\"}",
+    	            "storagedrawers:basicdrawers;3{Mat:\"jungle\"}->storagedrawers:basicdrawers;3{material:\"jungle\"}",
+    	            "storagedrawers:basicdrawers;3{Mat:\"acacia\"}->storagedrawers:basicdrawers;3{material:\"acacia\"}",
+    	            "storagedrawers:basicdrawers;3{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;3{material:\"dark_oak\"}",
+    	            "storagedrawers:basicdrawers;4{Mat:\"spruce\"}->storagedrawers:basicdrawers;4{material:\"spruce\"}",
+    	            "storagedrawers:basicdrawers;4{Mat:\"birch\"}->storagedrawers:basicdrawers;4{material:\"birch\"}",
+    	            "storagedrawers:basicdrawers;4{Mat:\"jungle\"}->storagedrawers:basicdrawers;4{material:\"jungle\"}",
+    	            "storagedrawers:basicdrawers;4{Mat:\"acacia\"}->storagedrawers:basicdrawers;4{material:\"acacia\"}",
+    	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}"
+    			};
 	}
 
 }

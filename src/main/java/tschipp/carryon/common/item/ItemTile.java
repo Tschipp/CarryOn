@@ -66,6 +66,7 @@ public class ItemTile extends Item
 			BlockPos pos2 = pos;
 			Block containedblock = getBlock(stack);
 			int meta = getMeta(stack);
+			IBlockState containedstate = getBlockState(stack);
 			if (!world.getBlockState(pos2).getBlock().isReplaceable(world, pos2))
 			{
 				pos2 = pos.offset(facing);
@@ -100,11 +101,11 @@ public class ItemTile extends Item
 						}
 
 						if(hasAllDirection)
-							world.setBlockState(pos2, containedblock.getStateFromMeta(meta).withProperty(BlockDirectional.FACING, facing2.getOpposite()));
+							world.setBlockState(pos2, containedstate.withProperty(BlockDirectional.FACING, facing2.getOpposite()));
 						else if (hasDirection)
-							world.setBlockState(pos2, containedblock.getStateFromMeta(meta).withProperty(BlockHorizontal.FACING, facing2.getOpposite()));
+							world.setBlockState(pos2, containedstate.withProperty(BlockHorizontal.FACING, facing2.getOpposite()));
 						else
-							world.setBlockState(pos2, containedblock.getStateFromMeta(meta));
+							world.setBlockState(pos2, containedstate);
 
 						TileEntity tile = world.getTileEntity(pos2);
 						if (tile != null)
@@ -147,7 +148,7 @@ public class ItemTile extends Item
 		if (stack.hasTagCompound())
 		{
 			NBTTagCompound tag = stack.getTagCompound();
-			return tag.hasKey(TILE_DATA_KEY) && tag.hasKey("block") && tag.hasKey("meta");
+			return tag.hasKey(TILE_DATA_KEY) && tag.hasKey("block") && tag.hasKey("meta") && tag.hasKey("stateid");
 		}
 		return false;
 	}
@@ -169,9 +170,12 @@ public class ItemTile extends Item
 
 		tag.setTag(TILE_DATA_KEY, chest);
 
+		ItemStack drop = state.getBlock().getItem(tile.getWorld(), tile.getPos(), state);
+		
 		tag.setString("block", state.getBlock().getRegistryName().toString());
 		Item item = Item.getItemFromBlock(state.getBlock());
-		tag.setInteger("meta", item.getHasSubtypes() ? state.getBlock().getMetaFromState(state) : 0);
+		tag.setInteger("meta", drop.getItemDamage());
+		tag.setInteger("stateid", Block.getStateId(state));
 		stack.setTagCompound(tag);
 		return true;
 	}
@@ -184,7 +188,7 @@ public class ItemTile extends Item
 			tag.removeTag(TILE_DATA_KEY);
 			tag.removeTag("block");
 			tag.removeTag("meta");
-
+			tag.removeTag("stateid");
 		}
 	}
 
@@ -227,7 +231,13 @@ public class ItemTile extends Item
 	
 	public static IBlockState getBlockState(ItemStack stack)
 	{
-		return getBlock(stack).getStateFromMeta(getMeta(stack));
+		if (stack.hasTagCompound())
+		{
+			NBTTagCompound tag = stack.getTagCompound();
+			int id = tag.getInteger("stateid");
+			return Block.getStateById(id);
+		}
+		return Blocks.AIR.getDefaultState();
 	}
 	
 	

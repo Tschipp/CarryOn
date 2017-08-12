@@ -32,5 +32,10 @@ public class RegistrationHandler
 	{
 		MinecraftForge.EVENT_BUS.register(new RenderEvents());
 	}
+	
+	public static void regOverrideList()
+	{
+		ModelOverridesHandler.initOverrides();
+	}
 
 }

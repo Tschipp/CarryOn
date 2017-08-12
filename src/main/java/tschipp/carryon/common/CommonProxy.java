@@ -20,6 +20,7 @@ public class CommonProxy
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
+		RegistrationHandler.regOverrideList();
 	}
 
 	@EventHandler

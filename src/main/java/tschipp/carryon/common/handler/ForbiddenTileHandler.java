@@ -8,7 +8,6 @@ import tschipp.carryon.common.config.CarryOnConfig;
 
 public class ForbiddenTileHandler
 {
-	
 	public static final List<String> FORBIDDEN_TILES;
 	
 	public static boolean isForbidden(Block block)

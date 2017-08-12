@@ -95,7 +95,7 @@ public class ItemEvents
 
 				if (!ItemTile.isLocked(pos, world))
 				{
-					if (ItemTile.storeTileData(te, state, stack))
+					if (ItemTile.storeTileData(te, state.getActualState(world, pos), stack))
 					{
 						world.removeTileEntity(pos);
 						world.setBlockToAir(pos);

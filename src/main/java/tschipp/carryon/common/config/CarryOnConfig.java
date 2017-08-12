@@ -26,6 +26,10 @@ public class CarryOnConfig {
 	@Config.LangKey(CarryOn.MODID)
 	@Config.Comment("Tile Entities that the Player is not allowed to pick up")
 	public static Configs.ForbiddenTiles forbiddenTiles = new Configs.ForbiddenTiles();
+	
+	@Config.LangKey(CarryOn.MODID)
+	@Config.Comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
+	public static Configs.ModelOverrides modelOverrides = new Configs.ModelOverrides();
 
 	@Mod.EventBusSubscriber
 	public static class EventHandler {
