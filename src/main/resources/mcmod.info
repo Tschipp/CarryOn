@@ -7,7 +7,7 @@
   "credits" : "Tschipp, Purplicious_Cow, cy4n",
   "authorList" : ["Tschipp, Purplicious_Cow, cy4n"],
   "description": "Carry On is a simple mod that improves game interaction by allowing players to pick up, carry, and place single block Tile Entities using only their empty hands.",
-  "logoFile" : "assets/carryon/textures/logo.png",
+  "logoFile" : "assets/carryon/logo.png",
   "updateUrl" : "",
   "parent" : "",
   "dependencies": [],
