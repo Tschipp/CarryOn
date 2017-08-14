@@ -91,7 +91,7 @@ public class RenderEvents
 	public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
-		Field field = KeyBinding.class.getDeclaredFields()[7];
+		Field field = KeyBinding.class.getDeclaredFields()[8];
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
