@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.BlockHorizontal;
@@ -46,19 +48,23 @@ public class ItemTile extends Item
 	@Override
 	public String getItemStackDisplayName(ItemStack stack)
 	{
-		if (hasTileData(stack))
+		if (stack != null)
 		{
-			return getItemStack(stack).getDisplayName();
+			if (hasTileData(stack))
+			{
+				ItemStack contained = getItemStack(stack);
+				if (contained != null)
+					return contained.getDisplayName();
+			}
 		}
 
 		return "";
 	}
 
 	@Override
-	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
 	{
 		Block block = world.getBlockState(pos).getBlock();
-		ItemStack stack = player.getHeldItem(hand);
 		if (hasTileData(stack))
 		{
 			Vec3d vec = player.getLookVec();
@@ -78,21 +84,23 @@ public class ItemTile extends Item
 
 				if (canPlace)
 				{
-					if (player.canPlayerEdit(pos, facing, stack) && world.mayPlace(containedblock, pos2, false, facing, (Entity) null))
+					boolean canEdit = player.canPlayerEdit(pos2, facing, stack);
+					boolean canBePlaced = world.canBlockBePlaced(containedblock, pos2, false, facing, (Entity) null, null);
+					if (canEdit && canBePlaced)
 					{
 						boolean hasDirection = false;
 						boolean hasAllDirection = false;
-						
-						Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyKeys().iterator();
+
+						Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyNames().iterator();
 						while (iterator.hasNext())
 						{
 							IProperty<?> prop = iterator.next();
 							Object[] allowedValues = prop.getAllowedValues().toArray();
-							
+
 							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
 								hasDirection = true;
-							
-							if(prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
+
+							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
 							{
 								hasAllDirection = true;
 								facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, (float) vec.yCoord, (float) vec.zCoord);
@@ -100,7 +108,7 @@ public class ItemTile extends Item
 
 						}
 
-						if(hasAllDirection)
+						if (hasAllDirection)
 							world.setBlockState(pos2, containedstate.withProperty(BlockDirectional.FACING, facing2.getOpposite()));
 						else if (hasDirection)
 							world.setBlockState(pos2, containedstate.withProperty(BlockHorizontal.FACING, facing2.getOpposite()));
@@ -115,7 +123,7 @@ public class ItemTile extends Item
 						}
 						clearTileData(stack);
 						player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
-						player.setHeldItem(hand, ItemStack.EMPTY);
+						player.setHeldItem(hand, null);
 						return EnumActionResult.SUCCESS;
 					}
 
@@ -139,7 +147,7 @@ public class ItemTile extends Item
 		}
 		else
 		{
-			stack = ItemStack.EMPTY;
+			stack = null;
 		}
 	}
 
@@ -158,7 +166,7 @@ public class ItemTile extends Item
 		if (tile == null)
 			return false;
 
-		if (stack.isEmpty())
+		if (stack == null)
 			return false;
 
 		NBTTagCompound chest = new NBTTagCompound();
@@ -171,7 +179,7 @@ public class ItemTile extends Item
 		tag.setTag(TILE_DATA_KEY, chest);
 
 		ItemStack drop = state.getBlock().getItem(tile.getWorld(), tile.getPos(), state);
-		
+
 		tag.setString("block", state.getBlock().getRegistryName().toString());
 		Item item = Item.getItemFromBlock(state.getBlock());
 		tag.setInteger("meta", drop.getItemDamage());
@@ -202,6 +210,7 @@ public class ItemTile extends Item
 		return null;
 	}
 
+	@Nullable
 	public static Block getBlock(ItemStack stack)
 	{
 		if (stack.hasTagCompound())
@@ -210,7 +219,7 @@ public class ItemTile extends Item
 			String name = tag.getString("block");
 			return Block.getBlockFromName(name);
 		}
-		return Blocks.AIR;
+		return null;
 	}
 
 	public static int getMeta(ItemStack stack)
@@ -226,9 +235,23 @@ public class ItemTile extends Item
 
 	public static ItemStack getItemStack(ItemStack stack)
 	{
-		return new ItemStack(getBlock(stack), 1, getMeta(stack));
+		Block block = getBlock(stack);
+		if (block != null)
+		{
+			Item item = Item.getItemFromBlock(block);
+			if (item != null)
+			{
+				ItemStack ret = new ItemStack(item, 1, getMeta(stack));
+				return ret;
+			}
+
+			return null;
+		}
+		else
+			return null;
+
 	}
-	
+
 	public static IBlockState getBlockState(ItemStack stack)
 	{
 		if (stack.hasTagCompound())
@@ -239,12 +262,11 @@ public class ItemTile extends Item
 		}
 		return Blocks.AIR.getDefaultState();
 	}
-	
-	
+
 	public static boolean isLocked(BlockPos pos, World world)
-	{	
+	{
 		TileEntity te = world.getTileEntity(pos);
-		if(te != null)
+		if (te != null)
 		{
 			NBTTagCompound tag = new NBTTagCompound();
 			te.writeToNBT(tag);
@@ -253,29 +275,29 @@ public class ItemTile extends Item
 
 		return true;
 	}
-	
+
 	private boolean equal(Object[] a, Object[] b)
 	{
 		if (a.length != b.length)
 			return false;
-		
+
 		List lA = Arrays.asList(a);
 		List lB = Arrays.asList(b);
 
 		return lA.containsAll(lB);
 	}
-	
+
 	private int potionLevel(ItemStack stack)
 	{
 		String nbt = getTileData(stack).toString();
 		int i = nbt.length() / 500;
-		
-		if(i > 4)
+
+		if (i > 4)
 			i = 4;
-		
-		if(!CarryOnConfig.settings.heavyTiles)
+
+		if (!CarryOnConfig.settings.heavyTiles)
 			i = 1;
-		
+
 		return i;
 	}
 }

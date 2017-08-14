@@ -29,6 +29,7 @@ public class GuiFactoryCarryOn implements IModGuiFactory
     }
 
    
+    /*
 	@Override
 	public boolean hasConfigGui()
 	{
@@ -40,7 +41,7 @@ public class GuiFactoryCarryOn implements IModGuiFactory
 	{
 
 		return new GuiConfigCarryOn(parentScreen);
-	}
+	} */
 	
 
 

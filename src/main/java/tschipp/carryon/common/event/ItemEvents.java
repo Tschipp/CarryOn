@@ -30,7 +30,7 @@ public class ItemEvents
 	{
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			event.setUseBlock(Result.DENY);
 		}
@@ -69,7 +69,7 @@ public class ItemEvents
 				tile.readFromNBT(ItemTile.getTileData(stack));
 				tile.setPos(finalPos);
 				ItemTile.clearTileData(stack);
-				eitem.setEntityItemStack(ItemStack.EMPTY);
+				eitem.setEntityItemStack(null);
 			}
 		}
 	}
@@ -86,7 +86,7 @@ public class ItemEvents
 		Block block = world.getBlockState(pos).getBlock();
 		IBlockState state = world.getBlockState(pos);
 
-		if (main.isEmpty() && off.isEmpty() && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
+		if (main == null && off == null && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
 		{
 			ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 

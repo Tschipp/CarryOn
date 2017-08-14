@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 public class StringParser
 {
 
+	@Nullable
 	public static Block getBlock(String string)
 	{
 		NBTTagCompound tag = getTagCompound(string);

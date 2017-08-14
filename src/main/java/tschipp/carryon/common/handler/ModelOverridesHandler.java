@@ -90,9 +90,8 @@ public class ModelOverridesHandler
 			if (override.contains(":"))
 				modidOverride = override.replace(override.substring(override.indexOf(":")), "");
 
-			if (Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride))
+			if ((Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride)) || (modidOverride.equals("minecraft") && modidToOverride.equals("minecraft")))
 			{
-
 				int meta = StringParser.getMeta(toOverride);
 				if (meta == 0)
 					toOverrideObject = StringParser.getBlock(toOverride);
@@ -100,7 +99,7 @@ public class ModelOverridesHandler
 					toOverrideObject = StringParser.getBlockState(toOverride);
 
 				overrideObject = StringParser.getItem(override);
-				if (Block.getBlockFromItem((Item) overrideObject) != Blocks.AIR)
+				if (Block.getBlockFromItem((Item) overrideObject) != null)
 					overrideObject = StringParser.getItemStack(override);
 				else
 					overrideObject = StringParser.getBlockState(override);

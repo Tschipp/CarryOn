@@ -51,8 +51,8 @@ public class RenderEvents
 	{
 		if (event.getDwheel() > 0 || event.getDwheel() < 0)
 		{
-			ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
-			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile)
+			ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
+			if (stack != null && stack.getItem() == RegistrationHandler.itemTile)
 			{
 				if (ItemTile.hasTileData(stack))
 					event.setCanceled(true);
@@ -70,11 +70,11 @@ public class RenderEvents
 		if (event.getGui() != null)
 		{
 			boolean inventory = event.getGui() instanceof GuiContainer;
-			EntityPlayer player = Minecraft.getMinecraft().player;
+			EntityPlayer player = Minecraft.getMinecraft().thePlayer;
 			if (player != null)
 			{
 				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
-				if (inventory && !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+				if (inventory && stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 				{
 					event.setCanceled(true);
 					Minecraft.getMinecraft().currentScreen = null;
@@ -93,8 +93,8 @@ public class RenderEvents
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
 		Field field = KeyBinding.class.getDeclaredFields()[7];
 		field.setAccessible(true);
-		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
+		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			if (settings.keyBindDrop.isPressed())
 			{
@@ -121,11 +121,11 @@ public class RenderEvents
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-		World world = Minecraft.getMinecraft().world;
-		EntityPlayer player = Minecraft.getMinecraft().player;
+		World world = Minecraft.getMinecraft().theWorld;
+		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
 		ItemStack stack = player.getHeldItemMainhand();
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			Block block = ItemTile.getBlock(stack);
 			BlockPos pos = player.getPosition();
@@ -149,7 +149,7 @@ public class RenderEvents
 				GlStateManager.rotate(8, 1f, 0, 0);
 
 			if (perspective == 0)
-				Minecraft.getMinecraft().getRenderItem().renderItem(tileStack.isEmpty() ? stack : tileStack, ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player));
+				Minecraft.getMinecraft().getRenderItem().renderItem(tileStack == null ? stack : tileStack, ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player));
 
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
@@ -168,12 +168,12 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
 	{
-		World world = Minecraft.getMinecraft().world;
+		World world = Minecraft.getMinecraft().theWorld;
 		EntityPlayer player = event.getEntityPlayer();
 		ModelBiped modelBiped = event.getRenderer().getMainModel();
-		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
+		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().thePlayer;
 		ItemStack stack = player.getHeldItemMainhand();
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			Block block = ItemTile.getBlock(stack);
 			IBlockState state = ItemTile.getBlockState(stack);
@@ -181,7 +181,7 @@ public class RenderEvents
 
 			ItemStack tileItem = ItemTile.getItemStack(stack);
 
-			EntityItem entityItem = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0);
+			EntityItem entityItem = new EntityItem(Minecraft.getMinecraft().theWorld, 0, 0, 0);
 			entityItem.hoverStart = 0;
 
 			entityItem.setEntityItemStack(tileItem);
@@ -211,7 +211,7 @@ public class RenderEvents
 				GlStateManager.translate(0, -0.3, 0);
 
 			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
-			Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
+			Minecraft.getMinecraft().getRenderItem().renderItem(tileItem == null ? stack : tileItem, model);
 
 			GlStateManager.scale(1, 1, 1);
 
@@ -233,11 +233,11 @@ public class RenderEvents
 		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 		ItemStack stack = player.getHeldItemMainhand();
 		ModelBiped model = event.getRenderer().getMainModel();
-		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
+		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().thePlayer;
 		
 		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			model.bipedLeftArm.isHidden = true;
 			model.bipedRightArm.isHidden = true;

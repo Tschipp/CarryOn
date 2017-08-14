@@ -16,7 +16,6 @@ public class Configs {
 	
 	public static class ForbiddenTiles
 	{
-		@Config.RequiresMcRestart()
 		@Comment("Tile Entities that cannot be picked up")
     	public String[] forbiddenTiles = new String[]
     			{
@@ -49,7 +48,6 @@ public class Configs {
 	
 	public static class ModelOverrides
 	{
-		@Config.RequiresMcRestart()
 		@Comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
     	public String[] modelOverrides = new String[]
     			{
