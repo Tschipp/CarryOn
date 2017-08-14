@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.BlockHorizontal;
@@ -83,17 +85,17 @@ public class ItemTile extends Item
 					{
 						boolean hasDirection = false;
 						boolean hasAllDirection = false;
-						
+
 						Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyKeys().iterator();
 						while (iterator.hasNext())
 						{
 							IProperty<?> prop = iterator.next();
 							Object[] allowedValues = prop.getAllowedValues().toArray();
-							
+
 							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
 								hasDirection = true;
-							
-							if(prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
+
+							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
 							{
 								hasAllDirection = true;
 								facing2 = EnumFacing.getFacingFromVector((float) vec.x, (float) vec.y, (float) vec.z);
@@ -101,7 +103,7 @@ public class ItemTile extends Item
 
 						}
 
-						if(hasAllDirection)
+						if (hasAllDirection)
 							world.setBlockState(pos2, containedstate.withProperty(BlockDirectional.FACING, facing2.getOpposite()));
 						else if (hasDirection)
 							world.setBlockState(pos2, containedstate.withProperty(BlockHorizontal.FACING, facing2.getOpposite()));
@@ -154,16 +156,17 @@ public class ItemTile extends Item
 		return false;
 	}
 
-	public static boolean storeTileData(TileEntity tile, IBlockState state, ItemStack stack)
+	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, IBlockState state, ItemStack stack)
 	{
-		if (tile == null)
+		if (CarryOnConfig.settings.pickupAllBlocks ? false : tile == null)
 			return false;
 
 		if (stack.isEmpty())
 			return false;
 
 		NBTTagCompound chest = new NBTTagCompound();
-		chest = tile.writeToNBT(chest);
+		if (tile != null)
+			chest = tile.writeToNBT(chest);
 
 		NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
 		if (tag.hasKey(TILE_DATA_KEY))
@@ -171,8 +174,8 @@ public class ItemTile extends Item
 
 		tag.setTag(TILE_DATA_KEY, chest);
 
-		ItemStack drop = state.getBlock().getItem(tile.getWorld(), tile.getPos(), state);
-		
+		ItemStack drop = state.getBlock().getItem(world, pos, state);
+
 		tag.setString("block", state.getBlock().getRegistryName().toString());
 		Item item = Item.getItemFromBlock(state.getBlock());
 		tag.setInteger("meta", drop.getItemDamage());
@@ -229,7 +232,7 @@ public class ItemTile extends Item
 	{
 		return new ItemStack(getBlock(stack), 1, getMeta(stack));
 	}
-	
+
 	public static IBlockState getBlockState(ItemStack stack)
 	{
 		if (stack.hasTagCompound())
@@ -240,43 +243,42 @@ public class ItemTile extends Item
 		}
 		return Blocks.AIR.getDefaultState();
 	}
-	
-	
+
 	public static boolean isLocked(BlockPos pos, World world)
-	{	
+	{
 		TileEntity te = world.getTileEntity(pos);
-		if(te != null)
+		if (te != null)
 		{
 			NBTTagCompound tag = new NBTTagCompound();
 			te.writeToNBT(tag);
 			return tag.hasKey("Lock") ? !tag.getString("Lock").equals("") : false;
 		}
 
-		return true;
+		return false;
 	}
-	
+
 	private boolean equal(Object[] a, Object[] b)
 	{
 		if (a.length != b.length)
 			return false;
-		
+
 		List lA = Arrays.asList(a);
 		List lB = Arrays.asList(b);
 
 		return lA.containsAll(lB);
 	}
-	
+
 	private int potionLevel(ItemStack stack)
 	{
 		String nbt = getTileData(stack).toString();
 		int i = nbt.length() / 500;
-		
-		if(i > 4)
+
+		if (i > 4)
 			i = 4;
-		
-		if(!CarryOnConfig.settings.heavyTiles)
+
+		if (!CarryOnConfig.settings.heavyTiles)
 			i = 1;
-		
+
 		return i;
 	}
 }

@@ -12,6 +12,12 @@ public class Configs {
 		
 		@Comment("More complex Tile Entities slow down the player more")
 		public boolean heavyTiles = true;
+		
+		@Comment("Allow all blocks to be picked up, not just Tile Entites")
+		public boolean pickupAllBlocks = false;
+		
+		@Comment("Maximum distance from where Blocks can be picked up")
+		public double maxDistance = 2.5;
 	}
 	
 	public static class ForbiddenTiles
@@ -22,6 +28,8 @@ public class Configs {
     			{
     					"minecraft:end_portal",
     					"minecraft:end_gateway",
+    					"minecraft:double_plant",
+    					"minecraft:bed",
     					"animania:block_trough",
     					"animania:block_invisiblock",
     					"colossalchests:*",
@@ -54,6 +62,7 @@ public class Configs {
     	public String[] modelOverrides = new String[]
     			{
     				"minecraft:lit_furnace->minecraft:furnace",
+    				"minecraft:bed->minecraft:bed",
     	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
     	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
     	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
