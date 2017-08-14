@@ -45,7 +45,7 @@ public class ItemEvents
 		if (e instanceof EntityItem)
 		{
 			EntityItem eitem = (EntityItem) e;
-			ItemStack stack = eitem.getEntityItem();
+			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
 			if (item == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 			{
@@ -69,7 +69,7 @@ public class ItemEvents
 				tile.readFromNBT(ItemTile.getTileData(stack));
 				tile.setPos(finalPos);
 				ItemTile.clearTileData(stack);
-				eitem.setEntityItemStack(ItemStack.EMPTY);
+				eitem.setItem(ItemStack.EMPTY);
 			}
 		}
 	}
