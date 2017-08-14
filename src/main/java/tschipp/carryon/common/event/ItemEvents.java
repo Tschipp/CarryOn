@@ -18,13 +18,14 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ForbiddenTileHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemTile;
 
 public class ItemEvents
 {
-	
+
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -74,7 +75,6 @@ public class ItemEvents
 		}
 	}
 
-
 	@SubscribeEvent
 	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -91,17 +91,21 @@ public class ItemEvents
 			ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
 			TileEntity te = world.getTileEntity(pos);
-			if (te != null && (block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
+			if ((CarryOnConfig.settings.pickupAllBlocks ? true : te != null) && (block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
 			{
+				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
 
-				if (!ItemTile.isLocked(pos, world))
+				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 				{
-					if (ItemTile.storeTileData(te, state.getActualState(world, pos), stack))
+					if (!ItemTile.isLocked(pos, world))
 					{
-						world.removeTileEntity(pos);
-						world.setBlockToAir(pos);
-						player.setHeldItem(EnumHand.MAIN_HAND, stack);
-						event.setUseBlock(Result.DENY);
+						if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
+						{
+							world.removeTileEntity(pos);
+							world.setBlockToAir(pos);
+							player.setHeldItem(EnumHand.MAIN_HAND, stack);
+							event.setUseBlock(Result.DENY);
+						}
 					}
 				}
 

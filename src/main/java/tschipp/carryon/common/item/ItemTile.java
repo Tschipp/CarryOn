@@ -161,16 +161,17 @@ public class ItemTile extends Item
 		return false;
 	}
 
-	public static boolean storeTileData(TileEntity tile, IBlockState state, ItemStack stack)
+	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, IBlockState state, ItemStack stack)
 	{
-		if (tile == null)
+		if (CarryOnConfig.settings.pickupAllBlocks ? false : tile == null)
 			return false;
 
 		if (stack == null)
 			return false;
 
 		NBTTagCompound chest = new NBTTagCompound();
-		chest = tile.writeToNBT(chest);
+		if (tile != null)
+			chest = tile.writeToNBT(chest);
 
 		NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
 		if (tag.hasKey(TILE_DATA_KEY))
@@ -178,7 +179,7 @@ public class ItemTile extends Item
 
 		tag.setTag(TILE_DATA_KEY, chest);
 
-		ItemStack drop = state.getBlock().getItem(tile.getWorld(), tile.getPos(), state);
+		ItemStack drop = state.getBlock().getItem(world, pos, state);
 
 		tag.setString("block", state.getBlock().getRegistryName().toString());
 		Item item = Item.getItemFromBlock(state.getBlock());
@@ -273,7 +274,7 @@ public class ItemTile extends Item
 			return tag.hasKey("Lock") ? !tag.getString("Lock").equals("") : false;
 		}
 
-		return true;
+		return false;
 	}
 
 	private boolean equal(Object[] a, Object[] b)
