@@ -19,7 +19,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.CommonProxy;
 
 @EventBusSubscriber
-@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = "required-after:forge@[13.20.1.2386,)")
+@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = "required-after:forge@[13.20.1.2386,)", updateJSON = CarryOn.UPDATE_JSON)
 public class CarryOn {
 
 	@SidedProxy(clientSide = "tschipp.carryon.client.ClientProxy", serverSide = "tschipp.carryon.common.CommonProxy")
@@ -30,8 +30,9 @@ public class CarryOn {
 	public static CarryOn instance;
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.1";
 	public static final String NAME = "Carry On";
+	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/bf7fb60d5e59f73eee65b271d5c01585e26a0352/update.json";
 
 	//public static SimpleNetworkWrapper network;
 

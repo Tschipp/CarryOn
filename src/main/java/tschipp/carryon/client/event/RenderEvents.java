@@ -9,6 +9,7 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -123,7 +124,9 @@ public class RenderEvents
 	{
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = Minecraft.getMinecraft().player;
+		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 		ItemStack stack = player.getHeldItemMainhand();
+		int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
@@ -131,10 +134,7 @@ public class RenderEvents
 			BlockPos pos = player.getPosition();
 			NBTTagCompound tag = ItemTile.getTileData(stack);
 			IBlockState state = ItemTile.getBlockState(stack);
-
 			ItemStack tileStack = ItemTile.getItemStack(stack);
-
-			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 			GlStateManager.pushMatrix();
 			GlStateManager.scale(2.5, 2.5, 2.5);
@@ -158,7 +158,15 @@ public class RenderEvents
 				event.setCanceled(true);
 		}
 		else
+		{
 			event.setCanceled(false);
+			Minecraft mc = Minecraft.getMinecraft();
+			RenderManager manager = mc.getRenderManager();
+			RenderPlayer renderPlayer = manager.getSkinMap().get(aplayer.getSkinType());
+			ModelPlayer modelPlayer = renderPlayer.getMainModel();
+			modelPlayer.bipedLeftArm.isHidden = false;
+			modelPlayer.bipedRightArm.isHidden = false;
+		}
 	}
 
 	/*
@@ -170,7 +178,7 @@ public class RenderEvents
 	{
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = event.getEntityPlayer();
-		ModelBiped modelBiped = event.getRenderer().getMainModel();
+		ModelPlayer modelPlayer = event.getRenderer().getMainModel();
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
@@ -218,6 +226,7 @@ public class RenderEvents
 			modelBiped.bipedLeftArm.isHidden = false;
 			modelBiped.bipedRightArm.isHidden = false;
 		}
+
 	}
 
 	/*
@@ -230,7 +239,7 @@ public class RenderEvents
 		EntityPlayer player = event.getEntityPlayer();
 		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 		ItemStack stack = player.getHeldItemMainhand();
-		ModelBiped model = event.getRenderer().getMainModel();
+		ModelPlayer model = event.getRenderer().getMainModel();
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
 
 		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
@@ -242,8 +251,7 @@ public class RenderEvents
 
 			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 			float rotation = -player.renderYawOffset;
-			ModelRenderer fakeLeftArm = new ModelRenderer(model, 40, 16);
-			fakeLeftArm.mirror = true;
+			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 			if (aplayer.getSkinType().equals("default"))
 			{
 				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
@@ -254,7 +262,6 @@ public class RenderEvents
 			}
 
 			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
-			fakeRightArm.mirror = true;
 			if (aplayer.getSkinType().equals("default"))
 			{
 				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
@@ -280,6 +287,12 @@ public class RenderEvents
 			}
 		}
 
+		if (stack.isEmpty() || stack.getItem() != RegistrationHandler.itemTile || !ItemTile.hasTileData(stack))
+		{
+			model.bipedLeftArm.isHidden = false;
+			model.bipedRightArm.isHidden = false;
+		}
+
 	}
 
 	public static boolean isChest(Block block)
@@ -296,7 +309,7 @@ public class RenderEvents
 	}
 
 	@SideOnly(Side.CLIENT)
-	private static ModelBiped getPlayerModel(AbstractClientPlayer player)
+	private static ModelPlayer getPlayerModel(AbstractClientPlayer player)
 	{
 		return getRenderPlayer(player).getMainModel();
 	}
