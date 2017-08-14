@@ -223,8 +223,8 @@ public class RenderEvents
 		}
 		else
 		{
-			modelBiped.bipedLeftArm.isHidden = false;
-			modelBiped.bipedRightArm.isHidden = false;
+			modelPlayer.bipedLeftArm.isHidden = false;
+			modelPlayer.bipedRightArm.isHidden = false;
 		}
 
 	}
