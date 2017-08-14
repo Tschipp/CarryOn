@@ -26,6 +26,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
@@ -39,7 +40,7 @@ public class ItemTile extends Item
 	{
 		this.setUnlocalizedName("tile_item");
 		this.setRegistryName(CarryOn.MODID, "tile_item");
-		GameRegistry.register(this);
+		ForgeRegistries.ITEMS.register(this);
 		this.setMaxStackSize(1);
 	}
 
@@ -62,7 +63,7 @@ public class ItemTile extends Item
 		if (hasTileData(stack))
 		{
 			Vec3d vec = player.getLookVec();
-			EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, 0f, (float) vec.zCoord);
+			EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
 			BlockPos pos2 = pos;
 			Block containedblock = getBlock(stack);
 			int meta = getMeta(stack);
@@ -95,7 +96,7 @@ public class ItemTile extends Item
 							if(prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
 							{
 								hasAllDirection = true;
-								facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, (float) vec.yCoord, (float) vec.zCoord);
+								facing2 = EnumFacing.getFacingFromVector((float) vec.x, (float) vec.y, (float) vec.z);
 							}
 
 						}

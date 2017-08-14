@@ -181,10 +181,6 @@ public class RenderEvents
 
 			ItemStack tileItem = ItemTile.getItemStack(stack);
 
-			EntityItem entityItem = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0);
-			entityItem.hoverStart = 0;
-
-			entityItem.setEntityItemStack(tileItem);
 			float rotation = -player.renderYawOffset;
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
@@ -216,7 +212,9 @@ public class RenderEvents
 			GlStateManager.scale(1, 1, 1);
 
 			GlStateManager.popMatrix();
-		} else {
+		}
+		else
+		{
 			modelBiped.bipedLeftArm.isHidden = false;
 			modelBiped.bipedRightArm.isHidden = false;
 		}
@@ -234,14 +232,14 @@ public class RenderEvents
 		ItemStack stack = player.getHeldItemMainhand();
 		ModelBiped model = event.getRenderer().getMainModel();
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
-		
+
 		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			model.bipedLeftArm.isHidden = true;
 			model.bipedRightArm.isHidden = true;
-			
+
 			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 			float rotation = -player.renderYawOffset;
 			ModelRenderer fakeLeftArm = new ModelRenderer(model, 40, 16);
