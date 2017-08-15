@@ -224,7 +224,9 @@ public class RenderEvents
 			GlStateManager.scale(1, 1, 1);
 
 			GlStateManager.popMatrix();
-		} else {
+		}
+		else
+		{
 			modelPlayer.bipedLeftArm.isHidden = false;
 			modelPlayer.bipedRightArm.isHidden = false;
 		}
@@ -273,8 +275,16 @@ public class RenderEvents
 				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
 			}
 
-			fakeRightArm.rotateAngleX = -.9F;
-			fakeLeftArm.rotateAngleX = -.9F;
+			if (!player.isSneaking())
+			{
+				fakeRightArm.rotateAngleX = -.9F;
+				fakeLeftArm.rotateAngleX = -.9F;
+			}
+			else
+			{	
+				fakeRightArm.rotateAngleX = -1.3F;
+				fakeLeftArm.rotateAngleX = -1.3F;
+			}
 			model.bipedBody.addChild(fakeLeftArm);
 			model.bipedBody.addChild(fakeRightArm);
 
