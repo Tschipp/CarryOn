@@ -250,44 +250,46 @@ public class RenderEvents
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
-			model.bipedLeftArm.isHidden = true;
-			model.bipedRightArm.isHidden = true;
+			if (!model.bipedLeftArm.isHidden || !model.bipedRightArm.isHidden) {
 
-			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
-			float rotation = -player.renderYawOffset;
-			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
-			if (aplayer.getSkinType().equals("default"))
-			{
-				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
-			}
-			else
-			{
-				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
-			}
+				model.bipedLeftArm.isHidden = true;
+				model.bipedRightArm.isHidden = true;
 
-			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
-			if (aplayer.getSkinType().equals("default"))
-			{
-				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
-			}
-			else
-			{
-				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
-			}
+				Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
+				float rotation = -player.renderYawOffset;
+				ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
+				if (aplayer.getSkinType().equals("default"))
+				{
+					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
+				}
+				else
+				{
+					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
+				}
 
-			if (!player.isSneaking())
-			{
-				fakeRightArm.rotateAngleX = -.9F;
-				fakeLeftArm.rotateAngleX = -.9F;
-			}
-			else
-			{	
-				fakeRightArm.rotateAngleX = -1.3F;
-				fakeLeftArm.rotateAngleX = -1.3F;
-			}
-			model.bipedBody.addChild(fakeLeftArm);
-			model.bipedBody.addChild(fakeRightArm);
+				ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
+				if (aplayer.getSkinType().equals("default"))
+				{
+					fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
+				}
+				else
+				{
+					fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
+				}
 
+				if (!player.isSneaking())
+				{
+					fakeRightArm.rotateAngleX = -.9F;
+					fakeLeftArm.rotateAngleX = -.9F;
+				}
+				else
+				{	
+					fakeRightArm.rotateAngleX = -1.3F;
+					fakeLeftArm.rotateAngleX = -1.3F;
+				}
+				model.bipedBody.addChild(fakeLeftArm);
+				model.bipedBody.addChild(fakeRightArm);
+			}
 		}
 		else
 		{
@@ -298,6 +300,7 @@ public class RenderEvents
 				model.bipedBody.childModels.clear();
 			}
 		}
+
 
 		if (stack.isEmpty() || stack.getItem() != RegistrationHandler.itemTile || !ItemTile.hasTileData(stack))
 		{
