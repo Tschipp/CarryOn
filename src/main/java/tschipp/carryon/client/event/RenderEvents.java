@@ -253,8 +253,8 @@ public class RenderEvents
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
-
-			model.bipedBody.childModels.clear();
+			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				model.bipedBody.childModels.clear();
 
 			model.bipedLeftArm.isHidden = true;
 			model.bipedRightArm.isHidden = true;
