@@ -16,9 +16,40 @@ public class Configs {
 		@Comment("Allow all blocks to be picked up, not just Tile Entites")
 		public boolean pickupAllBlocks = false;
 		
-		@Comment("Maximum distance from where Blocks can be picked up")
+		@Comment("Whether Blocks and Entities slow the creative player down when carried")
+		public boolean slownessInCreative = true;
+		
+		@Config.RangeDouble(min = 0)
+		@Comment("Maximum distance from where Blocks and Entities can be picked up")
 		public double maxDistance = 2.5;
+		
+		@Config.RangeDouble(min = 0, max = 10)
+		@Comment("Max width of entities that can be picked up in survival mode")
+		public float maxEntityWidth = 1.5f;
+		
+		@Config.RangeDouble(min = 0, max = 10)
+		@Comment("Max height of entities that can be picked up in survival mode")
+		public float maxEntityHeight = 1.5f;
+		
+		@Comment("Whether hostile mobs should be able to picked up in survival mode")
+		public boolean pickupHostileMobs = false;
+		
+		@Comment("Larger Entities slow down the player more")
+		public boolean heavyEntities = true;
 	}
+	
+	public static class ForbiddenEntities
+	{
+		
+		@Config.RequiresMcRestart()
+		@Comment("Entities that cannot be picked up")
+		public String[] forbiddenEntities = new String[]
+				{
+						"minecraft:ender_crystal",
+						"minecraft:ender_dragon"
+				};
+	}
+	
 	
 	public static class ForbiddenTiles
 	{

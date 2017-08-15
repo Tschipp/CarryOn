@@ -136,6 +136,9 @@ public class ItemTile extends Item
 		{
 			if (entity instanceof EntityLivingBase)
 			{
+				if(entity instanceof EntityPlayer && CarryOnConfig.settings.slownessInCreative ? false : ((EntityPlayer)entity).isCreative())
+					return;
+				
 				((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 1, potionLevel(stack), false, false));
 			}
 		}
