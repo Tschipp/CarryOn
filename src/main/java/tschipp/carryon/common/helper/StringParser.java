@@ -99,7 +99,7 @@ public class StringParser
 		Item item = getItem(string);
 		
 		if(item == null)
-			return ItemStack.EMPTY;
+			return null;
 		
 		ItemStack stack = new ItemStack(item, 1, getMeta(string));
 		NBTTagCompound tag = getTagCompound(string);

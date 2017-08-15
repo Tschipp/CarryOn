@@ -102,7 +102,7 @@ public class ModelOverridesHandler
 			if (override.contains(":"))
 				modidOverride = override.replace(override.substring(override.indexOf(":")), "");
 
-			if ((Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride)) || (modidOverride.equals("minecraft") && modidToOverride.equals("minecraft")))
+			if (!errored && (Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride)) || (modidOverride.equals("minecraft") && modidToOverride.equals("minecraft")))
 			{
 				int meta = StringParser.getMeta(toOverride);
 				if (meta == 0)
