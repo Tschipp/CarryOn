@@ -46,7 +46,9 @@ public class Configs {
 		public String[] forbiddenEntities = new String[]
 				{
 						"minecraft:ender_crystal",
-						"minecraft:ender_dragon"
+						"minecraft:ender_dragon",
+						"minecraft:ghast",
+						"minecraft:shulker"
 				};
 	}
 	

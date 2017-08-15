@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -21,6 +20,7 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
@@ -38,6 +38,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
+import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
 
 public class RenderEvents
@@ -159,13 +160,16 @@ public class RenderEvents
 		}
 		else
 		{
-			event.setCanceled(false);
-			Minecraft mc = Minecraft.getMinecraft();
-			RenderManager manager = mc.getRenderManager();
-			RenderPlayer renderPlayer = manager.getSkinMap().get(aplayer.getSkinType());
-			ModelPlayer modelPlayer = renderPlayer.getMainModel();
-			modelPlayer.bipedLeftArm.isHidden = false;
-			modelPlayer.bipedRightArm.isHidden = false;
+			if (stack.isEmpty() ? true : stack.getItem() != RegistrationHandler.itemEntity)
+			{
+				event.setCanceled(false);
+				Minecraft mc = Minecraft.getMinecraft();
+				RenderManager manager = mc.getRenderManager();
+				RenderPlayer renderPlayer = manager.getSkinMap().get(aplayer.getSkinType());
+				ModelPlayer modelPlayer = renderPlayer.getMainModel();
+				modelPlayer.bipedLeftArm.isHidden = false;
+				modelPlayer.bipedRightArm.isHidden = false;
+			}
 		}
 	}
 
@@ -181,6 +185,7 @@ public class RenderEvents
 		ModelPlayer modelPlayer = event.getRenderer().getMainModel();
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
 		ItemStack stack = player.getHeldItemMainhand();
+		float partialticks = event.getPartialRenderTick();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			Block block = ItemTile.getBlock(stack);
@@ -196,9 +201,17 @@ public class RenderEvents
 			float rotation = -player.renderYawOffset;
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
-			double xOffset = (double) player.posX - (double) clientPlayer.posX;
-			double yOffset = (double) player.posY - (double) clientPlayer.posY;
-			double zOffset = (double) player.posZ - (double) clientPlayer.posZ;
+			double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialticks;
+			double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialticks;
+			double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialticks;
+
+			double c0 = clientPlayer.lastTickPosX + (clientPlayer.posX - clientPlayer.lastTickPosX) * (double) partialticks;
+			double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * (double) partialticks;
+			double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * (double) partialticks;
+
+			double xOffset = d0 - c0;
+			double yOffset = d1 - c1;
+			double zOffset = d2 - c2;
 
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(xOffset, yOffset, zOffset);
@@ -225,11 +238,7 @@ public class RenderEvents
 
 			GlStateManager.popMatrix();
 		}
-		else
-		{
-			modelPlayer.bipedLeftArm.isHidden = false;
-			modelPlayer.bipedRightArm.isHidden = false;
-		}
+		
 
 	}
 
@@ -251,10 +260,12 @@ public class RenderEvents
 		ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 		ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
 		{
 			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 				model.bipedBody.childModels.clear();
+
+			Item item = stack.getItem();
 
 			model.bipedLeftArm.isHidden = true;
 			model.bipedRightArm.isHidden = true;
@@ -279,15 +290,35 @@ public class RenderEvents
 				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
 			}
 
-			if (!player.isSneaking())
+			if (item == RegistrationHandler.itemTile)
 			{
-				fakeRightArm.rotateAngleX = -.9F;
-				fakeLeftArm.rotateAngleX = -.9F;
+				if (!player.isSneaking())
+				{
+					fakeRightArm.rotateAngleX = -.9F;
+					fakeLeftArm.rotateAngleX = -.9F;
+				}
+				else
+				{
+					fakeRightArm.rotateAngleX = -1.4F;
+					fakeLeftArm.rotateAngleX = -1.4F;
+				}
 			}
 			else
 			{
-				fakeRightArm.rotateAngleX = -1.4F;
-				fakeLeftArm.rotateAngleX = -1.4F;
+				if (!player.isSneaking())
+				{
+					fakeRightArm.rotateAngleX = -1.2F;
+					fakeLeftArm.rotateAngleX = -1.2F;
+				}
+				else
+				{
+					fakeRightArm.rotateAngleX = -1.7F;
+					fakeLeftArm.rotateAngleX = -1.7F;
+				}
+				
+				fakeRightArm.rotateAngleY = -0.15f;
+				fakeLeftArm.rotateAngleY = 0.15f;
+
 			}
 			model.bipedBody.addChild(fakeLeftArm);
 			model.bipedBody.addChild(fakeRightArm);
@@ -303,7 +334,7 @@ public class RenderEvents
 			}
 		}
 
-		if (stack.isEmpty() || stack.getItem() != RegistrationHandler.itemTile || !ItemTile.hasTileData(stack))
+		if (stack.isEmpty() ||  (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
 		{
 			model.bipedLeftArm.isHidden = false;
 			model.bipedRightArm.isHidden = false;

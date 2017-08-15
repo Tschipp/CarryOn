@@ -32,6 +32,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.common.item.ItemTile;
 
 public class RenderEntityEvents
 {
@@ -161,16 +162,7 @@ public class RenderEntityEvents
 					event.setCanceled(true);
 			}
 		}
-		else
-		{
-			event.setCanceled(false);
-			Minecraft mc = Minecraft.getMinecraft();
-			RenderManager manager = mc.getRenderManager();
-			RenderPlayer renderPlayer = manager.getSkinMap().get(aplayer.getSkinType());
-			ModelPlayer modelPlayer = renderPlayer.getMainModel();
-			modelPlayer.bipedLeftArm.isHidden = false;
-			modelPlayer.bipedRightArm.isHidden = false;
-		}
+		
 	}
 
 	/*
@@ -205,13 +197,13 @@ public class RenderEntityEvents
 				
 				double xOffset = d0 - c0;
 				double yOffset = d1 - c1;
-				double zOffset = d2 - d2;
+				double zOffset = d2 - c2;
 				
 				float height = entity.height;
 				float width = entity.width;
 				float multiplier = height * width;
 					
-				entity.setPosition(d0, d1, d2);
+				entity.setPosition(c0, c1, c2);
 				entity.rotationYaw = 0.0f;
 				entity.prevRotationYaw = 0.0f;
 				entity.setRotationYawHead(0.0f);
@@ -231,108 +223,10 @@ public class RenderEntityEvents
 				GlStateManager.popMatrix();
 			}
 		}
-		else
-		{
-			modelPlayer.bipedLeftArm.isHidden = false;
-			modelPlayer.bipedRightArm.isHidden = false;
-		}
+	
 
 	}
 
-	/*
-	 * Renders correct arm rotation
-	 */
-	@SideOnly(Side.CLIENT)
-	@SubscribeEvent
-	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
-	{
-		EntityPlayer player = event.getEntityPlayer();
-		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
-		ItemStack stack = player.getHeldItemMainhand();
-		ModelPlayer model = event.getRenderer().getMainModel();
-		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
-
-		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
-
-		ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
-		ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
-
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
-		{
-			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
-				model.bipedBody.childModels.clear();
-
-			model.bipedLeftArm.isHidden = true;
-			model.bipedRightArm.isHidden = true;
-
-			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
-			float rotation = -player.renderYawOffset;
-			if (aplayer.getSkinType().equals("default"))
-			{
-				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
-			}
-			else
-			{
-				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
-			}
-
-			if (aplayer.getSkinType().equals("default"))
-			{
-				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
-			}
-			else
-			{
-				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
-			}
-
-			if (!player.isSneaking())
-			{
-				fakeRightArm.rotateAngleX = -1.2F;
-				fakeLeftArm.rotateAngleX = -1.2F;
-			}
-			else
-			{
-				fakeRightArm.rotateAngleX = -1.7F;
-				fakeLeftArm.rotateAngleX = -1.7F;
-			}
-			
-			fakeRightArm.rotateAngleY = -0.15f;
-			fakeLeftArm.rotateAngleY = 0.15f;
-
-			model.bipedBody.addChild(fakeLeftArm);
-			model.bipedBody.addChild(fakeRightArm);
-
-		}
-		else
-		{
-			model.bipedLeftArm.isHidden = false;
-			model.bipedRightArm.isHidden = false;
-			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
-			{
-				model.bipedBody.childModels.clear();
-			}
-		}
-
-		if (stack.isEmpty() || stack.getItem() != RegistrationHandler.itemEntity || !ItemEntity.hasEntityData(stack))
-		{
-			model.bipedLeftArm.isHidden = false;
-			model.bipedRightArm.isHidden = false;
-		}
-
-	}
-
-	@SideOnly(Side.CLIENT)
-	private static RenderPlayer getRenderPlayer(AbstractClientPlayer player)
-	{
-		Minecraft mc = Minecraft.getMinecraft();
-		RenderManager manager = mc.getRenderManager();
-		return manager.getSkinMap().get(player.getSkinType());
-	}
-
-	@SideOnly(Side.CLIENT)
-	private static ModelPlayer getPlayerModel(AbstractClientPlayer player)
-	{
-		return getRenderPlayer(player).getMainModel();
-	}
+	
 
 }
