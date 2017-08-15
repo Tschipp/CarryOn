@@ -224,7 +224,9 @@ public class RenderEvents
 			GlStateManager.scale(1, 1, 1);
 
 			GlStateManager.popMatrix();
-		} else {
+		}
+		else
+		{
 			modelPlayer.bipedLeftArm.isHidden = false;
 			modelPlayer.bipedRightArm.isHidden = false;
 		}
@@ -246,14 +248,19 @@ public class RenderEvents
 
 		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
+		ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
+		ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
+
 		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
+			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				model.bipedBody.childModels.clear();
+
 			model.bipedLeftArm.isHidden = true;
 			model.bipedRightArm.isHidden = true;
 
 			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 			float rotation = -player.renderYawOffset;
-			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 			if (aplayer.getSkinType().equals("default"))
 			{
 				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
@@ -263,7 +270,6 @@ public class RenderEvents
 				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
 			}
 
-			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
 			if (aplayer.getSkinType().equals("default"))
 			{
 				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
@@ -273,8 +279,16 @@ public class RenderEvents
 				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
 			}
 
-			fakeRightArm.rotateAngleX = -.9F;
-			fakeLeftArm.rotateAngleX = -.9F;
+			if (!player.isSneaking())
+			{
+				fakeRightArm.rotateAngleX = -.9F;
+				fakeLeftArm.rotateAngleX = -.9F;
+			}
+			else
+			{
+				fakeRightArm.rotateAngleX = -1.4F;
+				fakeLeftArm.rotateAngleX = -1.4F;
+			}
 			model.bipedBody.addChild(fakeLeftArm);
 			model.bipedBody.addChild(fakeRightArm);
 
