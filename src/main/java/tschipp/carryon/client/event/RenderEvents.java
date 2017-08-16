@@ -150,8 +150,21 @@ public class RenderEvents
 				GlStateManager.rotate(8, 1f, 0, 0);
 
 			if (perspective == 0)
-				Minecraft.getMinecraft().getRenderItem().renderItem(tileStack.isEmpty() ? stack : tileStack, ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player));
-
+			{
+				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player);
+				if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
+				{
+					Object override = ModelOverridesHandler.getOverrideObject(state, tag);
+					if (override instanceof ItemStack)
+					{
+						Minecraft.getMinecraft().getRenderItem().renderItem((ItemStack) override, model);
+					}
+					else
+						Minecraft.getMinecraft().getRenderItem().renderItem(tileStack.isEmpty() ? stack : tileStack, model);
+				}
+				else
+					Minecraft.getMinecraft().getRenderItem().renderItem(tileStack.isEmpty() ? stack : tileStack, model);
+			}
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 
@@ -231,14 +244,23 @@ public class RenderEvents
 			if (player.isSneaking())
 				GlStateManager.translate(0, -0.3, 0);
 
-			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
-			Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
-
+			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
+			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
+			{
+				Object override = ModelOverridesHandler.getOverrideObject(state, tag);
+				if (override instanceof ItemStack)
+				{
+					Minecraft.getMinecraft().getRenderItem().renderItem((ItemStack) override, model);
+				}
+				else
+					Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
+			}
+			else
+				Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
 			GlStateManager.scale(1, 1, 1);
 
 			GlStateManager.popMatrix();
 		}
-		
 
 	}
 
@@ -269,7 +291,6 @@ public class RenderEvents
 
 			model.bipedLeftArm.isHidden = true;
 			model.bipedRightArm.isHidden = true;
-
 			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 			float rotation = -player.renderYawOffset;
 			if (aplayer.getSkinType().equals("default"))
@@ -315,7 +336,7 @@ public class RenderEvents
 					fakeRightArm.rotateAngleX = -1.7F;
 					fakeLeftArm.rotateAngleX = -1.7F;
 				}
-				
+
 				fakeRightArm.rotateAngleY = -0.15f;
 				fakeLeftArm.rotateAngleY = 0.15f;
 
@@ -334,7 +355,7 @@ public class RenderEvents
 			}
 		}
 
-		if (stack.isEmpty() ||  (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
+		if (stack.isEmpty() || (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
 		{
 			model.bipedLeftArm.isHidden = false;
 			model.bipedRightArm.isHidden = false;
@@ -359,6 +380,19 @@ public class RenderEvents
 	private static ModelPlayer getPlayerModel(AbstractClientPlayer player)
 	{
 		return getRenderPlayer(player).getMainModel();
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void hideItems(RenderPlayerEvent.Specials.Pre event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+		ItemStack stack = player.getHeldItemMainhand();
+
+		if (stack != null && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+		{
+			event.setRenderItem(false);
+		}
 	}
 
 }

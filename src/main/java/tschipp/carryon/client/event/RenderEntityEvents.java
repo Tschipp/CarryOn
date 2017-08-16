@@ -132,28 +132,29 @@ public class RenderEntityEvents
 				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialticks;
 				double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialticks;
 				double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialticks;
-				
+
 				entity.setPosition(d0, d1, d2);
 				entity.rotationYaw = 0.0f;
 				entity.prevRotationYaw = 0.0f;
 				entity.setRotationYawHead(0.0f);
-				
+
 				float height = entity.height;
 				float width = entity.width;
 				float multiplier = height * width;
-				
+
 				GlStateManager.pushMatrix();
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.rotate(180, 0, 1, 0);
 				GlStateManager.translate(0.0, -height, width + 0.1);
-				GlStateManager.disableLighting();
 				GlStateManager.enableAlpha();
-				GlStateManager.color(0, 0, 0, 0);
-				
-				if (perspective == 0)			
+
+				if (perspective == 0)
+				{
+					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
-				
-				GlStateManager.enableLighting();
+					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
+				}
+
 				GlStateManager.disableAlpha();
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
@@ -162,7 +163,7 @@ public class RenderEntityEvents
 					event.setCanceled(true);
 			}
 		}
-		
+
 	}
 
 	/*
@@ -194,20 +195,20 @@ public class RenderEntityEvents
 				double c0 = clientPlayer.lastTickPosX + (clientPlayer.posX - clientPlayer.lastTickPosX) * (double) partialticks;
 				double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * (double) partialticks;
 				double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * (double) partialticks;
-				
+
 				double xOffset = d0 - c0;
 				double yOffset = d1 - c1;
 				double zOffset = d2 - c2;
-				
+
 				float height = entity.height;
 				float width = entity.width;
 				float multiplier = height * width;
-					
+
 				entity.setPosition(c0, c1, c2);
 				entity.rotationYaw = 0.0f;
 				entity.prevRotationYaw = 0.0f;
 				entity.setRotationYawHead(0.0f);
-				
+
 				GlStateManager.pushMatrix();
 				GlStateManager.translate(xOffset, yOffset, zOffset);
 				GlStateManager.scale((10 - multiplier) * 0.08, (10 - multiplier) * 0.08, (10 - multiplier) * 0.08);
@@ -217,16 +218,58 @@ public class RenderEntityEvents
 				if (player.isSneaking())
 					GlStateManager.translate(0, -0.3, 0);
 
+				Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
+				Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
 
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
 			}
 		}
-	
 
 	}
 
-	
+	public void renderEntityStatic(Entity entityIn, float partialTicks, boolean p_188388_3_)
+	{
+		Field fieldX = RenderManager.class.getDeclaredFields()[4];
+		Field fieldY = RenderManager.class.getDeclaredFields()[5];
+		Field fieldZ = RenderManager.class.getDeclaredFields()[6];
+		fieldX.setAccessible(true);
+		fieldY.setAccessible(true);
+		fieldZ.setAccessible(true);
+
+		RenderManager manager = Minecraft.getMinecraft().getRenderManager();
+		
+		if (entityIn.ticksExisted == 0)
+		{
+			entityIn.lastTickPosX = entityIn.posX;
+			entityIn.lastTickPosY = entityIn.posY;
+			entityIn.lastTickPosZ = entityIn.posZ;
+		}
+
+		double d0 = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double) partialTicks;
+		double d1 = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double) partialTicks;
+		double d2 = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double) partialTicks;
+		float f = entityIn.prevRotationYaw + (entityIn.rotationYaw - entityIn.prevRotationYaw) * partialTicks;
+		int i = entityIn.getBrightnessForRender(partialTicks);
+
+		if (entityIn.isBurning())
+		{
+			i = 15728880;
+		}
+
+		int j = i % 65536;
+		int k = i / 65536;
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) j, (float) k);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		try
+		{
+			manager.doRenderEntity(entityIn, d0 - fieldX.getDouble(manager), d1 - fieldY.getDouble(manager), d2 - fieldZ.getDouble(manager), f, partialTicks, p_188388_3_);
+		}
+		catch (IllegalArgumentException | IllegalAccessException e)
+		{
+			e.printStackTrace();
+		}
+	}
 
 }

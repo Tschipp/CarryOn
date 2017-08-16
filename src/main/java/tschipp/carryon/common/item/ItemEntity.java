@@ -31,8 +31,8 @@ public class ItemEntity extends Item
 
 	public ItemEntity()
 	{
-		this.setUnlocalizedName("tile_entity");
-		this.setRegistryName(CarryOn.MODID, "tile_entity");
+		this.setUnlocalizedName("entity_item");
+		this.setRegistryName(CarryOn.MODID, "entity_item");
 		GameRegistry.register(this);
 		this.setMaxStackSize(1);
 	}
