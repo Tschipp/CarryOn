@@ -31,6 +31,7 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -238,7 +239,7 @@ public class RenderEvents
 
 			GlStateManager.popMatrix();
 		}
-		
+
 
 	}
 
@@ -249,95 +250,98 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
 	{
-		EntityPlayer player = event.getEntityPlayer();
-		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
-		ItemStack stack = player.getHeldItemMainhand();
-		ModelPlayer model = event.getRenderer().getMainModel();
-		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
+		if (!Loader.isModLoaded("mobends")) {
 
-		ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
+			EntityPlayer player = event.getEntityPlayer();
+			AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
+			ItemStack stack = player.getHeldItemMainhand();
+			ModelPlayer model = event.getRenderer().getMainModel();
+			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
 
-		ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
-		ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
+			ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
-		if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
-		{
-			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
-				model.bipedBody.childModels.clear();
+			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
+			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
 
-			Item item = stack.getItem();
-
-			model.bipedLeftArm.isHidden = true;
-			model.bipedRightArm.isHidden = true;
-
-			Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
-			float rotation = -player.renderYawOffset;
-			if (aplayer.getSkinType().equals("default"))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
 			{
-				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
-			}
-			else
-			{
-				fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
-			}
+				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+					model.bipedBody.childModels.clear();
 
-			if (aplayer.getSkinType().equals("default"))
-			{
-				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
-			}
-			else
-			{
-				fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
-			}
+				Item item = stack.getItem();
 
-			if (item == RegistrationHandler.itemTile)
-			{
-				if (!player.isSneaking())
+				model.bipedLeftArm.isHidden = true;
+				model.bipedRightArm.isHidden = true;
+
+				Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
+				float rotation = -player.renderYawOffset;
+				if (aplayer.getSkinType().equals("default"))
 				{
-					fakeRightArm.rotateAngleX = -.9F;
-					fakeLeftArm.rotateAngleX = -.9F;
+					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
 				}
 				else
 				{
-					fakeRightArm.rotateAngleX = -1.4F;
-					fakeLeftArm.rotateAngleX = -1.4F;
+					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
 				}
-			}
-			else
-			{
-				if (!player.isSneaking())
+
+				if (aplayer.getSkinType().equals("default"))
 				{
-					fakeRightArm.rotateAngleX = -1.2F;
-					fakeLeftArm.rotateAngleX = -1.2F;
+					fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
 				}
 				else
 				{
-					fakeRightArm.rotateAngleX = -1.7F;
-					fakeLeftArm.rotateAngleX = -1.7F;
+					fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
 				}
-				
-				fakeRightArm.rotateAngleY = -0.15f;
-				fakeLeftArm.rotateAngleY = 0.15f;
+
+				if (item == RegistrationHandler.itemTile)
+				{
+					if (!player.isSneaking())
+					{
+						fakeRightArm.rotateAngleX = -.9F;
+						fakeLeftArm.rotateAngleX = -.9F;
+					}
+					else
+					{
+						fakeRightArm.rotateAngleX = -1.4F;
+						fakeLeftArm.rotateAngleX = -1.4F;
+					}
+				}
+				else
+				{
+					if (!player.isSneaking())
+					{
+						fakeRightArm.rotateAngleX = -1.2F;
+						fakeLeftArm.rotateAngleX = -1.2F;
+					}
+					else
+					{
+						fakeRightArm.rotateAngleX = -1.7F;
+						fakeLeftArm.rotateAngleX = -1.7F;
+					}
+
+					fakeRightArm.rotateAngleY = -0.15f;
+					fakeLeftArm.rotateAngleY = 0.15f;
+
+				}
+				model.bipedBody.addChild(fakeLeftArm);
+				model.bipedBody.addChild(fakeRightArm);
 
 			}
-			model.bipedBody.addChild(fakeLeftArm);
-			model.bipedBody.addChild(fakeRightArm);
-
-		}
-		else
-		{
-			model.bipedLeftArm.isHidden = false;
-			model.bipedRightArm.isHidden = false;
-			if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+			else
 			{
-				model.bipedBody.childModels.clear();
+				model.bipedLeftArm.isHidden = false;
+				model.bipedRightArm.isHidden = false;
+				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				{
+					model.bipedBody.childModels.clear();
+				}
 			}
-		}
 
-		if (stack.isEmpty() ||  (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
-		{
-			model.bipedLeftArm.isHidden = false;
-			model.bipedRightArm.isHidden = false;
+			if (stack.isEmpty() ||  (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
+			{
+				model.bipedLeftArm.isHidden = false;
+				model.bipedRightArm.isHidden = false;
+			}
 		}
 
 	}
