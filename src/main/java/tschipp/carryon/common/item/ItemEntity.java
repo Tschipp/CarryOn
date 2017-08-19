@@ -41,26 +41,8 @@ public class ItemEntity extends Item
 	public String getItemStackDisplayName(ItemStack stack)
 	{
 		if (hasEntityData(stack))
-		{
-
-			/*
-			ResourceLocation key = new ResourceLocation(getEntityName(stack));
-
-			String name = I18n.translateToLocal(EntityList.getClass(key).getCanonicalName());
-			
-			System.out.println(EntityList.getClass(key).getCanonicalName());
-			System.out.println(EntityList.getClass(key).getSimpleName());
-			System.out.println(EntityList.getClass(key).getName());
-			
-			
-			
-			//I18n.translateToLocal(entity.getDisplayName().getFormattedText())
-
-			//return name;
-			*/
-		
+		{	
 			return I18n.translateToLocal("entity."+EntityList.getTranslationName(new ResourceLocation(getEntityName(stack))) + ".name");
-			//return getCustomName(stack);
 		}
 
 		return "";
@@ -223,7 +205,7 @@ public class ItemEntity extends Item
 		if(e == null)
 			return 1;
 		
-		int i = (int) (e.height * e.width) / 300;
+		int i = (int)(e.height * e.width);
 		if (i > 4)
 			i = 4;
 
