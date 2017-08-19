@@ -31,6 +31,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.ModelOverridesHandler;
 
 public class ItemTile extends Item
 {
@@ -52,9 +53,25 @@ public class ItemTile extends Item
 		{
 			if (hasTileData(stack))
 			{
-				ItemStack contained = getItemStack(stack);
-				if (contained != null)
-					return contained.getDisplayName();
+				NBTTagCompound nbt = getTileData(stack);
+				IBlockState state = getBlockState(stack);
+
+				if (ModelOverridesHandler.hasCustomOverrideModel(state, nbt))
+				{
+					Object override = ModelOverridesHandler.getOverrideObject(state, nbt);
+					if (override instanceof ItemStack)
+						return ((ItemStack) override).getDisplayName();
+					else
+					{
+						IBlockState ostate = (IBlockState) override;
+						ItemStack itemstack = new ItemStack(ostate.getBlock().getItemDropped(ostate, this.itemRand, 0), 1, state.getBlock().damageDropped(ostate));
+						return itemstack.getDisplayName();
+					}
+				}
+
+				ItemStack istack = getItemStack(stack);
+				if (istack != null)
+					return istack.getDisplayName();
 			}
 		}
 
@@ -142,6 +159,9 @@ public class ItemTile extends Item
 		{
 			if (entity instanceof EntityLivingBase)
 			{
+				if (entity instanceof EntityPlayer && CarryOnConfig.settings.slownessInCreative ? false : ((EntityPlayer) entity).isCreative())
+					return;
+
 				((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 1, potionLevel(stack), false, false));
 			}
 		}
@@ -163,9 +183,6 @@ public class ItemTile extends Item
 
 	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, IBlockState state, ItemStack stack)
 	{
-		if (CarryOnConfig.settings.pickupAllBlocks ? false : tile == null)
-			return false;
-
 		if (stack == null)
 			return false;
 
@@ -179,7 +196,7 @@ public class ItemTile extends Item
 
 		tag.setTag(TILE_DATA_KEY, chest);
 
-		ItemStack drop = state.getBlock().getItem(world, pos, state);
+		ItemStack drop = new ItemStack(state.getBlock().getItemDropped(state, itemRand, 0), 1, state.getBlock().damageDropped(state));
 
 		tag.setString("block", state.getBlock().getRegistryName().toString());
 		Item item = Item.getItemFromBlock(state.getBlock());

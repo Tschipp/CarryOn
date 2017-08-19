@@ -16,11 +16,29 @@ public class Configs {
 		@Comment("Allow all blocks to be picked up, not just Tile Entites")
 		public boolean pickupAllBlocks = false;
 		
-		@Comment("Maximum distance from where Blocks can be picked up")
+		@Comment("Whether Blocks and Entities slow the creative player down when carried")
+		public boolean slownessInCreative = true;
+		
+		@Config.RangeDouble(min = 0)
+		@Comment("Maximum distance from where Blocks and Entities can be picked up")
 		public double maxDistance = 2.5;
+		
+		@Config.RangeDouble(min = 0, max = 10)
+		@Comment("Max width of entities that can be picked up in survival mode")
+		public float maxEntityWidth = 1.5f;
+		
+		@Config.RangeDouble(min = 0, max = 10)
+		@Comment("Max height of entities that can be picked up in survival mode")
+		public float maxEntityHeight = 1.5f;
+		
+		@Comment("Whether hostile mobs should be able to picked up in survival mode")
+		public boolean pickupHostileMobs = false;
+		
+		@Comment("Larger Entities slow down the player more")
+		public boolean heavyEntities = true;
 	}
 	
-	public static class ForbiddenTiles
+	public static class Blacklist
 	{
 		@Comment("Tile Entities that cannot be picked up")
     	public String[] forbiddenTiles = new String[]
@@ -29,6 +47,13 @@ public class Configs {
     					"minecraft:end_gateway",
     					"minecraft:double_plant",
     					"minecraft:bed",
+    					"minecraft:wooden_door",
+    					"minecraft:iron_door",
+    					"minecraft:spruce_door",
+    					"minecraft:birch_door",
+    					"minecraft:jungle_door",
+    					"minecraft:acacia_door",
+    					"minecraft:dark_oak_door",
     					"animania:block_trough",
     					"animania:block_invisiblock",
     					"colossalchests:*",
@@ -52,6 +77,16 @@ public class Configs {
     					"embers:inferno_forge",
     					"storagedrawers:framingtable",
     			};
+		
+		@Comment("Entities that cannot be picked up")
+		public String[] forbiddenEntities = new String[]
+				{
+						"EnderCrystal",
+						"EnderDragon",
+						"Ghast",
+						"Shulker",
+						"animania:textures/entity/pigs/hamster_tarou.png"
+				};
 	}
 	
 	public static class ModelOverrides
@@ -60,7 +95,17 @@ public class Configs {
     	public String[] modelOverrides = new String[]
     			{
     				"minecraft:lit_furnace->minecraft:furnace",
-    				"minecraft:bed->minecraft:bed",
+    				"minecraft:hopper->(block)minecraft:hopper",
+    				"minecraft:unpowered_comparator->(block)minecraft:unpowered_comparator",
+    				"minecraft:unpowered_repeater->(block)minecraft:unpowered_repeater",
+    				"minecraft:powered_comparator->(block)minecraft:powered_comparator",
+    				"minecraft:powered_repeater->(block)minecraft:powered_repeater",
+    				"minecraft:cauldron->(block)minecraft:cauldron",
+    				"minecraft:brewing_stand->(item)minecraft:brewing_stand",
+    				"minecraft:tallgrass;1->(item)minecraft:tallgrass;1",
+    				"minecraft:tallgrass;2->(item)minecraft:tallgrass;2",
+    				"minecraft:flower_pot->(block)minecraft:flower_pot",
+    				"minecraft:leaves2->(item)minecraft:leaves2",
     	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
     	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
     	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
@@ -98,5 +143,6 @@ public class Configs {
     	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}"
     			};
 	}
+	
 
 }

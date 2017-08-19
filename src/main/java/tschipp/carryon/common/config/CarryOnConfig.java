@@ -24,8 +24,8 @@ public class CarryOnConfig {
 	public static Configs.Settings settings = new Configs.Settings();
 	
 	@Config.LangKey(CarryOn.MODID)
-	@Config.Comment("Tile Entities that the Player is not allowed to pick up")
-	public static Configs.ForbiddenTiles forbiddenTiles = new Configs.ForbiddenTiles();
+	@Config.Comment("Blacklist for Blocks and Entities")
+	public static Configs.Blacklist blacklist = new Configs.Blacklist();
 	
 	@Config.LangKey(CarryOn.MODID)
 	@Config.Comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
