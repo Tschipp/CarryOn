@@ -32,8 +32,6 @@ minecraft {
 }
 
 repositories {
-
-    maven { url 'http://maven.epoxide.org' }
 	
 	ivy {
         name "LatMod"
@@ -45,7 +43,6 @@ repositories {
 
 dependencies {
   
-      deobfCompile "net.darkhax.gamestages:GameStages-1.11.2:1.0.11"
 	  
 	  deobfCompile "LatMod:FTBUtilities:1.1x-3.6.5"
 	  deobfCompile "LatMod:FTBLib:1.1x-3.6.5"
