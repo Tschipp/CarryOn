@@ -1,4 +1,2 @@
-# CarryOn
-Carry On mod for Minecraft
 
-Download here: https://minecraft.curseforge.com/projects/carry-on
+# Carry On [![](http://cf.way2muchnoise.eu/carry-on.svg)](https://minecraft.curseforge.com/projects/carry-on) [![](http://cf.way2muchnoise.eu/versions/carry-on.svg)](https://minecraft.curseforge.com/projects/carry-on)
