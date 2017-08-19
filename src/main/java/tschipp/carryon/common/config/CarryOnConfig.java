@@ -24,12 +24,16 @@ public class CarryOnConfig {
 	public static Configs.Settings settings = new Configs.Settings();
 	
 	@Config.LangKey(CarryOn.MODID)
-	@Config.Comment("Tile Entities that the Player is not allowed to pick up")
-	public static Configs.ForbiddenTiles forbiddenTiles = new Configs.ForbiddenTiles();
+	@Config.Comment("Blacklist for Blocks and Entities")
+	public static Configs.Blacklist blacklist = new Configs.Blacklist();
 	
 	@Config.LangKey(CarryOn.MODID)
 	@Config.Comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
 	public static Configs.ModelOverrides modelOverrides = new Configs.ModelOverrides();
+	
+	@Config.LangKey(CarryOn.MODID)
+	@Config.Comment("Custom Pickup Conditions for certain blocks. ONLY WORKS WHEN GAMESTAGES IS INSTALLED! Advanced Users Only!")
+	public static Configs.CustomPickupConditions customPickupConditions = new Configs.CustomPickupConditions();
 
 	@Mod.EventBusSubscriber
 	public static class EventHandler {
