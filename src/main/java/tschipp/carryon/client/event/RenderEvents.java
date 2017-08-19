@@ -282,8 +282,8 @@ public class RenderEvents
 			}
 			else
 			{
-				fakeRightArm.rotateAngleX = -1.4F;
-				fakeLeftArm.rotateAngleX = -1.4F;
+				fakeRightArm.rotateAngleX = -1.6F;
+				fakeLeftArm.rotateAngleX = -1.6F;
 			}
 			model.bipedBody.addChild(fakeLeftArm);
 			model.bipedBody.addChild(fakeRightArm);
