@@ -191,7 +191,7 @@ public class ItemEntity extends Item
 		if(e == null)
 			return 1;
 		
-		int i = (int) (e.height * e.width);
+		int i = (int) (e.height * e.width) / 300;
 		if (i > 4)
 			i = 4;
 

@@ -1,10 +1,9 @@
 package tschipp.carryon.common.event;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -15,8 +14,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import tschipp.carryon.common.config.CarryOnConfig;
-import tschipp.carryon.common.handler.ForbiddenTileHandler;
+import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
 
@@ -58,42 +56,36 @@ public class ItemEntityEvents
 		}
 	}
 
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.NORMAL)
 	public void onEntityRightClick(PlayerInteractEvent.EntityInteract event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		ItemStack main = player.getHeldItemMainhand();
-		ItemStack off = player.getHeldItemOffhand();
-		World world = event.getWorld();
-		Entity entity = event.getTarget();
-		BlockPos pos = entity.getPosition();
 
-		if (main.isEmpty() && off.isEmpty() && player.isSneaking())
+		if (player instanceof EntityPlayerMP)
 		{
-			ItemStack stack = new ItemStack(RegistrationHandler.itemEntity);
+			ItemStack main = player.getHeldItemMainhand();
+			ItemStack off = player.getHeldItemOffhand();
+			World world = event.getWorld();
+			Entity entity = event.getTarget();
+			BlockPos pos = entity.getPosition();
 
-			if (!(entity instanceof EntityPlayer) && !ForbiddenTileHandler.isForbidden(entity) && (CarryOnConfig.settings.pickupHostileMobs ? true : !entity.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()) && (entity.height <= CarryOnConfig.settings.maxEntityHeight && entity.width <= CarryOnConfig.settings.maxEntityWidth || player.isCreative()))
+			if (main.isEmpty() && off.isEmpty() && player.isSneaking())
 			{
-				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+				ItemStack stack = new ItemStack(RegistrationHandler.itemEntity);
 
-				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+				if (PickupHandler.canPlayerPickUpEntity(player, entity))
 				{
-					if (entity instanceof EntityTameable)
-					{
-						EntityTameable tame = (EntityTameable) entity;
-						if (tame.getOwnerId() != null && tame.getOwnerId() != player.getUUID(player.getGameProfile()))
-							return;
-					}
 					if (ItemEntity.storeEntityData(entity, world, stack))
 					{
 						entity.setDead();
 						player.setHeldItem(EnumHand.MAIN_HAND, stack);
+						event.setCanceled(true);
 					}
 				}
 
 			}
-
 		}
+
 	}
 
 }

@@ -11,8 +11,8 @@ import tschipp.carryon.common.config.CarryOnConfig;
 
 public class ForbiddenTileHandler
 {
-	public static final List<String> FORBIDDEN_TILES;
-	public static final List<String> FORBIDDEN_ENTITIES;
+	public static List<String> FORBIDDEN_TILES;
+	public static List<String> FORBIDDEN_ENTITIES;
 
 	public static boolean isForbidden(Block block)
 	{
@@ -30,9 +30,9 @@ public class ForbiddenTileHandler
 		return true;
 	}
 
-	static
+	public static void initForbiddenTiles()
 	{
-		String[] forbidden = CarryOnConfig.forbiddenTiles.forbiddenTiles;
+		String[] forbidden = CarryOnConfig.blacklist.forbiddenTiles;
 		FORBIDDEN_TILES = new ArrayList<String>();
 
 		for (int i = 0; i < forbidden.length; i++)
@@ -51,7 +51,7 @@ public class ForbiddenTileHandler
 			FORBIDDEN_TILES.add(forbidden[i]);
 		}
 
-		String[] forbiddenEntity = CarryOnConfig.forbiddenEntities.forbiddenEntities;
+		String[] forbiddenEntity = CarryOnConfig.blacklist.forbiddenEntities;
 		FORBIDDEN_ENTITIES = new ArrayList<String>();
 
 		for (int i = 0; i < forbiddenEntity.length; i++)

@@ -38,22 +38,7 @@ public class Configs {
 		public boolean heavyEntities = true;
 	}
 	
-	public static class ForbiddenEntities
-	{
-		
-		@Config.RequiresMcRestart()
-		@Comment("Entities that cannot be picked up")
-		public String[] forbiddenEntities = new String[]
-				{
-						"minecraft:ender_crystal",
-						"minecraft:ender_dragon",
-						"minecraft:ghast",
-						"minecraft:shulker"
-				};
-	}
-	
-	
-	public static class ForbiddenTiles
+	public static class Blacklist
 	{
 		@Config.RequiresMcRestart()
 		@Comment("Tile Entities that cannot be picked up")
@@ -93,6 +78,17 @@ public class Configs {
     					"embers:inferno_forge",
     					"storagedrawers:framingtable",
     			};
+		
+		@Config.RequiresMcRestart()
+		@Comment("Entities that cannot be picked up")
+		public String[] forbiddenEntities = new String[]
+				{
+						"minecraft:ender_crystal",
+						"minecraft:ender_dragon",
+						"minecraft:ghast",
+						"minecraft:shulker",
+						"animania:textures/entity/pigs/hamster_tarou.png"
+				};
 	}
 	
 	public static class ModelOverrides
@@ -112,6 +108,7 @@ public class Configs {
     				"minecraft:tallgrass;1->(item)minecraft:tallgrass;1",
     				"minecraft:tallgrass;2->(item)minecraft:tallgrass;2",
     				"minecraft:flower_pot->(block)minecraft:flower_pot",
+    				"minecraft:leaves2->(item)minecraft:leaves2",
     	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
     	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
     	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
@@ -148,6 +145,25 @@ public class Configs {
     	            "storagedrawers:basicdrawers;4{Mat:\"acacia\"}->storagedrawers:basicdrawers;4{material:\"acacia\"}",
     	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}"
     			};
+	}
+	
+	
+	
+	public static class CustomPickupConditions
+	{
+		@Config.RequiresMcRestart()
+		@Comment("Custom Pickup Conditions for Blocks")
+    	public String[] customPickupConditionsBlocks = new String[]
+    			{
+    					
+    			};	
+		
+		@Config.RequiresMcRestart()
+		@Comment("Custom Pickup Conditions for Entities")
+    	public String[] customPickupConditionsEntities = new String[]
+    			{
+    					
+    			};	
 	}
 
 }

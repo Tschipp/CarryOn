@@ -44,6 +44,8 @@ public class RegistrationHandler
 	public static void regOverrideList()
 	{
 		ModelOverridesHandler.initOverrides();
+		CustomPickupOverrideHandler.initPickupOverrides();
+		ForbiddenTileHandler.initForbiddenTiles();
 	}
 	
 	

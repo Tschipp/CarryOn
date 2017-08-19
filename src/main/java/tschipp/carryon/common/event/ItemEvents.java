@@ -5,6 +5,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -20,6 +21,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ForbiddenTileHandler;
+import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemTile;
 
@@ -79,38 +81,36 @@ public class ItemEvents
 	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		ItemStack main = player.getHeldItemMainhand();
-		ItemStack off = player.getHeldItemOffhand();
-		World world = event.getWorld();
-		BlockPos pos = event.getPos();
-		Block block = world.getBlockState(pos).getBlock();
-		IBlockState state = world.getBlockState(pos);
 
-		if (main.isEmpty() && off.isEmpty() && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
+		if (player instanceof EntityPlayerMP)
 		{
-			ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
-			TileEntity te = world.getTileEntity(pos);
-			if ((CarryOnConfig.settings.pickupAllBlocks ? true : te != null) && (block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
+			ItemStack main = player.getHeldItemMainhand();
+			ItemStack off = player.getHeldItemOffhand();
+			World world = event.getWorld();
+			BlockPos pos = event.getPos();
+			Block block = world.getBlockState(pos).getBlock();
+			IBlockState state = world.getBlockState(pos);
+
+			if (main.isEmpty() && off.isEmpty() && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
 			{
-				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
-				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+				TileEntity te = world.getTileEntity(pos);
+				if (PickupHandler.canPlayerPickUpBlock(player, te, world, pos))
 				{
-					if (!ItemTile.isLocked(pos, world))
+					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{
-						if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
-						{
-							world.removeTileEntity(pos);
-							world.setBlockToAir(pos);
-							player.setHeldItem(EnumHand.MAIN_HAND, stack);
-							event.setUseBlock(Result.DENY);
-						}
+						world.removeTileEntity(pos);
+						world.setBlockToAir(pos);
+						player.setHeldItem(EnumHand.MAIN_HAND, stack);
+						event.setUseBlock(Result.DENY);
+						event.setCanceled(true);
 					}
+
 				}
 
 			}
-
 		}
 	}
 

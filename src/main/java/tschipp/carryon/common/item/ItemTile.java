@@ -177,9 +177,6 @@ public class ItemTile extends Item
 
 	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, IBlockState state, ItemStack stack)
 	{
-		if (CarryOnConfig.settings.pickupAllBlocks ? false : tile == null)
-			return false;
-
 		if (stack.isEmpty())
 			return false;
 

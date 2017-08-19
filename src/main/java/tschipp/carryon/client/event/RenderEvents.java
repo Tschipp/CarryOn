@@ -273,6 +273,7 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
 	{
+		
 		if (!Loader.isModLoaded("mobends")) {
 
 			EntityPlayer player = event.getEntityPlayer();
@@ -366,6 +367,7 @@ public class RenderEvents
 				model.bipedRightArm.isHidden = false;
 			}
 		}
+		
 
 	}
 

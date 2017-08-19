@@ -224,6 +224,7 @@ public class RenderEntityEvents
 
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
+
 			}
 		}
 
