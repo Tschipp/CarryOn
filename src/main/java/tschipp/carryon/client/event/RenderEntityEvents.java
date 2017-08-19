@@ -2,9 +2,12 @@ package tschipp.carryon.client.event;
 
 import java.lang.reflect.Field;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
@@ -116,12 +119,15 @@ public class RenderEntityEvents
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
+
+
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 		ItemStack stack = player.getHeldItemMainhand();
 		int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 		float partialticks = event.getPartialTicks();
+
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 		{
@@ -143,24 +149,28 @@ public class RenderEntityEvents
 				float multiplier = height * width;
 
 				GlStateManager.pushMatrix();
-				GlStateManager.scale(1, 1, 1);
+				GlStateManager.scale(.8, .8, .8);
 				GlStateManager.rotate(180, 0, 1, 0);
-				GlStateManager.translate(0.0, -height, width + 0.1);
+				GlStateManager.translate(0.0, -height - .1, width + 0.1);
 				GlStateManager.enableAlpha();
-
-				if (perspective == 0)
+				
+				
+				if (perspective == 0 && Minecraft.getMinecraft().inGameHasFocus)
 				{
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
+					
 				}
 
 				GlStateManager.disableAlpha();
+
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
 
 				if (perspective == 0)
 					event.setCanceled(true);
+
 			}
 		}
 
@@ -230,17 +240,8 @@ public class RenderEntityEvents
 
 	}
 
-	public void renderEntityStatic(Entity entityIn, float partialTicks, boolean p_188388_3_)
+	public void renderEntityStaticCO(Entity entityIn, float partialTicks, boolean p_188388_3_)
 	{
-		Field fieldX = RenderManager.class.getDeclaredFields()[4];
-		Field fieldY = RenderManager.class.getDeclaredFields()[5];
-		Field fieldZ = RenderManager.class.getDeclaredFields()[6];
-		fieldX.setAccessible(true);
-		fieldY.setAccessible(true);
-		fieldZ.setAccessible(true);
-
-		RenderManager manager = Minecraft.getMinecraft().getRenderManager();
-		
 		if (entityIn.ticksExisted == 0)
 		{
 			entityIn.lastTickPosX = entityIn.posX;
@@ -248,12 +249,17 @@ public class RenderEntityEvents
 			entityIn.lastTickPosZ = entityIn.posZ;
 		}
 
-		double d0 = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double) partialTicks;
-		double d1 = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double) partialTicks;
-		double d2 = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double) partialTicks;
+		double d0 = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double)partialTicks;
+		double d1 = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double)partialTicks;
+		double d2 = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double)partialTicks;
 		float f = entityIn.prevRotationYaw + (entityIn.rotationYaw - entityIn.prevRotationYaw) * partialTicks;
-		int i = entityIn.getBrightnessForRender(partialTicks);
 
+		int i = 0;
+		if (!Minecraft.getMinecraft().world.isDaytime()) {
+			i = entityIn.getBrightnessForRender(partialTicks);
+		} else {
+			i = 50000;
+		}
 		if (entityIn.isBurning())
 		{
 			i = 15728880;
@@ -261,16 +267,10 @@ public class RenderEntityEvents
 
 		int j = i % 65536;
 		int k = i / 65536;
-		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) j, (float) k);
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		try
-		{
-			manager.doRenderEntity(entityIn, d0 - fieldX.getDouble(manager), d1 - fieldY.getDouble(manager), d2 - fieldZ.getDouble(manager), f, partialTicks, p_188388_3_);
-		}
-		catch (IllegalArgumentException | IllegalAccessException e)
-		{
-			e.printStackTrace();
-		}
+		RenderManager manager = Minecraft.getMinecraft().getRenderManager();
+		manager.doRenderEntity(entityIn, d0, d1, d2, f, partialTicks, p_188388_3_);
 	}
 
 }

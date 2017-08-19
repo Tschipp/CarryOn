@@ -1,6 +1,8 @@
 package tschipp.carryon.client.event;
 
 import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -281,16 +283,20 @@ public class RenderEvents
 			ItemStack stack = player.getHeldItemMainhand();
 			ModelPlayer model = event.getRenderer().getMainModel();
 			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
-
+			
 			ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
 			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
-
+			
+			player.setArrowCountInEntity(0); //TODO Temporary Fix
+			
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
 			{
-				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				
+				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty()) {
 					model.bipedBody.childModels.clear();
+				}
 
 				Item item = stack.getItem();
 
@@ -355,6 +361,7 @@ public class RenderEvents
 			{
 				model.bipedLeftArm.isHidden = false;
 				model.bipedRightArm.isHidden = false;
+				
 				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 				{
 					model.bipedBody.childModels.clear();

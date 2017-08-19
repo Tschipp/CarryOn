@@ -42,7 +42,25 @@ public class ItemEntity extends Item
 	{
 		if (hasEntityData(stack))
 		{
-			return I18n.translateToLocal(EntityList.getTranslationName(new ResourceLocation(getEntityName(stack))));
+
+			/*
+			ResourceLocation key = new ResourceLocation(getEntityName(stack));
+
+			String name = I18n.translateToLocal(EntityList.getClass(key).getCanonicalName());
+			
+			System.out.println(EntityList.getClass(key).getCanonicalName());
+			System.out.println(EntityList.getClass(key).getSimpleName());
+			System.out.println(EntityList.getClass(key).getName());
+			
+			
+			
+			//I18n.translateToLocal(entity.getDisplayName().getFormattedText())
+
+			//return name;
+			*/
+		
+			return I18n.translateToLocal("entity."+EntityList.getTranslationName(new ResourceLocation(getEntityName(stack))) + ".name");
+			//return getCustomName(stack);
 		}
 
 		return "";
@@ -90,7 +108,7 @@ public class ItemEntity extends Item
 		if (hasEntityData(stack))
 		{
 			BlockPos finalPos = pos;
-			
+
 			if (!block.isReplaceable(world, pos))
 			{
 				finalPos = pos.offset(facing);
@@ -116,7 +134,7 @@ public class ItemEntity extends Item
 
 		return EnumActionResult.FAIL;
 	}
-	
+
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected)
 	{
@@ -124,15 +142,15 @@ public class ItemEntity extends Item
 		{
 			if(getEntity(stack, world) == null)
 				stack = ItemStack.EMPTY;
-			
+
 			if (entity instanceof EntityLivingBase)
 			{
 				if(entity instanceof EntityPlayer && CarryOnConfig.settings.slownessInCreative ? false : ((EntityPlayer)entity).isCreative())
 					return;
-				
+
 				((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 1, potionLevel(stack, world), false, false));
 			}
-			
+
 		}
 		else
 		{
@@ -184,7 +202,21 @@ public class ItemEntity extends Item
 		}
 		return null;
 	}
-	
+
+	public static String getCustomName(ItemStack stack)
+	{
+		if (stack.hasTagCompound())
+		{
+			NBTTagCompound tag = stack.getTagCompound();
+			if (tag.hasKey("CustomName") && !tag.getString("CustomName").isEmpty()) {
+				return tag.toString();
+			} else {
+				return tag.toString();
+			}
+		}
+		return null;
+	}
+
 	private int potionLevel(ItemStack stack, World world)
 	{
 		Entity e = getEntity(stack, world);
