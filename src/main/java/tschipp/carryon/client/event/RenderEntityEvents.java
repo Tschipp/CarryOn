@@ -158,7 +158,7 @@ public class RenderEntityEvents
 				if (perspective == 0 && Minecraft.getMinecraft().inGameHasFocus)
 				{
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
-					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
+					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 1.0f, false);
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
 					
 				}
@@ -229,7 +229,7 @@ public class RenderEntityEvents
 					GlStateManager.translate(0, -0.3, 0);
 
 				Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
-				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
+				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 1.0f, false);
 				Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
 
 				GlStateManager.scale(1, 1, 1);
@@ -240,37 +240,5 @@ public class RenderEntityEvents
 
 	}
 
-	public void renderEntityStaticCO(Entity entityIn, float partialTicks, boolean p_188388_3_)
-	{
-		if (entityIn.ticksExisted == 0)
-		{
-			entityIn.lastTickPosX = entityIn.posX;
-			entityIn.lastTickPosY = entityIn.posY;
-			entityIn.lastTickPosZ = entityIn.posZ;
-		}
-
-		double d0 = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double)partialTicks;
-		double d1 = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double)partialTicks;
-		double d2 = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double)partialTicks;
-		float f = entityIn.prevRotationYaw + (entityIn.rotationYaw - entityIn.prevRotationYaw) * partialTicks;
-
-		int i = 0;
-		if (!Minecraft.getMinecraft().world.isDaytime()) {
-			i = entityIn.getBrightnessForRender(partialTicks);
-		} else {
-			i = 50000;
-		}
-		if (entityIn.isBurning())
-		{
-			i = 15728880;
-		}
-
-		int j = i % 65536;
-		int k = i / 65536;
-		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderManager manager = Minecraft.getMinecraft().getRenderManager();
-		manager.doRenderEntity(entityIn, d0, d1, d2, f, partialTicks, p_188388_3_);
-	}
 
 }
