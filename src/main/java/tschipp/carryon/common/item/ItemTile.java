@@ -91,7 +91,7 @@ public class ItemTile extends Item
 				pos2 = pos.offset(facing);
 			}
 
-			if (world.getBlockState(pos2).getBlock().isReplaceable(world, pos2))
+			if (world.getBlockState(pos2).getBlock().isReplaceable(world, pos2) && containedblock != null)
 			{
 				boolean canPlace = containedblock.canPlaceBlockAt(world, pos2);
 
@@ -227,8 +227,8 @@ public class ItemTile extends Item
 		if (stack.hasTagCompound())
 		{
 			NBTTagCompound tag = stack.getTagCompound();
-			String name = tag.getString("block");
-			return Block.getBlockFromName(name);
+			int id = tag.getInteger("stateid");
+			return Block.getStateById(id).getBlock();
 		}
 		return Blocks.AIR;
 	}

@@ -28,7 +28,7 @@ public class CarryOn {
 	public static final String MODID = "carryon";
 	public static final String VERSION = "1.2";
 	public static final String NAME = "Carry On";
-	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/bf7fb60d5e59f73eee65b271d5c01585e26a0352/update.json";
+	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
 	
 	//public static SimpleNetworkWrapper network;
