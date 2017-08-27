@@ -13,6 +13,7 @@ import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
@@ -155,10 +156,11 @@ public class RenderEntityEvents
 				GlStateManager.enableAlpha();
 				
 				
-				if (perspective == 0 && Minecraft.getMinecraft().inGameHasFocus)
+				if (perspective == 0)
 				{
+					RenderHelper.enableStandardItemLighting();
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
-					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 1.0f, false);
+					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
 					
 				}
@@ -167,6 +169,12 @@ public class RenderEntityEvents
 
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
+				
+				RenderHelper.disableStandardItemLighting();
+				GlStateManager.disableRescaleNormal();
+		        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		        GlStateManager.disableTexture2D();
+		        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
 				if (perspective == 0)
 					event.setCanceled(true);
@@ -229,7 +237,7 @@ public class RenderEntityEvents
 					GlStateManager.translate(0, -0.3, 0);
 
 				Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
-				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 1.0f, false);
+				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
 				Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
 
 				GlStateManager.scale(1, 1, 1);

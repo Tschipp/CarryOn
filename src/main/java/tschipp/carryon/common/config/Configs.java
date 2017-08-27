@@ -42,6 +42,9 @@ public class Configs {
 		
 		@Comment("Slowness multiplier for entities")
 		public double entitySlownessMultiplier = 1.0;
+		
+		@Comment("Arms should render on sides when carrying")
+		public boolean renderArms = true;
 	}
 	
 	public static class Blacklist
