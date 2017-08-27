@@ -1,8 +1,6 @@
 package tschipp.carryon.client.event;
 
 import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -36,13 +34,17 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import tschipp.carryon.CarryOn;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.network.server.SyncKeybindPacket;
 
 public class RenderEvents
 {
@@ -61,6 +63,30 @@ public class RenderEvents
 			{
 				if (ItemTile.hasTileData(stack))
 					event.setCanceled(true);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onPlayerTick(PlayerTickEvent event)
+	{
+		EntityPlayer player = event.player;
+		if (player != null && event.side == Side.CLIENT)
+		{
+			
+			boolean keyPressed = CarryOnKeybinds.carryKey.isKeyDown();
+			boolean playerKeyPressed = CarryOnKeybinds.isKeyPressed(player);
+			
+			if (keyPressed && !playerKeyPressed)
+			{
+				CarryOnKeybinds.setKeyPressed(player, true);
+				CarryOn.network.sendToServer(new SyncKeybindPacket(true));
+			}
+			else if(!keyPressed && playerKeyPressed)
+			{
+				CarryOnKeybinds.setKeyPressed(player, false);
+				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
 			}
 		}
 	}
@@ -265,7 +291,6 @@ public class RenderEvents
 			GlStateManager.popMatrix();
 		}
 
-
 	}
 
 	/*
@@ -276,7 +301,8 @@ public class RenderEvents
 	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
 	{
 
-		if (!Loader.isModLoaded("mobends") && CarryOnConfig.settings.renderArms) {
+		if (!Loader.isModLoaded("mobends") && CarryOnConfig.settings.renderArms)
+		{
 
 			EntityPlayer player = event.getEntityPlayer();
 			AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
@@ -289,18 +315,20 @@ public class RenderEvents
 			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
 
-			player.setArrowCountInEntity(0); //TODO Temporary Fix
+			player.setArrowCountInEntity(0); // TODO Temporary Fix
 
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
 			{
 				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 				{
 
-					for (int k = 0; k < model.bipedBody.childModels.size(); k++) {
+					for (int k = 0; k < model.bipedBody.childModels.size(); k++)
+					{
 						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
-						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F) {
+						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+						{
 							model.bipedBody.childModels.remove(k);
-							k = k -1;
+							k = k - 1;
 						}
 					}
 
@@ -336,12 +364,12 @@ public class RenderEvents
 				{
 					if (!player.isSneaking())
 					{
-						fakeRightArm.rotateAngleX = -.9001F; 
+						fakeRightArm.rotateAngleX = -.9001F;
 						fakeLeftArm.rotateAngleX = -.9001F;
 					}
 					else
 					{
-						fakeRightArm.rotateAngleX = -1.4001F; 
+						fakeRightArm.rotateAngleX = -1.4001F;
 						fakeLeftArm.rotateAngleX = -1.4001F;
 					}
 				}
@@ -373,9 +401,11 @@ public class RenderEvents
 
 				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 				{
-					for (int k = 0; k < model.bipedBody.childModels.size(); k++) {
+					for (int k = 0; k < model.bipedBody.childModels.size(); k++)
+					{
 						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
-						if (chkRot == - 0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F) {
+						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+						{
 							model.bipedBody.childModels.remove(k);
 							k = k - 1;
 						}
@@ -383,7 +413,7 @@ public class RenderEvents
 				}
 			}
 
-			if (stack.isEmpty() ||  (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
+			if (stack.isEmpty() || (stack.getItem() != RegistrationHandler.itemTile && stack.getItem() != RegistrationHandler.itemEntity))
 			{
 				model.bipedLeftArm.isHidden = false;
 				model.bipedRightArm.isHidden = false;
