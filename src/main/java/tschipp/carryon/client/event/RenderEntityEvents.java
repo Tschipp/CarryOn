@@ -13,6 +13,7 @@ import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
@@ -153,8 +154,9 @@ public class RenderEntityEvents
 				GlStateManager.enableAlpha();
 				
 				
-				if (perspective == 0 && Minecraft.getMinecraft().inGameHasFocus)
+				if (perspective == 0)
 				{
+					RenderHelper.enableStandardItemLighting();
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
@@ -165,6 +167,12 @@ public class RenderEntityEvents
 
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
+				
+				RenderHelper.disableStandardItemLighting();
+				GlStateManager.disableRescaleNormal();
+		        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		        GlStateManager.disableTexture2D();
+		        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
 				if (perspective == 0)
 					event.setCanceled(true);
@@ -238,37 +246,5 @@ public class RenderEntityEvents
 
 	}
 
-	public void renderEntityStaticCO(Entity entityIn, float partialTicks, boolean p_188388_3_)
-	{
-		if (entityIn.ticksExisted == 0)
-		{
-			entityIn.lastTickPosX = entityIn.posX;
-			entityIn.lastTickPosY = entityIn.posY;
-			entityIn.lastTickPosZ = entityIn.posZ;
-		}
-
-		double d0 = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double)partialTicks;
-		double d1 = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double)partialTicks;
-		double d2 = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double)partialTicks;
-		float f = entityIn.prevRotationYaw + (entityIn.rotationYaw - entityIn.prevRotationYaw) * partialTicks;
-
-		int i = 0;
-		if (!Minecraft.getMinecraft().world.isDaytime()) {
-			i = entityIn.getBrightnessForRender();
-		} else {
-			i = 50000;
-		}
-		if (entityIn.isBurning())
-		{
-			i = 15728880;
-		}
-
-		int j = i % 65536;
-		int k = i / 65536;
-		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderManager manager = Minecraft.getMinecraft().getRenderManager();
-		manager.doRenderEntity(entityIn, d0, d1, d2, f, partialTicks, p_188388_3_);
-	}
 
 }

@@ -36,6 +36,15 @@ public class Configs {
 		
 		@Comment("Larger Entities slow down the player more")
 		public boolean heavyEntities = true;
+		
+		@Comment("Slowness multiplier for blocks")
+		public double blockSlownessMultiplier = 1.0;
+		
+		@Comment("Slowness multiplier for entities")
+		public double entitySlownessMultiplier = 1.0;
+		
+		@Comment("Arms should render on sides when carrying")
+		public boolean renderArms = true;
 	}
 	
 	public static class Blacklist
@@ -62,6 +71,8 @@ public class Configs {
     					"bigreactors:*",
     					"forestry:*",
     					"tconstruct:*",
+    					"refinedstorage:*",
+    					"rustic:*",
     					"immersiveengineering:*",
     					"embers:block_furnace",
     					"embers:ember_bore",
@@ -87,7 +98,8 @@ public class Configs {
 						"minecraft:ender_dragon",
 						"minecraft:ghast",
 						"minecraft:shulker",
-						"animania:textures/entity/pigs/hamster_tarou.png"
+						"animania:textures/entity/pigs/hamster_tarou.png",
+						"mynko:*"
 				};
 	}
 	
@@ -109,6 +121,7 @@ public class Configs {
     				"minecraft:tallgrass;2->(item)minecraft:tallgrass;2",
     				"minecraft:flower_pot->(block)minecraft:flower_pot",
     				"minecraft:leaves2->(item)minecraft:leaves2",
+    				"minecraft:reeds->(block)minecraft:reeds",
     	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
     	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
     	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",

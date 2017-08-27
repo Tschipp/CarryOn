@@ -213,6 +213,6 @@ public class ItemEntity extends Item
 		if (!CarryOnConfig.settings.heavyEntities)
 			i = 1;
 
-		return i;
+		return (int) (i * CarryOnConfig.settings.entitySlownessMultiplier);
 	}
 }
