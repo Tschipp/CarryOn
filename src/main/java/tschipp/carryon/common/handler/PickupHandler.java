@@ -11,6 +11,7 @@ import net.darkhax.gamestages.capabilities.PlayerDataHandler;
 import net.darkhax.gamestages.capabilities.PlayerDataHandler.IStageData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityTameable;
@@ -34,6 +35,7 @@ public class PickupHandler
 		Block block = state.getBlock();
 
 		player.closeScreen();
+		
 		
 		if ((block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
 		{

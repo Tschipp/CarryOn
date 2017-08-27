@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import tschipp.carryon.common.CommonProxy;
 
 @EventBusSubscriber
@@ -31,7 +32,7 @@ public class CarryOn {
 	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
 	
-	//public static SimpleNetworkWrapper network;
+	public static SimpleNetworkWrapper network;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
