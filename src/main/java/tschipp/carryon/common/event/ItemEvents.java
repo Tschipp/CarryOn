@@ -2,6 +2,7 @@ package tschipp.carryon.common.event;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,6 +20,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ForbiddenTileHandler;
 import tschipp.carryon.common.handler.PickupHandler;
@@ -92,7 +94,7 @@ public class ItemEvents
 			Block block = world.getBlockState(pos).getBlock();
 			IBlockState state = world.getBlockState(pos);
 
-			if (main == null && off == null && player.isSneaking() && !ForbiddenTileHandler.isForbidden(block))
+			if (main == null && off == null && CarryOnKeybinds.isKeyPressed(player) && !ForbiddenTileHandler.isForbidden(block))
 			{
 				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 

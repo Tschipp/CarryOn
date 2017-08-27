@@ -316,6 +316,6 @@ public class ItemTile extends Item
 		if (!CarryOnConfig.settings.heavyTiles)
 			i = 1;
 
-		return i;
+		return (int) (i * CarryOnConfig.settings.blockSlownessMultiplier);
 	}
 }
