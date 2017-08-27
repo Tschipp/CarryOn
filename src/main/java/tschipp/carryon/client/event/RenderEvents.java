@@ -321,7 +321,7 @@ public class RenderEvents
 					for (int k = 0; k < model.bipedBody.childModels.size(); k++)
 					{
 						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
-						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.6001F || chkRot == -1.7001F)
 						{
 							model.bipedBody.childModels.remove(k);
 							k = k - 1;
