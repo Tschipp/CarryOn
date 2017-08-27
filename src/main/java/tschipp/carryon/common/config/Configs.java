@@ -36,6 +36,9 @@ public class Configs {
 		
 		@Comment("Larger Entities slow down the player more")
 		public boolean heavyEntities = true;
+		
+		@Comment("Arms should render on sides when carrying")
+		public boolean renderArms = true;
 	}
 	
 	public static class Blacklist

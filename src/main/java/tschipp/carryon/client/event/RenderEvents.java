@@ -275,27 +275,35 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
 	{
-		
-		if (!Loader.isModLoaded("mobends")) {
+
+		if (!Loader.isModLoaded("mobends") && CarryOnConfig.settings.renderArms) {
 
 			EntityPlayer player = event.getEntityPlayer();
 			AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 			ItemStack stack = player.getHeldItemMainhand();
 			ModelPlayer model = event.getRenderer().getMainModel();
 			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
-			
+
 			ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
 			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
-			
+
 			player.setArrowCountInEntity(0); //TODO Temporary Fix
-			
+
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
 			{
-				
-				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty()) {
-					model.bipedBody.childModels.clear();
+				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				{
+
+					for (int k = 0; k < model.bipedBody.childModels.size(); k++) {
+						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
+						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F) {
+							model.bipedBody.childModels.remove(k);
+							k = k -1;
+						}
+					}
+
 				}
 
 				Item item = stack.getItem();
@@ -305,6 +313,7 @@ public class RenderEvents
 
 				Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 				float rotation = -player.renderYawOffset;
+
 				if (aplayer.getSkinType().equals("default"))
 				{
 					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
@@ -327,26 +336,26 @@ public class RenderEvents
 				{
 					if (!player.isSneaking())
 					{
-						fakeRightArm.rotateAngleX = -.9F;
-						fakeLeftArm.rotateAngleX = -.9F;
+						fakeRightArm.rotateAngleX = -.9001F; 
+						fakeLeftArm.rotateAngleX = -.9001F;
 					}
 					else
 					{
-						fakeRightArm.rotateAngleX = -1.4F;
-						fakeLeftArm.rotateAngleX = -1.4F;
+						fakeRightArm.rotateAngleX = -1.4001F; 
+						fakeLeftArm.rotateAngleX = -1.4001F;
 					}
 				}
 				else
 				{
 					if (!player.isSneaking())
 					{
-						fakeRightArm.rotateAngleX = -1.2F;
-						fakeLeftArm.rotateAngleX = -1.2F;
+						fakeRightArm.rotateAngleX = -1.2001F;
+						fakeLeftArm.rotateAngleX = -1.2001F;
 					}
 					else
 					{
-						fakeRightArm.rotateAngleX = -1.7F;
-						fakeLeftArm.rotateAngleX = -1.7F;
+						fakeRightArm.rotateAngleX = -1.7001F;
+						fakeLeftArm.rotateAngleX = -1.7001F;
 					}
 
 					fakeRightArm.rotateAngleY = -0.15f;
@@ -361,10 +370,16 @@ public class RenderEvents
 			{
 				model.bipedLeftArm.isHidden = false;
 				model.bipedRightArm.isHidden = false;
-				
+
 				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 				{
-					model.bipedBody.childModels.clear();
+					for (int k = 0; k < model.bipedBody.childModels.size(); k++) {
+						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
+						if (chkRot == - 0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F) {
+							model.bipedBody.childModels.remove(k);
+							k = k - 1;
+						}
+					}
 				}
 			}
 
@@ -374,7 +389,6 @@ public class RenderEvents
 				model.bipedRightArm.isHidden = false;
 			}
 		}
-		
 
 	}
 
