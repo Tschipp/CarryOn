@@ -72,7 +72,7 @@ public class RenderEntityEvents
 			if (player != null)
 			{
 				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
-				if (inventory && stack != null && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+				if (inventory && (stack != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false))
 				{
 					event.setCanceled(true);
 					Minecraft.getMinecraft().currentScreen = null;
@@ -92,7 +92,7 @@ public class RenderEntityEvents
 		Field field = KeyBinding.class.getDeclaredFields()[7];
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
-		if (stack != null && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (stack != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false)
 		{
 			if (settings.keyBindDrop.isPressed())
 			{
@@ -129,7 +129,7 @@ public class RenderEntityEvents
 		float partialticks = event.getPartialTicks();
 
 
-		if (stack != null && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (stack != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false)
 		{
 			BlockPos pos = player.getPosition();
 			Entity entity = ItemEntity.getEntity(stack, world);
@@ -189,7 +189,7 @@ public class RenderEntityEvents
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().thePlayer;
 		ItemStack stack = player.getHeldItemMainhand();
 		float partialticks = event.getPartialRenderTick();
-		if (stack  != null && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (stack  != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false)
 		{
 			Entity entity = ItemEntity.getEntity(stack, world);
 

@@ -79,7 +79,7 @@ public class RenderEvents
 			if (player != null)
 			{
 				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
-				if (inventory && stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+				if (inventory && (stack != null ? stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) : false))
 				{
 					event.setCanceled(true);
 					Minecraft.getMinecraft().currentScreen = null;
@@ -99,7 +99,7 @@ public class RenderEvents
 		Field field = KeyBinding.class.getDeclaredFields()[7];
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
-		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack != null ? stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) : false)
 		{
 			if (settings.keyBindDrop.isPressed())
 			{
@@ -132,7 +132,7 @@ public class RenderEvents
 		ItemStack stack = player.getHeldItemMainhand();
 		int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
-		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack != null ? stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) : false)
 		{
 			Block block = ItemTile.getBlock(stack);
 			BlockPos pos = player.getPosition();
@@ -202,6 +202,7 @@ public class RenderEvents
 		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().thePlayer;
 		ItemStack stack = player.getHeldItemMainhand();
 		float partialticks = event.getPartialRenderTick();
+		if (stack != null ? stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) : false)
 		{
 			Block block = ItemTile.getBlock(stack);
 			IBlockState state = ItemTile.getBlockState(stack);
@@ -290,7 +291,7 @@ public class RenderEvents
 			
 			player.setArrowCountInEntity(0); //TODO Temporary Fix
 			
-			if (stack != null && (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
+			if (stack != null ? ((stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))) : false)
 			{
 				
 				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty()) {
