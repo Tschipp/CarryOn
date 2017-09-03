@@ -1,29 +1,23 @@
 package tschipp.carryon.client.event;
 
 import java.lang.reflect.Field;
-
-import org.lwjgl.opengl.GL11;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.model.ModelPlayer;
-import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -46,7 +40,7 @@ public class RenderEntityEvents
 	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onScroll(MouseEvent event)
+	public void onScroll(MouseEvent event) throws IllegalArgumentException, IllegalAccessException
 	{
 		if (event.getDwheel() > 0 || event.getDwheel() < 0)
 		{
@@ -57,6 +51,7 @@ public class RenderEntityEvents
 					event.setCanceled(true);
 			}
 		}
+
 	}
 
 	/*
@@ -87,12 +82,13 @@ public class RenderEntityEvents
 	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
+	public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
 		Field field = KeyBinding.class.getDeclaredFields()[7];
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
+		EntityPlayer player = Minecraft.getMinecraft().player;
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 		{
 			if (settings.keyBindDrop.isPressed())
@@ -110,7 +106,13 @@ public class RenderEntityEvents
 					field.set(keyBind, false);
 				}
 			}
+
 		}
+
+		int current = player.inventory.currentItem;
+
+		if (player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInteger("carrySlot") != current : false)
+			player.inventory.currentItem = player.getEntityData().getInteger("carrySlot");
 	}
 
 	/*
@@ -121,14 +123,12 @@ public class RenderEntityEvents
 	public void renderHand(RenderHandEvent event)
 	{
 
-
 		World world = Minecraft.getMinecraft().world;
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 		ItemStack stack = player.getHeldItemMainhand();
 		int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 		float partialticks = event.getPartialTicks();
-
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 		{
@@ -154,27 +154,26 @@ public class RenderEntityEvents
 				GlStateManager.rotate(180, 0, 1, 0);
 				GlStateManager.translate(0.0, -height - .1, width + 0.1);
 				GlStateManager.enableAlpha();
-				
-				
+
 				if (perspective == 0)
 				{
 					RenderHelper.enableStandardItemLighting();
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 					Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
-					
+
 				}
 
 				GlStateManager.disableAlpha();
 
 				GlStateManager.scale(1, 1, 1);
 				GlStateManager.popMatrix();
-				
+
 				RenderHelper.disableStandardItemLighting();
 				GlStateManager.disableRescaleNormal();
-		        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-		        GlStateManager.disableTexture2D();
-		        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+				GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+				GlStateManager.disableTexture2D();
+				GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
 				if (perspective == 0)
 					event.setCanceled(true);
@@ -247,6 +246,5 @@ public class RenderEntityEvents
 		}
 
 	}
-
 
 }

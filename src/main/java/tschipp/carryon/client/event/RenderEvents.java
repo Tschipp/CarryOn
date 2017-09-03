@@ -1,6 +1,8 @@
 package tschipp.carryon.client.event;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -65,29 +67,32 @@ public class RenderEvents
 					event.setCanceled(true);
 			}
 		}
+
 	}
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
-	public void onPlayerTick(PlayerTickEvent event)
+	public void onPlayerTick(PlayerTickEvent event) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
 		EntityPlayer player = event.player;
 		if (player != null && event.side == Side.CLIENT)
 		{
-			
+
 			boolean keyPressed = CarryOnKeybinds.carryKey.isKeyDown();
 			boolean playerKeyPressed = CarryOnKeybinds.isKeyPressed(player);
-			
+
 			if (keyPressed && !playerKeyPressed)
 			{
 				CarryOnKeybinds.setKeyPressed(player, true);
 				CarryOn.network.sendToServer(new SyncKeybindPacket(true));
 			}
-			else if(!keyPressed && playerKeyPressed)
+			else if (!keyPressed && playerKeyPressed)
 			{
 				CarryOnKeybinds.setKeyPressed(player, false);
 				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
 			}
+
+			
 		}
 	}
 
@@ -125,6 +130,7 @@ public class RenderEvents
 		Field field = KeyBinding.class.getDeclaredFields()[7];
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
+		EntityPlayer player = Minecraft.getMinecraft().player;
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			if (settings.keyBindDrop.isPressed())
@@ -142,7 +148,16 @@ public class RenderEvents
 					field.set(keyBind, false);
 				}
 			}
+
 		}
+		
+		int current = player.inventory.currentItem;
+		
+		if(player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInteger("carrySlot") != current : false)
+			player.inventory.currentItem = player.getEntityData().getInteger("carrySlot");
+
+		
+
 	}
 
 	/*

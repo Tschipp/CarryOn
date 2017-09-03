@@ -12,8 +12,10 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import tschipp.carryon.common.CommonProxy;
+import tschipp.carryon.common.command.CommandCarryOn;
 
 @EventBusSubscriber
 @Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = "required-after:forge@[13.20.1.2386,)", updateJSON = CarryOn.UPDATE_JSON)
@@ -27,7 +29,7 @@ public class CarryOn {
 	public static CarryOn instance;
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.3";
+	public static final String VERSION = "1.4";
 	public static final String NAME = "Carry On";
 	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
@@ -47,6 +49,12 @@ public class CarryOn {
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		CarryOn.proxy.postInit(event);
+	}
+	
+	@EventHandler
+	public void serverLoad(FMLServerStartingEvent event)
+	{
+		event.registerServerCommand(new CommandCarryOn());
 	}
 
 }
