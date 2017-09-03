@@ -75,8 +75,6 @@ public class ItemTile extends Item
 				if (istack != null)
 					return istack.getDisplayName();
 			}
-
-			return getItemStack(stack).getDisplayName();
 		}
 
 		return "";
