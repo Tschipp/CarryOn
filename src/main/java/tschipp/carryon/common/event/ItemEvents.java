@@ -2,30 +2,30 @@ package tschipp.carryon.common.event;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
-import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ForbiddenTileHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEvents
 {
@@ -37,6 +37,7 @@ public class ItemEvents
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
+			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
 		}
 
@@ -71,8 +72,11 @@ public class ItemEvents
 				}
 				world.setBlockState(finalPos, ItemTile.getBlockState(stack));
 				TileEntity tile = world.getTileEntity(finalPos);
-				tile.readFromNBT(ItemTile.getTileData(stack));
-				tile.setPos(finalPos);
+				if (tile != null)
+				{
+					tile.readFromNBT(ItemTile.getTileData(stack));
+					tile.setPos(finalPos);
+				}
 				ItemTile.clearTileData(stack);
 				eitem.setItem(ItemStack.EMPTY);
 			}
@@ -80,7 +84,7 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
+	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) throws InstantiationException, IllegalAccessException
 	{
 		EntityPlayer player = event.getEntityPlayer();
 
@@ -103,11 +107,19 @@ public class ItemEvents
 				{
 					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{
-						world.removeTileEntity(pos);
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
+						if (world.getTileEntity(pos) != null)
+						{
+							TileEntity newtile = world.getTileEntity(pos).getClass().newInstance();
+							world.removeTileEntity(pos);
+							world.setTileEntity(pos, newtile);
+						}
 						world.setBlockToAir(pos);
 						player.setHeldItem(EnumHand.MAIN_HAND, stack);
 						event.setUseBlock(Result.DENY);
 						event.setCanceled(true);
+						
+
 					}
 
 				}

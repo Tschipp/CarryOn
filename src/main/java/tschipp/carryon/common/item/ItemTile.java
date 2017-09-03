@@ -27,11 +27,17 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.ClickEvent.Action;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 
 public class ItemTile extends Item
@@ -54,12 +60,12 @@ public class ItemTile extends Item
 		{
 			IBlockState state = getBlockState(stack);
 			NBTTagCompound nbt = getTileData(stack);
-			
-			if(ModelOverridesHandler.hasCustomOverrideModel(state, nbt))
+
+			if (ModelOverridesHandler.hasCustomOverrideModel(state, nbt))
 			{
 				Object override = ModelOverridesHandler.getOverrideObject(state, nbt);
-				if(override instanceof ItemStack)
-					return ((ItemStack)override).getDisplayName();
+				if (override instanceof ItemStack)
+					return ((ItemStack) override).getDisplayName();
 				else
 				{
 					IBlockState ostate = (IBlockState) override;
@@ -67,7 +73,7 @@ public class ItemTile extends Item
 					return itemstack.getDisplayName();
 				}
 			}
-			
+
 			return getItemStack(stack).getDisplayName();
 		}
 
@@ -81,63 +87,88 @@ public class ItemTile extends Item
 		ItemStack stack = player.getHeldItem(hand);
 		if (hasTileData(stack))
 		{
-			Vec3d vec = player.getLookVec();
-			EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
-			BlockPos pos2 = pos;
-			Block containedblock = getBlock(stack);
-			int meta = getMeta(stack);
-			IBlockState containedstate = getBlockState(stack);
-			if (!world.getBlockState(pos2).getBlock().isReplaceable(world, pos2))
+			try
 			{
-				pos2 = pos.offset(facing);
-			}
-
-			if (world.getBlockState(pos2).getBlock().isReplaceable(world, pos2) && containedblock != null)
-			{
-				boolean canPlace = containedblock.canPlaceBlockAt(world, pos2);
-
-				if (canPlace)
+				Vec3d vec = player.getLookVec();
+				EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
+				BlockPos pos2 = pos;
+				Block containedblock = getBlock(stack);
+				int meta = getMeta(stack);
+				IBlockState containedstate = getBlockState(stack);
+				if (!world.getBlockState(pos2).getBlock().isReplaceable(world, pos2))
 				{
-					if (player.canPlayerEdit(pos, facing, stack) && world.mayPlace(containedblock, pos2, false, facing, (Entity) null))
+					pos2 = pos.offset(facing);
+				}
+
+				if (world.getBlockState(pos2).getBlock().isReplaceable(world, pos2) && containedblock != null)
+				{
+					boolean canPlace = containedblock.canPlaceBlockAt(world, pos2);
+
+					if (canPlace)
 					{
-						boolean hasDirection = false;
-						boolean hasAllDirection = false;
-
-						Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyKeys().iterator();
-						while (iterator.hasNext())
+						if (player.canPlayerEdit(pos, facing, stack) && world.mayPlace(containedblock, pos2, false, facing, (Entity) null))
 						{
-							IProperty<?> prop = iterator.next();
-							Object[] allowedValues = prop.getAllowedValues().toArray();
+							boolean set = false;
 
-							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
-								hasDirection = true;
-
-							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
+							Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyKeys().iterator();
+							while (iterator.hasNext())
 							{
-								hasAllDirection = true;
-								facing2 = EnumFacing.getFacingFromVector((float) vec.x, (float) vec.y, (float) vec.z);
+								IProperty prop = iterator.next();
+								Object[] allowedValues = prop.getAllowedValues().toArray();
+
+								if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
+								{
+									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+									set = true;
+								}
+								else if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
+								{
+									facing2 = EnumFacing.getFacingFromVector((float) vec.x, (float) vec.y, (float) vec.z);
+									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+									set = true;
+								}
+
 							}
 
+							if (!set)
+								world.setBlockState(pos2, containedstate);
+
+							TileEntity tile = world.getTileEntity(pos2);
+							if (tile != null)
+							{
+								tile.readFromNBT(getTileData(stack));
+								tile.setPos(pos2);
+							}
+							clearTileData(stack);
+							player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
+							player.setHeldItem(hand, ItemStack.EMPTY);
+							return EnumActionResult.SUCCESS;
 						}
 
-						if (hasAllDirection)
-							world.setBlockState(pos2, containedstate.withProperty(BlockDirectional.FACING, facing2.getOpposite()));
-						else if (hasDirection)
-							world.setBlockState(pos2, containedstate.withProperty(BlockHorizontal.FACING, facing2.getOpposite()));
-						else
-							world.setBlockState(pos2, containedstate);
-
-						TileEntity tile = world.getTileEntity(pos2);
-						if (tile != null)
-						{
-							tile.readFromNBT(getTileData(stack));
-							tile.setPos(pos2);
-						}
-						clearTileData(stack);
-						player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
-						player.setHeldItem(hand, ItemStack.EMPTY);
-						return EnumActionResult.SUCCESS;
 					}
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+
+				if (world.isRemote)
+				{
+					CarryOn.LOGGER.info("Block: " + ItemTile.getBlock(stack));
+					CarryOn.LOGGER.info("BlockState: " + ItemTile.getBlockState(stack));
+					CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
+					CarryOn.LOGGER.info("ItemStack: " + ItemTile.getItemStack(stack));
+
+					if (ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(stack), ItemTile.getTileData(stack)))
+						CarryOn.LOGGER.info("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(stack), ItemTile.getTileData(stack)));
+
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemTile.getBlockState(stack)))
+						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemTile.getBlockState(stack)));
+
+					player.sendMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"));
+					TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
+					s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
+					player.sendMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
 
 				}
 			}
@@ -154,9 +185,9 @@ public class ItemTile extends Item
 		{
 			if (entity instanceof EntityLivingBase)
 			{
-				if(entity instanceof EntityPlayer && CarryOnConfig.settings.slownessInCreative ? false : ((EntityPlayer)entity).isCreative())
+				if (entity instanceof EntityPlayer && CarryOnConfig.settings.slownessInCreative ? false : ((EntityPlayer) entity).isCreative())
 					return;
-				
+
 				((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 1, potionLevel(stack), false, false));
 			}
 		}
