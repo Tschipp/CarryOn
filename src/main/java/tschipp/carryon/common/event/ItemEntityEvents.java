@@ -18,10 +18,12 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntityEvents
 {
@@ -33,6 +35,7 @@ public class ItemEntityEvents
 		ItemStack stack = player.getHeldItemMainhand();
 		if (stack != null && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 		{
+			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
 		}
 
@@ -78,13 +81,17 @@ public class ItemEntityEvents
 			{
 				ItemStack stack = new ItemStack(RegistrationHandler.itemEntity);
 
-				if (PickupHandler.canPlayerPickUpEntity(player, entity))
+				if (entity.hurtResistantTime == 0)
 				{
-					if (ItemEntity.storeEntityData(entity, world, stack))
+					if (PickupHandler.canPlayerPickUpEntity(player, entity))
 					{
-						entity.setDead();
-						player.setHeldItem(EnumHand.MAIN_HAND, stack);
-						event.setCanceled(true);
+						if (ItemEntity.storeEntityData(entity, world, stack))
+						{
+							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
+							entity.setDead();
+							player.setHeldItem(EnumHand.MAIN_HAND, stack);
+							event.setCanceled(true);
+						}
 					}
 				}
 
@@ -111,7 +118,7 @@ public class ItemEntityEvents
 				{
 					float height = contained.height;
 					float width = contained.width;
-					
+
 					entity.addVelocity(0, -0.01 * height * width, 0);
 				}
 			}

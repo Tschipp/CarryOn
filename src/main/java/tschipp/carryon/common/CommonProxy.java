@@ -8,6 +8,8 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.RegistrationHandler;
+import tschipp.carryon.network.client.CarrySlotPacket;
+import tschipp.carryon.network.client.CarrySlotPacketHandler;
 import tschipp.carryon.network.server.SyncKeybindPacket;
 import tschipp.carryon.network.server.SyncKeybindPacketHandler;
 
@@ -20,7 +22,8 @@ public class CommonProxy
 		CarryOn.network = NetworkRegistry.INSTANCE.newSimpleChannel("CarryOn");
 		
 		CarryOn.network.registerMessage(SyncKeybindPacketHandler.class, SyncKeybindPacket.class, 0, Side.SERVER);
-		
+		CarryOn.network.registerMessage(CarrySlotPacketHandler.class, CarrySlotPacket.class, 1, Side.CLIENT);
+
 		RegistrationHandler.regItems();
 		RegistrationHandler.regCommonEvents();
 	}

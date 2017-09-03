@@ -7,8 +7,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDirectional;
-import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
@@ -27,6 +25,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
@@ -73,6 +75,8 @@ public class ItemTile extends Item
 				if (istack != null)
 					return istack.getDisplayName();
 			}
+
+			return getItemStack(stack).getDisplayName();
 		}
 
 		return "";
@@ -84,65 +88,85 @@ public class ItemTile extends Item
 		Block block = world.getBlockState(pos).getBlock();
 		if (hasTileData(stack))
 		{
-			Vec3d vec = player.getLookVec();
-			EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, 0f, (float) vec.zCoord);
-			BlockPos pos2 = pos;
-			Block containedblock = getBlock(stack);
-			int meta = getMeta(stack);
-			IBlockState containedstate = getBlockState(stack);
-			if (!world.getBlockState(pos2).getBlock().isReplaceable(world, pos2))
+			try
 			{
-				pos2 = pos.offset(facing);
-			}
-
-			if (world.getBlockState(pos2).getBlock().isReplaceable(world, pos2) && containedblock != null)
-			{
-				boolean canPlace = containedblock.canPlaceBlockAt(world, pos2);
-
-				if (canPlace)
+				Vec3d vec = player.getLookVec();
+				EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, 0f, (float) vec.zCoord);
+				BlockPos pos2 = pos;
+				Block containedblock = getBlock(stack);
+				int meta = getMeta(stack);
+				IBlockState containedstate = getBlockState(stack);
+				if (!world.getBlockState(pos2).getBlock().isReplaceable(world, pos2))
 				{
-					boolean canEdit = player.canPlayerEdit(pos2, facing, stack);
-					boolean canBePlaced = world.canBlockBePlaced(containedblock, pos2, false, facing, (Entity) null, null);
-					if (canEdit && canBePlaced)
+					pos2 = pos.offset(facing);
+				}
+
+				if (world.getBlockState(pos2).getBlock().isReplaceable(world, pos2) && containedblock != null)
+				{
+					boolean canPlace = containedblock.canPlaceBlockAt(world, pos2);
+
+					if (canPlace)
 					{
-						boolean hasDirection = false;
-						boolean hasAllDirection = false;
-
-						Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyNames().iterator();
-						while (iterator.hasNext())
+						if (player.canPlayerEdit(pos, facing, stack) && world.canBlockBePlaced(containedblock, pos2, false, facing, (Entity) null, stack))
 						{
-							IProperty<?> prop = iterator.next();
-							Object[] allowedValues = prop.getAllowedValues().toArray();
+							boolean set = false;
 
-							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
-								hasDirection = true;
-
-							if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
+							Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyNames().iterator();
+							while (iterator.hasNext())
 							{
-								hasAllDirection = true;
-								facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, (float) vec.yCoord, (float) vec.zCoord);
+								IProperty prop = iterator.next();
+								Object[] allowedValues = prop.getAllowedValues().toArray();
+
+								if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
+								{
+									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+									set = true;
+								}
+								else if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
+								{
+									facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, (float) vec.yCoord, (float) vec.zCoord);
+									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+									set = true;
+								}
+
 							}
 
+							if (!set)
+								world.setBlockState(pos2, containedstate);
+
+							TileEntity tile = world.getTileEntity(pos2);
+							if (tile != null)
+							{
+								tile.readFromNBT(getTileData(stack));
+								tile.setPos(pos2);
+							}
+							clearTileData(stack);
+							player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
+							player.setHeldItem(hand, null);
+							return EnumActionResult.SUCCESS;
 						}
 
-						if (hasAllDirection)
-							world.setBlockState(pos2, containedstate.withProperty(BlockDirectional.FACING, facing2.getOpposite()));
-						else if (hasDirection)
-							world.setBlockState(pos2, containedstate.withProperty(BlockHorizontal.FACING, facing2.getOpposite()));
-						else
-							world.setBlockState(pos2, containedstate);
-
-						TileEntity tile = world.getTileEntity(pos2);
-						if (tile != null)
-						{
-							tile.readFromNBT(getTileData(stack));
-							tile.setPos(pos2);
-						}
-						clearTileData(stack);
-						player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
-						player.setHeldItem(hand, null);
-						return EnumActionResult.SUCCESS;
 					}
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+
+				if (world.isRemote)
+				{
+					CarryOn.LOGGER.info("Block: " + ItemTile.getBlock(stack));
+					CarryOn.LOGGER.info("BlockState: " + ItemTile.getBlockState(stack));
+					CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
+					CarryOn.LOGGER.info("ItemStack: " + ItemTile.getItemStack(stack));
+
+					if (ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(stack), ItemTile.getTileData(stack)))
+						CarryOn.LOGGER.info("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(stack), ItemTile.getTileData(stack)));
+
+					player.addChatMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"));
+					TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
+					s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
+					player.addChatMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
 
 				}
 			}
