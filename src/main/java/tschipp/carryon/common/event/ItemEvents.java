@@ -13,6 +13,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -107,18 +111,31 @@ public class ItemEvents
 				{
 					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
-						if (world.getTileEntity(pos) != null)
+						IBlockState statee = world.getBlockState(pos);
+						NBTTagCompound tag = new NBTTagCompound();
+						tag = world.getTileEntity(pos) != null ? world.getTileEntity(pos).writeToNBT(tag) : new NBTTagCompound();
+
+						try
 						{
-							TileEntity newtile = world.getTileEntity(pos).getClass().newInstance();
+							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
 							world.removeTileEntity(pos);
-							world.setTileEntity(pos, newtile);
+							world.setBlockToAir(pos);
+							player.setHeldItem(EnumHand.MAIN_HAND, stack);
+							event.setUseBlock(Result.DENY);
+							event.setCanceled(true);
 						}
-						world.setBlockToAir(pos);
-						player.setHeldItem(EnumHand.MAIN_HAND, stack);
-						event.setUseBlock(Result.DENY);
-						event.setCanceled(true);
-						
+						catch (Exception e)
+						{
+							CarryOn.network.sendTo(new CarrySlotPacket(9), (EntityPlayerMP) player);
+							world.setBlockState(pos, statee);
+							if (!tag.hasNoTags())
+								TileEntity.create(world, tag);
+
+							player.sendMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot pick up block."));
+							TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
+							s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
+							player.sendMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
+						}
 
 					}
 
