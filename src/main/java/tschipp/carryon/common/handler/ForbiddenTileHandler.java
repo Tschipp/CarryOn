@@ -13,6 +13,7 @@ public class ForbiddenTileHandler
 {
 	public static List<String> FORBIDDEN_TILES;
 	public static List<String> FORBIDDEN_ENTITIES;
+	public static List<String> ALLOWED_ENTITIES;
 
 	public static boolean isForbidden(Block block)
 	{
@@ -30,6 +31,16 @@ public class ForbiddenTileHandler
 		return true;
 	}
 
+	public static boolean isAllowed(Entity entity){
+		if (EntityList.getKey(entity) != null)
+		{
+			String name = EntityList.getKey(entity).toString();
+			boolean contains = ALLOWED_ENTITIES.contains(name);
+			return contains;
+		}
+		return true;
+	}
+	
 	public static void initForbiddenTiles()
 	{
 		String[] forbidden = CarryOnConfig.blacklist.forbiddenTiles;
@@ -68,6 +79,22 @@ public class ForbiddenTileHandler
 				}
 			}
 			FORBIDDEN_ENTITIES.add(forbiddenEntity[i]);
+		}
+		
+		String [] allowedEntities=CarryOnConfig.whitelist.allowedEntities;
+		ALLOWED_ENTITIES=new ArrayList<String>();
+		for(int i=0;i<allowedEntities.length;i++){
+			if(allowedEntities[i].contains("*"))
+			{
+				String modid=allowedEntities[i].replace("*", "");
+				for(int k=0;k<ForgeRegistries.ENTITIES.getKeys().size();k++)
+				{
+					if(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid)){
+						ALLOWED_ENTITIES.add(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString());
+					}
+				}
+			}
+			ALLOWED_ENTITIES.add(allowedEntities[i]);
 		}
 	}
 

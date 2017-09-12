@@ -45,6 +45,23 @@ public class Configs {
 		
 		@Comment("Arms should render on sides when carrying")
 		public boolean renderArms = true;
+		
+		@Comment("Allow babies to be carried when parents are not")
+		public boolean allowBabies=false;
+		
+		@Comment("Use Whitelist instead of Blacklist")
+		public boolean useWhiteList=false;
+	}
+	
+	public static class WhiteList
+	{
+		@Config.RequiresMcRestart()
+		@Comment("Entities that CAN be picked up")
+		public String[] allowedEntities=new String[]
+				{
+					"minecraft:chicken",
+					"minecraft:rabbit"
+				};
 	}
 	
 	public static class Blacklist
@@ -101,6 +118,7 @@ public class Configs {
 						"animania:textures/entity/pigs/hamster_tarou.png",
 						"mynko:*"
 				};
+		
 	}
 	
 	public static class ModelOverrides
