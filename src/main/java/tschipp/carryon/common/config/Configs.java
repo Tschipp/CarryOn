@@ -46,11 +46,14 @@ public class Configs {
 		@Comment("Arms should render on sides when carrying")
 		public boolean renderArms = true;
 		
-		@Comment("Allow babies to be carried when parents are not")
-		public boolean allowBabies=false;
+		@Comment("Allow babies to be carried even when adult mob is blacklisted (or not whitelisted)")
+		public boolean allowBabies = false;
 		
-		@Comment("Use Whitelist instead of Blacklist")
-		public boolean useWhiteList=false;
+		@Comment("Use Whitelist instead of Blacklist for Blocks")
+		public boolean useWhiteistBlocks=false;
+		
+		@Comment("Use Whitelist instead of Blacklist for Entities")
+		public boolean useWhiteistEntities=false;
 	}
 	
 	public static class WhiteList
@@ -59,8 +62,12 @@ public class Configs {
 		@Comment("Entities that CAN be picked up")
 		public String[] allowedEntities=new String[]
 				{
-					"minecraft:chicken",
-					"minecraft:rabbit"
+				};
+		
+		@Config.RequiresMcRestart()
+		@Comment("Blocks that CAN be picked up")
+		public String[] allowedBlocks=new String[]
+				{
 				};
 	}
 	
@@ -116,6 +123,9 @@ public class Configs {
 						"minecraft:ghast",
 						"minecraft:shulker",
 						"animania:textures/entity/pigs/hamster_tarou.png",
+						"animania:hamster",
+						"animania:ferret*",
+						"animania:hedgehog*",
 						"mynko:*"
 				};
 		
@@ -174,7 +184,20 @@ public class Configs {
     	            "storagedrawers:basicdrawers;4{Mat:\"birch\"}->storagedrawers:basicdrawers;4{material:\"birch\"}",
     	            "storagedrawers:basicdrawers;4{Mat:\"jungle\"}->storagedrawers:basicdrawers;4{material:\"jungle\"}",
     	            "storagedrawers:basicdrawers;4{Mat:\"acacia\"}->storagedrawers:basicdrawers;4{material:\"acacia\"}",
-    	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}"
+    	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}",
+    	            "animania:nest->(block)animania:nest",
+    	            "animania:cheese_mold;0->(block)cheese_mold;0",
+    	            "animania:cheese_mold;1->(block)cheese_mold;1",
+    	            "animania:cheese_mold;2->(block)cheese_mold;2",
+    	            "animania:cheese_mold;3->(block)cheese_mold;3",
+    	            "animania:cheese_mold;4->(block)cheese_mold;4",
+    	            "animania:cheese_mold;5->(block)cheese_mold;5",
+    	            "animania:cheese_mold;6->(block)cheese_mold;6",
+    	            "animania:cheese_mold;7->(block)cheese_mold;7",
+    	            "animania:cheese_mold;8->(block)cheese_mold;8",
+    	            "animania:cheese_mold;9->(block)cheese_mold;9",
+    	            "animania:cheese_mold;10->(block)cheese_mold;10",
+
     			};
 	}
 	

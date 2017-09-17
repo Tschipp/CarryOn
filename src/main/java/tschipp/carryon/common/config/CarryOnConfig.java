@@ -28,7 +28,7 @@ public class CarryOnConfig {
 	public static Configs.Blacklist blacklist = new Configs.Blacklist();
 	
 	@Config.LangKey(CarryOn.MODID)
-	@Config.Comment("Whitelist for Entities")
+	@Config.Comment("Whitelist for Blocks and Entities (useWhitelist must be true!)")
 	public static Configs.WhiteList whitelist = new Configs.WhiteList();
 	
 	@Config.LangKey(CarryOn.MODID)

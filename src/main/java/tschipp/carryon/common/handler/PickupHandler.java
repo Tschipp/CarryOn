@@ -37,7 +37,21 @@ public class PickupHandler
 		Block block = state.getBlock();
 
 		player.closeScreen();
-		
+
+		if (CarryOnConfig.settings.useWhiteistBlocks)
+		{
+			if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (ListHandler.isForbidden(world.getBlockState(pos).getBlock()))
+			{
+				return false;
+			}
+		}
 		
 		if ((block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
 		{
@@ -71,13 +85,16 @@ public class PickupHandler
 	{
 		BlockPos pos = toPickUp.getPosition();
 
+		if (toPickUp instanceof EntityPlayer)
+			return false;
 		
-		
-		//check for allow babies to be picked up
-		if(toPickUp instanceof EntityAgeable && CarryOnConfig.settings.allowBabies){
-			EntityAgeable entity_living=(EntityAgeable) toPickUp;
-			if(entity_living.getGrowingAge()<0){
-			
+		// check for allow babies to be picked up
+		if (toPickUp instanceof EntityAgeable && CarryOnConfig.settings.allowBabies)
+		{
+			EntityAgeable living = (EntityAgeable) toPickUp;
+			if (living.getGrowingAge() < 0 || living.isChild())
+			{
+
 				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
 				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 				{
@@ -100,21 +117,22 @@ public class PickupHandler
 				}
 			}
 		}
-		
-		if(toPickUp instanceof EntityPlayer)
-			return false;
-		
-		if(CarryOnConfig.settings.useWhiteList){
-			if(!ForbiddenTileHandler.isAllowed(toPickUp)){
-				return false;
-			}
-		}
-		else{
-			if (ForbiddenTileHandler.isForbidden(toPickUp))
+
+		if (CarryOnConfig.settings.useWhiteistEntities)
+		{
+			if (!ListHandler.isAllowed(toPickUp))
 			{
 				return false;
 			}
 		}
+		else
+		{
+			if (ListHandler.isForbidden(toPickUp))
+			{
+				return false;
+			}
+		}
+		
 		if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 		{
 			if ((toPickUp.height <= CarryOnConfig.settings.maxEntityHeight && toPickUp.width <= CarryOnConfig.settings.maxEntityWidth || player.isCreative()))
@@ -141,11 +159,10 @@ public class PickupHandler
 				}
 			}
 		}
-		
-		
+
 		return false;
 	}
-	
+
 	private static boolean handleFTBUtils(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
 	{
 		if (Loader.isModLoaded("ftbu"))

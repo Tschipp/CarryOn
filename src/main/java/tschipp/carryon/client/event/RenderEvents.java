@@ -251,7 +251,7 @@ public class RenderEvents
 
 			ItemStack tileItem = ItemTile.getItemStack(stack);
 
-			float rotation = -player.renderYawOffset;
+			float rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 			double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialticks;
