@@ -50,10 +50,10 @@ public class Configs {
 		public boolean allowBabies = false;
 		
 		@Comment("Use Whitelist instead of Blacklist for Blocks")
-		public boolean useWhiteistBlocks=false;
+		public boolean useWhitelistBlocks=false;
 		
 		@Comment("Use Whitelist instead of Blacklist for Entities")
-		public boolean useWhiteistEntities=false;
+		public boolean useWhitelistEntities=false;
 	}
 	
 	public static class WhiteList

@@ -3,7 +3,6 @@ package tschipp.carryon.common.handler;
 import javax.annotation.Nullable;
 
 import com.feed_the_beast.ftbl.lib.math.BlockPosContainer;
-import com.feed_the_beast.ftbu.FTBUPermissions;
 import com.feed_the_beast.ftbu.api.chunks.BlockInteractionType;
 import com.feed_the_beast.ftbu.api_impl.ClaimedChunkStorage;
 
@@ -11,15 +10,12 @@ import net.darkhax.gamestages.capabilities.PlayerDataHandler;
 import net.darkhax.gamestages.capabilities.PlayerDataHandler.IStageData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -38,7 +34,7 @@ public class PickupHandler
 
 		player.closeScreen();
 
-		if (CarryOnConfig.settings.useWhiteistBlocks)
+		if (CarryOnConfig.settings.useWhitelistBlocks)
 		{
 			if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
 			{
@@ -118,7 +114,7 @@ public class PickupHandler
 			}
 		}
 
-		if (CarryOnConfig.settings.useWhiteistEntities)
+		if (CarryOnConfig.settings.useWhitelistEntities)
 		{
 			if (!ListHandler.isAllowed(toPickUp))
 			{
