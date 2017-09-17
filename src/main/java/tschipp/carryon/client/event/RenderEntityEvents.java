@@ -200,7 +200,8 @@ public class RenderEntityEvents
 		{
 			Entity entity = ItemEntity.getEntity(stack, world);
 
-			float rotation = -player.renderYawOffset;
+			float rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
+
 			int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 
 			if (entity != null)

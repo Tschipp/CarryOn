@@ -35,7 +35,21 @@ public class PickupHandler
 		Block block = state.getBlock();
 
 		player.closeScreen();
-		
+
+		if (CarryOnConfig.settings.useWhiteistBlocks)
+		{
+			if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (ListHandler.isForbidden(world.getBlockState(pos).getBlock()))
+			{
+				return false;
+			}
+		}
 		
 		if ((block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
 		{
@@ -68,7 +82,56 @@ public class PickupHandler
 	public static boolean canPlayerPickUpEntity(EntityPlayer player, Entity toPickUp)
 	{
 		BlockPos pos = toPickUp.getPosition();
-		if (!(toPickUp instanceof EntityPlayer) && !ForbiddenTileHandler.isForbidden(toPickUp))
+
+		if (toPickUp instanceof EntityPlayer)
+			return false;
+		
+		// check for allow babies to be picked up
+		if (toPickUp instanceof EntityAgeable && CarryOnConfig.settings.allowBabies)
+		{
+			EntityAgeable living = (EntityAgeable) toPickUp;
+			if (living.getGrowingAge() < 0 || living.isChild())
+			{
+
+				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+				{
+					if (toPickUp instanceof EntityTameable)
+					{
+						EntityTameable tame = (EntityTameable) toPickUp;
+						if (tame.getOwnerId() != null && tame.getOwnerId() != player.getUUID(player.getGameProfile()))
+							return false;
+					}
+
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
+					{
+						IStageData stageData = PlayerDataHandler.getStageData(player);
+						String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+						if (stageData.hasUnlockedStage(condition))
+							return true;
+					}
+					else
+						return true;
+				}
+			}
+		}
+
+		if (CarryOnConfig.settings.useWhiteistEntities)
+		{
+			if (!ListHandler.isAllowed(toPickUp))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (ListHandler.isForbidden(toPickUp))
+			{
+				return false;
+			}
+		}
+		
+		if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 		{
 			if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 			{
@@ -98,9 +161,10 @@ public class PickupHandler
 			}
 
 		}
+
 		return false;
 	}
-	
+
 	private static boolean handleFTBUtils(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
 	{
 		if (Loader.isModLoaded("ftbu"))
