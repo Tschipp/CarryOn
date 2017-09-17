@@ -8,8 +8,8 @@ import com.feed_the_beast.ftbu.api_impl.ClaimedChunkStorage;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
@@ -31,6 +31,21 @@ public class PickupHandler
 		Block block = state.getBlock();
 
 		player.closeScreen();
+
+		if (CarryOnConfig.settings.useWhitelistBlocks)
+		{
+			if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (ListHandler.isForbidden(world.getBlockState(pos).getBlock()))
+			{
+				return false;
+			}
+		}
 
 		if ((block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
 		{
@@ -55,7 +70,48 @@ public class PickupHandler
 	public static boolean canPlayerPickUpEntity(EntityPlayer player, Entity toPickUp)
 	{
 		BlockPos pos = toPickUp.getPosition();
-		if (!(toPickUp instanceof EntityPlayer) && !ForbiddenTileHandler.isForbidden(toPickUp))
+
+		if (toPickUp instanceof EntityPlayer)
+			return false;
+
+		// check for allow babies to be picked up
+		if (toPickUp instanceof EntityAgeable && CarryOnConfig.settings.allowBabies)
+		{
+			EntityAgeable living = (EntityAgeable) toPickUp;
+			if (living.getGrowingAge() < 0 || living.isChild())
+			{
+
+				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+				{
+					if (toPickUp instanceof EntityTameable)
+					{
+						EntityTameable tame = (EntityTameable) toPickUp;
+						if (tame.getOwnerId() != null && tame.getOwnerId() != player.getUUID(player.getGameProfile()))
+							return false;
+					}
+
+					return true;
+				}
+			}
+		}
+
+		if (CarryOnConfig.settings.useWhitelistEntities)
+		{
+			if (!ListHandler.isAllowed(toPickUp))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (ListHandler.isForbidden(toPickUp))
+			{
+				return false;
+			}
+		}
+
+		if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 		{
 			if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 			{
@@ -77,6 +133,7 @@ public class PickupHandler
 			}
 
 		}
+
 		return false;
 	}
 

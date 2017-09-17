@@ -44,7 +44,7 @@ public class RegistrationHandler
 	public static void regOverrideList()
 	{
 		ModelOverridesHandler.initOverrides();
-		ForbiddenTileHandler.initForbiddenTiles();
+		ListHandler.initForbiddenTiles();
 	}
 	
 	
