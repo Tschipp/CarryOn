@@ -18,6 +18,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.handler.PickupHandler;
@@ -87,6 +89,14 @@ public class ItemEntityEvents
 					{
 						if (ItemEntity.storeEntityData(entity, world, stack))
 						{
+							if(entity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+							{
+								IItemHandler handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+								for(int i = 0; i < handler.getSlots(); i++)
+								{
+									handler.extractItem(i, 64, false);
+								}
+							}
 							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
