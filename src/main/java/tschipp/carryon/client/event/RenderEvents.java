@@ -325,6 +325,8 @@ public class RenderEvents
 
 			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
 			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
+			ModelRenderer fakeLeftArmwear = new ModelRenderer(model, 48, 48);
+			ModelRenderer fakeRightArmwear = new ModelRenderer(model, 40, 32);
 
 			player.setArrowCountInEntity(0); // TODO Temporary Fix
 
@@ -349,6 +351,8 @@ public class RenderEvents
 
 				model.bipedLeftArm.isHidden = true;
 				model.bipedRightArm.isHidden = true;
+				model.bipedLeftArmwear.isHidden = true;
+				model.bipedRightArmwear.isHidden = true;
 
 				Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 				float rotation = -player.renderYawOffset;
@@ -356,19 +360,23 @@ public class RenderEvents
 				if (aplayer.getSkinType().equals("default"))
 				{
 					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
+					fakeLeftArmwear.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F + 0.25F);
 				}
 				else
 				{
 					fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
+					fakeLeftArmwear.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F + 0.25F);
 				}
 
 				if (aplayer.getSkinType().equals("default"))
 				{
 					fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
+					fakeRightArmwear.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F + 0.25F);
 				}
 				else
 				{
 					fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
+					fakeRightArmwear.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F + 0.25F);
 				}
 
 				if (item == RegistrationHandler.itemTile)
@@ -377,11 +385,15 @@ public class RenderEvents
 					{
 						fakeRightArm.rotateAngleX = -.9001F;
 						fakeLeftArm.rotateAngleX = -.9001F;
+						fakeLeftArmwear.rotateAngleX = -.9001F;
+						fakeRightArmwear.rotateAngleX = -.9001F;
 					}
 					else
 					{
 						fakeRightArm.rotateAngleX = -1.4001F;
 						fakeLeftArm.rotateAngleX = -1.4001F;
+						fakeLeftArmwear.rotateAngleX = -1.4001F;
+						fakeRightArmwear.rotateAngleX = -1.4001F;
 					}
 				}
 				else
@@ -390,25 +402,35 @@ public class RenderEvents
 					{
 						fakeRightArm.rotateAngleX = -1.2001F;
 						fakeLeftArm.rotateAngleX = -1.2001F;
+						fakeLeftArmwear.rotateAngleX = -1.2001F;
+						fakeRightArmwear.rotateAngleX = -1.2001F;
 					}
 					else
 					{
 						fakeRightArm.rotateAngleX = -1.7001F;
 						fakeLeftArm.rotateAngleX = -1.7001F;
+						fakeLeftArmwear.rotateAngleX = -1.7001F;
+						fakeRightArmwear.rotateAngleX = -1.7001F;
 					}
 
 					fakeRightArm.rotateAngleY = -0.15f;
 					fakeLeftArm.rotateAngleY = 0.15f;
+					fakeLeftArmwear.rotateAngleY = 0.15f;
+					fakeRightArmwear.rotateAngleY = 0.15f;
 
 				}
 				model.bipedBody.addChild(fakeLeftArm);
 				model.bipedBody.addChild(fakeRightArm);
+				model.bipedBody.addChild(fakeLeftArmwear);
+				model.bipedBody.addChild(fakeRightArmwear);
 
 			}
 			else
 			{
 				model.bipedLeftArm.isHidden = false;
 				model.bipedRightArm.isHidden = false;
+				model.bipedLeftArmwear.isHidden = false;
+				model.bipedRightArmwear.isHidden = false;
 
 				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 				{
@@ -428,6 +450,8 @@ public class RenderEvents
 			{
 				model.bipedLeftArm.isHidden = false;
 				model.bipedRightArm.isHidden = false;
+				model.bipedLeftArmwear.isHidden = false;
+				model.bipedRightArmwear.isHidden = false;
 			}
 		}
 
