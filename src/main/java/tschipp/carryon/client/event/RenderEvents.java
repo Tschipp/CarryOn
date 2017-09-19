@@ -416,13 +416,20 @@ public class RenderEvents
 					fakeRightArm.rotateAngleY = -0.15f;
 					fakeLeftArm.rotateAngleY = 0.15f;
 					fakeLeftArmwear.rotateAngleY = 0.15f;
-					fakeRightArmwear.rotateAngleY = 0.15f;
+					fakeRightArmwear.rotateAngleY = -0.15f;
 
 				}
 				model.bipedBody.addChild(fakeLeftArm);
 				model.bipedBody.addChild(fakeRightArm);
-				model.bipedBody.addChild(fakeLeftArmwear);
-				model.bipedBody.addChild(fakeRightArmwear);
+
+				if (Minecraft.getMinecraft().gameSettings.getModelParts().contains(EnumPlayerModelParts.LEFT_SLEEVE))
+				{
+					model.bipedBody.addChild(fakeLeftArmwear);
+				}
+				if (Minecraft.getMinecraft().gameSettings.getModelParts().contains(EnumPlayerModelParts.RIGHT_SLEEVE))
+				{
+					model.bipedBody.addChild(fakeRightArmwear);
+				}
 
 			}
 			else
