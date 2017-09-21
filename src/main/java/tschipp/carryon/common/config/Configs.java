@@ -54,6 +54,10 @@ public class Configs {
 		
 		@Comment("Use Whitelist instead of Blacklist for Entities")
 		public boolean useWhitelistEntities=false;
+		
+		@Config.RequiresMcRestart()
+		@Comment("Use custom Pickup Scripts. Having this set to false, will not allow you to run scripts, but will save you some performance")
+		public boolean useScripts=false;
 	}
 	
 	public static class WhiteList

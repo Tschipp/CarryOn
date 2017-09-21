@@ -2,7 +2,6 @@ package tschipp.carryon.client.event;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -19,8 +18,8 @@ import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -44,8 +43,12 @@ import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
+import tschipp.carryon.common.helper.ScriptParseHelper;
+import tschipp.carryon.common.helper.StringParser;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.common.scripting.CarryOnOverride;
+import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.server.SyncKeybindPacket;
 
 public class RenderEvents
@@ -92,7 +95,6 @@ public class RenderEvents
 				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
 			}
 
-			
 		}
 	}
 
@@ -150,13 +152,11 @@ public class RenderEvents
 			}
 
 		}
-		
-		int current = player.inventory.currentItem;
-		
-		if(player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInteger("carrySlot") != current : false)
-			player.inventory.currentItem = player.getEntityData().getInteger("carrySlot");
 
-		
+		int current = player.inventory.currentItem;
+
+		if (player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInteger("carrySlot") != current : false)
+			player.inventory.currentItem = player.getEntityData().getInteger("carrySlot");
 
 	}
 
@@ -196,6 +196,29 @@ public class RenderEvents
 			if (perspective == 0)
 			{
 				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player);
+
+				CarryOnOverride carryOverride = ScriptChecker.inspectBlock(state, world, pos, tag);
+				if (carryOverride != null)
+				{
+					double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
+					double[] rotation = ScriptParseHelper.getXYZArray(carryOverride.getRenderRotation());
+					double[] scale = ScriptParseHelper.getScale(carryOverride.getRenderScale());
+					Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
+					if (b != null)
+					{
+						ItemStack s = new ItemStack(b, 1, carryOverride.getRenderMeta());
+						s.setTagCompound(carryOverride.getRenderNBT());
+						model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(s, world, player);
+					}
+
+					GlStateManager.translate(translation[0], translation[1], translation[2]);
+					GlStateManager.rotate((float) rotation[0], 1, 0, 0);
+					GlStateManager.rotate((float) rotation[1], 0, 1, 0);
+					GlStateManager.rotate((float) rotation[2], 0, 0, 1);
+					GlStateManager.scale(scale[0], scale[1], scale[2]);
+
+				}
+
 				if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 				{
 					Object override = ModelOverridesHandler.getOverrideObject(state, tag);
@@ -285,6 +308,30 @@ public class RenderEvents
 				GlStateManager.translate(0, -0.3, 0);
 
 			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
+
+			CarryOnOverride carryOverride = ScriptChecker.inspectBlock(state, world, player.getPosition(), tag);
+			if (carryOverride != null)
+			{
+				double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
+				double[] rot = ScriptParseHelper.getXYZArray(carryOverride.getRenderRotation());
+				double[] scale = ScriptParseHelper.getScale(carryOverride.getRenderScale());
+				Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
+				if (b != null)
+				{
+					ItemStack s = new ItemStack(b, 1, carryOverride.getRenderMeta());
+					s.setTagCompound(carryOverride.getRenderNBT());
+					model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(s, world, player);
+				}
+				
+				
+				GlStateManager.translate(translation[0], translation[1], translation[2]);
+				GlStateManager.rotate((float) rot[0], 1, 0, 0);
+				GlStateManager.rotate((float) rot[1], 0, 1, 0);
+				GlStateManager.rotate((float) rot[2], 0, 0, 1);
+				GlStateManager.scale(scale[0], scale[1], scale[2]);
+
+			}
+
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 			{
 				Object override = ModelOverridesHandler.getOverrideObject(state, tag);
