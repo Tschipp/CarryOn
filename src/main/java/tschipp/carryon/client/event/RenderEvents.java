@@ -53,6 +53,11 @@ import tschipp.carryon.network.server.SyncKeybindPacket;
 
 public class RenderEvents
 {
+    private static boolean initModels;
+    private ModelRenderer fakeLeftArm;
+    private ModelRenderer fakeRightArm;
+    private ModelRenderer fakeLeftArmwear;
+    private ModelRenderer fakeRightArmwear;
 
 	/*
 	 * Prevents the Player from scrolling
@@ -249,6 +254,8 @@ public class RenderEvents
 				ModelPlayer modelPlayer = renderPlayer.getMainModel();
 				modelPlayer.bipedLeftArm.isHidden = false;
 				modelPlayer.bipedRightArm.isHidden = false;
+				modelPlayer.bipedLeftArmwear.isHidden = false;
+				modelPlayer.bipedRightArmwear.isHidden = false;
 			}
 		}
 	}
@@ -358,22 +365,22 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
 	{
-
 		if (!Loader.isModLoaded("mobends") && CarryOnConfig.settings.renderArms)
 		{
-
 			EntityPlayer player = event.getEntityPlayer();
 			AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 			ItemStack stack = player.getHeldItemMainhand();
 			ModelPlayer model = event.getRenderer().getMainModel();
-			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
-
 			ResourceLocation skinLoc = DefaultPlayerSkin.getDefaultSkin(player.getPersistentID());
 
-			ModelRenderer fakeLeftArm = new ModelRenderer(model, 32, 48);
-			ModelRenderer fakeRightArm = new ModelRenderer(model, 40, 16);
-			ModelRenderer fakeLeftArmwear = new ModelRenderer(model, 48, 48);
-			ModelRenderer fakeRightArmwear = new ModelRenderer(model, 40, 32);
+			if (!initModels)
+			{
+		         fakeLeftArm = new ModelRenderer(model, 32, 48);
+		         fakeRightArm = new ModelRenderer(model, 40, 16);
+		         fakeLeftArmwear = new ModelRenderer(model, 48, 48);
+		         fakeRightArmwear = new ModelRenderer(model, 40, 32);
+		         initModels = true;
+			}
 
 			player.setArrowCountInEntity(0); // TODO Temporary Fix
 
@@ -469,11 +476,11 @@ public class RenderEvents
 				model.bipedBody.addChild(fakeLeftArm);
 				model.bipedBody.addChild(fakeRightArm);
 
-				if (Minecraft.getMinecraft().gameSettings.getModelParts().contains(EnumPlayerModelParts.LEFT_SLEEVE))
+				if (player.isWearing(EnumPlayerModelParts.LEFT_SLEEVE))
 				{
 					model.bipedBody.addChild(fakeLeftArmwear);
 				}
-				if (Minecraft.getMinecraft().gameSettings.getModelParts().contains(EnumPlayerModelParts.RIGHT_SLEEVE))
+				if (player.isWearing(EnumPlayerModelParts.RIGHT_SLEEVE))
 				{
 					model.bipedBody.addChild(fakeRightArmwear);
 				}
