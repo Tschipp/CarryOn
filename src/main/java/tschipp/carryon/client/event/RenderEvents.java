@@ -211,11 +211,25 @@ public class RenderEvents
 
                     if (override instanceof ItemStack)
                     {
+                        int i = this.getBrightnessForRender(Minecraft.getMinecraft().player);
+                        int j = i % 65536;
+                        int k = i / 65536;
+                        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
+                        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                        this.setLightmapDisabled(false);
                         Minecraft.getMinecraft().getRenderItem().renderItem((ItemStack) override, model);
+                        this.setLightmapDisabled(true);
                     }
                     else
                     {
+                        int i = this.getBrightnessForRender(Minecraft.getMinecraft().player);
+                        int j = i % 65536;
+                        int k = i / 65536;
+                        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
+                        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                        this.setLightmapDisabled(false);
                         Minecraft.getMinecraft().getRenderItem().renderItem(tileStack.isEmpty() ? stack : tileStack, model);
+                        this.setLightmapDisabled(true);
                     }
                 }
                 else
@@ -421,22 +435,21 @@ public class RenderEvents
 
                 if (aplayer.getSkinType().equals("default"))
                 {
+                    //left arm
                     this.fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F);
                     this.fakeLeftArmwear.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 4, 12, 4, .08F + 0.25F);
-                }
-                else
-                {
-                    this.fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
-                    this.fakeLeftArmwear.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F + 0.25F);
-                }
 
-                if (aplayer.getSkinType().equals("default"))
-                {
+                    //right arm
                     this.fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F);
                     this.fakeRightArmwear.addBox(model.bipedRightArm.offsetX - 7.9F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 4, 12, 4, .08F + 0.25F);
                 }
                 else
                 {
+                    //left arm
+                    this.fakeLeftArm.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F);
+                    this.fakeLeftArmwear.addBox(model.bipedLeftArm.offsetX + 4.2F, model.bipedLeftArm.offsetY, model.bipedLeftArm.offsetZ, 3, 12, 4, .08F + 0.25F);
+
+                    //right arm
                     this.fakeRightArm.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F);
                     this.fakeRightArmwear.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F + 0.25F);
                 }
