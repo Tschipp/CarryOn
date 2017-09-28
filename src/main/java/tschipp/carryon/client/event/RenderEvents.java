@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
@@ -184,7 +185,7 @@ public class RenderEvents
 			GlStateManager.pushMatrix();
 			GlStateManager.scale(2.5, 2.5, 2.5);
 			GlStateManager.translate(0, -0.6, -1);
-
+			
 			if (CarryOnConfig.settings.facePlayer ? !isChest(block) : isChest(block))
 			{
 				GlStateManager.rotate(180, 0, 1f, 0);
@@ -296,7 +297,8 @@ public class RenderEvents
 					Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
 			}
 			else
-				Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
+				//Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
+				Minecraft.getMinecraft().getRenderItem().renderItem(tileItem, model);
 			GlStateManager.scale(1, 1, 1);
 
 			GlStateManager.popMatrix();
