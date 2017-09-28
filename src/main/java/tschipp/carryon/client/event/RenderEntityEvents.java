@@ -12,9 +12,12 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -27,279 +30,349 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.handler.RegistrationHandler;
+import tschipp.carryon.common.helper.ScriptParseHelper;
 import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.common.scripting.CarryOnOverride;
+import tschipp.carryon.common.scripting.ScriptChecker;
 
 public class RenderEntityEvents
 {
-    /*
-     * Prevents the Player from scrolling
-     */
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void onScroll(MouseEvent event) throws IllegalArgumentException, IllegalAccessException
-    {
-        if (event.getDwheel() > 0 || event.getDwheel() < 0 || Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed())
-        {
-            ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
+	/*
+	 * Prevents the Player from scrolling
+	 */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onScroll(MouseEvent event) throws IllegalArgumentException, IllegalAccessException
+	{
+		if (event.getDwheel() > 0 || event.getDwheel() < 0 || Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed())
+		{
+			ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
 
-            if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity)
-            {
-                if (ItemEntity.hasEntityData(stack))
-                {
-                    event.setCanceled(true);
-                }
-            }
-        }
-    }
+			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity)
+			{
+				if (ItemEntity.hasEntityData(stack))
+				{
+					event.setCanceled(true);
+				}
+			}
+		}
+	}
 
-    /*
-     * Prevents the Player from opening Guis
-     */
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void onGuiOpen(GuiOpenEvent event)
-    {
-        if (event.getGui() != null)
-        {
-            boolean inventory = event.getGui() instanceof GuiContainer;
-            EntityPlayer player = Minecraft.getMinecraft().player;
+	/*
+	 * Prevents the Player from opening Guis
+	 */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onGuiOpen(GuiOpenEvent event)
+	{
+		if (event.getGui() != null)
+		{
+			boolean inventory = event.getGui() instanceof GuiContainer;
+			EntityPlayer player = Minecraft.getMinecraft().player;
 
-            if (player != null)
-            {
-                ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
+			if (player != null)
+			{
+				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
 
-                if (inventory && !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
-                {
-                    event.setCanceled(true);
-                    Minecraft.getMinecraft().currentScreen = null;
-                }
-            }
-        }
-    }
+				if (inventory && !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+				{
+					event.setCanceled(true);
+					Minecraft.getMinecraft().currentScreen = null;
+				}
+			}
+		}
+	}
 
-    /*
-     * Prevents the Player from switching Slots
-     */
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
-    {
-        GameSettings settings = Minecraft.getMinecraft().gameSettings;
-        Field field = KeyBinding.class.getDeclaredFields()[7];
-        field.setAccessible(true);
-        ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
-        EntityPlayer player = Minecraft.getMinecraft().player;
+	/*
+	 * Prevents the Player from switching Slots
+	 */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void inputEvent(InputEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
+	{
+		GameSettings settings = Minecraft.getMinecraft().gameSettings;
+		Field field = KeyBinding.class.getDeclaredFields()[7];
+		field.setAccessible(true);
+		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
+		EntityPlayer player = Minecraft.getMinecraft().player;
 
-        if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
-        {
-            if (settings.keyBindDrop.isPressed())
-            {
-                field.set(settings.keyBindDrop, false);
-            }
-            if (settings.keyBindSwapHands.isPressed())
-            {
-                field.set(settings.keyBindSwapHands, false);
-            }
-            for (KeyBinding keyBind : settings.keyBindsHotbar)
-            {
-                if (keyBind.isPressed())
-                {
-                    field.set(keyBind, false);
-                }
-            }
-        }
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		{
+			if (settings.keyBindDrop.isPressed())
+			{
+				field.set(settings.keyBindDrop, false);
+			}
+			if (settings.keyBindSwapHands.isPressed())
+			{
+				field.set(settings.keyBindSwapHands, false);
+			}
+			for (KeyBinding keyBind : settings.keyBindsHotbar)
+			{
+				if (keyBind.isPressed())
+				{
+					field.set(keyBind, false);
+				}
+			}
+		}
 
-        int current = player.inventory.currentItem;
+		int current = player.inventory.currentItem;
 
-        if (player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInteger("carrySlot") != current : false)
-        {
-            player.inventory.currentItem = player.getEntityData().getInteger("carrySlot");
-        }
-    }
+		if (player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInteger("carrySlot") != current : false)
+		{
+			player.inventory.currentItem = player.getEntityData().getInteger("carrySlot");
+		}
+	}
 
-    /*
-     * Renders the Entity in First Person
-     */
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void renderHand(RenderHandEvent event)
-    {
-        World world = Minecraft.getMinecraft().world;
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        ItemStack stack = player.getHeldItemMainhand();
-        int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
-        float partialticks = event.getPartialTicks();
+	/*
+	 * Renders the Entity in First Person
+	 */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void renderHand(RenderHandEvent event)
+	{
+		World world = Minecraft.getMinecraft().world;
+		EntityPlayer player = Minecraft.getMinecraft().player;
+		ItemStack stack = player.getHeldItemMainhand();
+		int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
+		float partialticks = event.getPartialTicks();
 
-        if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
-        {
-            Entity entity = ItemEntity.getEntity(stack, world);
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		{
+			Entity entity = ItemEntity.getEntity(stack, world);
 
-            if (entity != null)
-            {
-                double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;
-                double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialticks;
-                double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialticks;
+			if (entity != null)
+			{
+				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;
+				double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialticks;
+				double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialticks;
 
-                entity.setPosition(d0, d1, d2);
-                entity.rotationYaw = 0.0f;
-                entity.prevRotationYaw = 0.0f;
-                entity.setRotationYawHead(0.0f);
+				entity.setPosition(d0, d1, d2);
+				entity.rotationYaw = 0.0f;
+				entity.prevRotationYaw = 0.0f;
+				entity.setRotationYawHead(0.0f);
 
-                float height = entity.height;
-                float width = entity.width;
-                GlStateManager.pushMatrix();
-                GlStateManager.scale(.8, .8, .8);
-                GlStateManager.rotate(180, 0, 1, 0);
-                GlStateManager.translate(0.0, -height - .1, width + 0.1);
-                GlStateManager.enableAlpha();
+				float height = entity.height;
+				float width = entity.width;
+				GlStateManager.pushMatrix();
+				GlStateManager.scale(.8, .8, .8);
+				GlStateManager.rotate(180, 0, 1, 0);
+				GlStateManager.translate(0.0, -height - .1, width + 0.1);
+				GlStateManager.enableAlpha();
 
-                if (perspective == 0)
-                {
-                    RenderHelper.enableStandardItemLighting();
-                    Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
-                    this.renderEntityStatic(entity);
-                    Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
-                }
+				if (perspective == 0)
+				{
+					RenderHelper.enableStandardItemLighting();
+					Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 
-                GlStateManager.disableAlpha();
-                GlStateManager.scale(1, 1, 1);
-                GlStateManager.popMatrix();
+					CarryOnOverride carryOverride = ScriptChecker.inspectEntity(entity);
+					if (carryOverride != null)
+					{
+						double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
+						double[] rotation = ScriptParseHelper.getXYZArray(carryOverride.getRenderRotation());
+						double[] scale = ScriptParseHelper.getScale(carryOverride.getRenderScale());
+						String entityname = carryOverride.getRenderNameEntity();
+						if (entityname != null)
+						{
+							Entity newEntity = EntityList.createEntityByIDFromName(new ResourceLocation(entityname), world);
+							if (newEntity != null)
+							{
+								NBTTagCompound nbttag = carryOverride.getRenderNBT();
+								if (nbttag != null)
+									newEntity.readFromNBT(nbttag);
+								entity = newEntity;
+								entity.setPosition(d0, d1, d2);
+								entity.rotationYaw = 0.0f;
+								entity.prevRotationYaw = 0.0f;
+								entity.setRotationYawHead(0.0f);
+							}
+						}
 
-                RenderHelper.disableStandardItemLighting();
-                GlStateManager.disableRescaleNormal();
-                GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-                GlStateManager.disableTexture2D();
-                GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+						GlStateManager.translate(translation[0], translation[1], translation[2]);
+						GlStateManager.rotate((float) rotation[0], 1, 0, 0);
+						GlStateManager.rotate((float) rotation[1], 0, 1, 0);
+						GlStateManager.rotate((float) rotation[2], 0, 0, 1);
+						GlStateManager.scale(scale[0], scale[1], scale[2]);
 
-                if (perspective == 0)
-                {
-                    event.setCanceled(true);
-                }
-            }
-        }
-    }
+					}
 
-    @SideOnly(Side.CLIENT)
-    private void renderEntityStatic(Entity entity)
-    {
-        if (entity.ticksExisted == 0)
-        {
-            entity.lastTickPosX = entity.posX;
-            entity.lastTickPosY = entity.posY;
-            entity.lastTickPosZ = entity.posZ;
-        }
+					this.renderEntityStatic(entity);
+					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
+				}
 
-        float f = entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw);
-        int i = this.getBrightnessForRender(entity, Minecraft.getMinecraft().player);
+				GlStateManager.disableAlpha();
+				GlStateManager.scale(1, 1, 1);
+				GlStateManager.popMatrix();
 
-        if (entity.isBurning())
-        {
-            i = 15728880;
-        }
+				RenderHelper.disableStandardItemLighting();
+				GlStateManager.disableRescaleNormal();
+				GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+				GlStateManager.disableTexture2D();
+				GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
-        int j = i % 65536;
-        int k = i / 65536;
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+				if (perspective == 0)
+				{
+					event.setCanceled(true);
+				}
+			}
+		}
+	}
 
-        this.setLightmapDisabled(false);
-        Minecraft.getMinecraft().getRenderManager().doRenderEntity(entity, 0.0D, 0.0D, 0.0D, f, 0.0F, true);
-        this.setLightmapDisabled(true);
-    }
+	@SideOnly(Side.CLIENT)
+	private void renderEntityStatic(Entity entity)
+	{
+		if (entity.ticksExisted == 0)
+		{
+			entity.lastTickPosX = entity.posX;
+			entity.lastTickPosY = entity.posY;
+			entity.lastTickPosZ = entity.posZ;
+		}
 
-    @SideOnly(Side.CLIENT)
-    private int getBrightnessForRender(Entity entity, EntityPlayer player)
-    {
-        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(player.posX), 0, MathHelper.floor(player.posZ));
+		float f = entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw);
+		int i = this.getBrightnessForRender(entity, Minecraft.getMinecraft().player);
 
-        if (entity.world.isBlockLoaded(blockpos$mutableblockpos))
-        {
-            blockpos$mutableblockpos.setY(MathHelper.floor(player.posY + entity.getEyeHeight()));
-            return entity.world.getCombinedLight(blockpos$mutableblockpos, 0);
-        }
-        else
-        {
-            return 0;
-        }
-    }
+		if (entity.isBurning())
+		{
+			i = 15728880;
+		}
 
-    @SideOnly(Side.CLIENT)
-    private void setLightmapDisabled(boolean disabled)
-    {
-        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		int j = i % 65536;
+		int k = i / 65536;
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j, k);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-        if (disabled)
-        {
-            GlStateManager.disableTexture2D();
-        }
-        else
-        {
-            GlStateManager.enableTexture2D();
-        }
+		this.setLightmapDisabled(false);
+		
+		
+		
+		Minecraft.getMinecraft().getRenderManager().doRenderEntity(entity, 0.0D, 0.0D, 0.0D, f, 0.0F, true);
+		this.setLightmapDisabled(true);
+	}
 
-        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
-    }
+	@SideOnly(Side.CLIENT)
+	private int getBrightnessForRender(Entity entity, EntityPlayer player)
+	{
+		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(player.posX), 0, MathHelper.floor(player.posZ));
 
-    /*
-     * Renders the Block in Third Person
-     */
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void onPlayerRenderPost(RenderPlayerEvent.Post event)
-    {
-        World world = Minecraft.getMinecraft().world;
-        EntityPlayer player = event.getEntityPlayer();
-        event.getRenderer().getMainModel();
-        EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
-        ItemStack stack = player.getHeldItemMainhand();
-        float partialticks = event.getPartialRenderTick();
+		if (entity.world.isBlockLoaded(blockpos$mutableblockpos))
+		{
+			blockpos$mutableblockpos.setY(MathHelper.floor(player.posY + entity.getEyeHeight()));
+			return entity.world.getCombinedLight(blockpos$mutableblockpos, 0);
+		}
+		else
+		{
+			return 0;
+		}
+	}
 
-        if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
-        {
-            Entity entity = ItemEntity.getEntity(stack, world);
-            float rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
+	@SideOnly(Side.CLIENT)
+	private void setLightmapDisabled(boolean disabled)
+	{
+		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
 
-            if (entity != null)
-            {
-                double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;
-                double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialticks;
-                double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialticks;
+		if (disabled)
+		{
+			GlStateManager.disableTexture2D();
+		}
+		else
+		{
+			GlStateManager.enableTexture2D();
+		}
 
-                double c0 = clientPlayer.lastTickPosX + (clientPlayer.posX - clientPlayer.lastTickPosX) * partialticks;
-                double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * partialticks;
-                double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * partialticks;
+		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+	}
 
-                double xOffset = d0 - c0;
-                double yOffset = d1 - c1;
-                double zOffset = d2 - c2;
+	/*
+	 * Renders the Block in Third Person
+	 */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
+	{
+		World world = Minecraft.getMinecraft().world;
+		EntityPlayer player = event.getEntityPlayer();
+		event.getRenderer().getMainModel();
+		EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
+		ItemStack stack = player.getHeldItemMainhand();
+		float partialticks = event.getPartialRenderTick();
 
-                float height = entity.height;
-                float width = entity.width;
-                float multiplier = height * width;
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		{
+			Entity entity = ItemEntity.getEntity(stack, world);
+			float rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
 
-                entity.setPosition(c0, c1, c2);
-                entity.rotationYaw = 0.0f;
-                entity.prevRotationYaw = 0.0f;
-                entity.setRotationYawHead(0.0f);
+			if (entity != null)
+			{
+				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;
+				double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialticks;
+				double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialticks;
 
-                GlStateManager.pushMatrix();
-                GlStateManager.translate(xOffset, yOffset, zOffset);
-                GlStateManager.scale((10 - multiplier) * 0.08, (10 - multiplier) * 0.08, (10 - multiplier) * 0.08);
-                GlStateManager.rotate(rotation, 0, 1f, 0);
-                GlStateManager.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
+				double c0 = clientPlayer.lastTickPosX + (clientPlayer.posX - clientPlayer.lastTickPosX) * partialticks;
+				double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * partialticks;
+				double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * partialticks;
 
-                if (player.isSneaking())
-                {
-                    GlStateManager.translate(0, -0.3, 0);
-                }
+				double xOffset = d0 - c0;
+				double yOffset = d1 - c1;
+				double zOffset = d2 - c2;
 
-                Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
-                Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
-                Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
+				float height = entity.height;
+				float width = entity.width;
+				float multiplier = height * width;
 
-                GlStateManager.scale(1, 1, 1);
-                GlStateManager.popMatrix();
-            }
-        }
-    }
+				entity.setPosition(c0, c1, c2);
+				entity.rotationYaw = 0.0f;
+				entity.prevRotationYaw = 0.0f;
+				entity.setRotationYawHead(0.0f);
+
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(xOffset, yOffset, zOffset);
+				GlStateManager.scale((10 - multiplier) * 0.08, (10 - multiplier) * 0.08, (10 - multiplier) * 0.08);
+				GlStateManager.rotate(rotation, 0, 1f, 0);
+				GlStateManager.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
+
+				if (player.isSneaking())
+				{
+					GlStateManager.translate(0, -0.3, 0);
+				}
+
+				Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
+				
+				CarryOnOverride carryOverride = ScriptChecker.inspectEntity(entity);
+				if (carryOverride != null)
+				{
+					double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
+					double[] rot = ScriptParseHelper.getXYZArray(carryOverride.getRenderRotation());
+					double[] scale = ScriptParseHelper.getScale(carryOverride.getRenderScale());
+					String entityname = carryOverride.getRenderNameEntity();
+					if (entityname != null)
+					{
+						Entity newEntity = EntityList.createEntityByIDFromName(new ResourceLocation(entityname), world);
+						if (newEntity != null)
+						{
+							NBTTagCompound nbttag = carryOverride.getRenderNBT();
+							if (nbttag != null)
+								newEntity.readFromNBT(nbttag);
+							entity = newEntity;
+							entity.setPosition(d0, d1, d2);
+							entity.rotationYaw = 0.0f;
+							entity.prevRotationYaw = 0.0f;
+							entity.setRotationYawHead(0.0f);
+						}
+					}
+
+					GlStateManager.translate(translation[0], translation[1], translation[2]);
+					GlStateManager.rotate((float) rot[0], 1, 0, 0);
+					GlStateManager.rotate((float) rot[1], 0, 1, 0);
+					GlStateManager.rotate((float) rot[2], 0, 0, 1);
+					GlStateManager.scale(scale[0], scale[1], scale[2]);
+
+				}
+				
+				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
+				Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
+
+				GlStateManager.scale(1, 1, 1);
+				GlStateManager.popMatrix();
+			}
+		}
+	}
 }
