@@ -71,6 +71,7 @@ public class ScriptReader
 					
 					if (block != null)
 					{
+						override.setBlock(true);
 						JsonElement name = block.get("name");
 						JsonElement meta = block.get("meta");
 						JsonElement material = block.get("material");
@@ -93,6 +94,7 @@ public class ScriptReader
 					}
 					else
 					{
+						override.setEntity(true);
 						JsonElement name = entity.get("name");
 						JsonElement health = entity.get("health");
 						JsonElement height = entity.get("height");

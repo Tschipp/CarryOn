@@ -36,13 +36,31 @@ public class CarryOnOverride
 	private String renderRotation;
 	private String renderScale;
 	
+	private boolean isBlock;
+	private boolean isEntity;
+
 	
 	
 	
 	
 	
 	
-	
+	public boolean isBlock()
+	{
+		return isBlock;
+	}
+	public void setBlock(boolean isBlock)
+	{
+		this.isBlock = isBlock;
+	}
+	public boolean isEntity()
+	{
+		return isEntity;
+	}
+	public void setEntity(boolean isEntity)
+	{
+		this.isEntity = isEntity;
+	}
 	public NBTTagCompound getTypeBlockTag()
 	{
 		return typeBlockTag;
