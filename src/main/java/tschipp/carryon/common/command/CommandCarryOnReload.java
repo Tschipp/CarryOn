@@ -23,17 +23,17 @@ public class CommandCarryOnReload extends CommandBase
 		if (CarryOnConfig.settings.useScripts)
 		{
 			ScriptReader.reloadScripts();
-			sender.sendMessage(new TextComponentString("Successfully reloaded scripts!"));
+			sender.addChatMessage(new TextComponentString("Successfully reloaded scripts!"));
 		}
 		else
-			sender.sendMessage(new TextComponentString("To use custom Carry On scripts, enable them in the config!"));
+			sender.addChatMessage(new TextComponentString("To use custom Carry On scripts, enable them in the config!"));
 
 	}
 
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender)
 	{
-		return sender.canUseCommand(this.getRequiredPermissionLevel(), this.getName());
+		return sender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class CommandCarryOnReload extends CommandBase
 	}
 
 	@Override
-	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos)
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos)
 	{
 
 		if (args.length > 0)
@@ -63,16 +63,18 @@ public class CommandCarryOnReload extends CommandBase
 		return Collections.<String>emptyList();
 
 	}
+	
 
 	@Override
-	public String getName()
+	public String getCommandName()
 	{
 		return "reloadscripts";
 	}
 
 	@Override
-	public String getUsage(ICommandSender sender)
+	public String getCommandUsage(ICommandSender sender)
 	{
 		return "/reloadscripts";
 	}
+
 }
