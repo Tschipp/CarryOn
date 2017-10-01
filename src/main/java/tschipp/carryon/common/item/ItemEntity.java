@@ -109,6 +109,7 @@ public class ItemEntity extends Item
 					clearEntityData(stack);
 					player.setHeldItem(hand, null);
 				}
+				player.getEntityData().removeTag("overrideKey");
 				return EnumActionResult.SUCCESS;
 			}
 		}

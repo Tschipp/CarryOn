@@ -25,6 +25,8 @@ import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.common.scripting.CarryOnOverride;
+import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntityEvents
@@ -97,7 +99,13 @@ public class ItemEntityEvents
 									handler.extractItem(i, 64, false);
 								}
 							}
-							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
+							
+							CarryOnOverride override = ScriptChecker.inspectEntity(entity);
+							int overrideHash = 0;
+							if(override != null)
+								overrideHash = override.hashCode();
+							
+							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, overrideHash), (EntityPlayerMP) player);
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);

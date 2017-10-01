@@ -20,6 +20,7 @@ import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class CommandCarryOn extends CommandBase implements ICommand

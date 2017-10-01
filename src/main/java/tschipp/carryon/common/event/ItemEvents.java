@@ -29,6 +29,8 @@ import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.common.scripting.CarryOnOverride;
+import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEvents
@@ -114,10 +116,14 @@ public class ItemEvents
 						IBlockState statee = world.getBlockState(pos);
 						NBTTagCompound tag = new NBTTagCompound();
 						tag = world.getTileEntity(pos) != null ? world.getTileEntity(pos).writeToNBT(tag) : new NBTTagCompound();
-
+						CarryOnOverride override = ScriptChecker.inspectBlock(state, world, pos, tag);
+						int overrideHash = 0;
+						if(override != null)
+							overrideHash = override.hashCode();
+						
 						try
 						{
-							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem), (EntityPlayerMP) player);
+							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, overrideHash), (EntityPlayerMP) player);
 							world.removeTileEntity(pos);
 							world.setBlockToAir(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);

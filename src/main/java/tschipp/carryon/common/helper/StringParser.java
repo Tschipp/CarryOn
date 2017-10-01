@@ -19,6 +19,9 @@ public class StringParser
 	@Nullable
 	public static Block getBlock(String string)
 	{
+		if(string == null)
+			return null;
+		
 		NBTTagCompound tag = getTagCompound(string);
 		if (tag != null)
 			string = string.replace(tag.toString(), "");
@@ -35,6 +38,9 @@ public class StringParser
 
 	public static int getMeta(String string)
 	{
+		if(string == null)
+			return 0;
+		
 		NBTTagCompound tag = getTagCompound(string);
 		if (tag != null)
 			string = string.replace(tag.toString(), "");
@@ -59,6 +65,9 @@ public class StringParser
 	@Nullable
 	public static IBlockState getBlockState(String string)
 	{
+		if(string == null)
+			return null;
+		
 		NBTTagCompound tag = getTagCompound(string);
 		if (tag != null)
 			string = string.replace(tag.toString(), "");
@@ -84,6 +93,9 @@ public class StringParser
 	@Nullable
 	public static Item getItem(String string)
 	{
+		if(string == null)
+			return null;
+		
 		NBTTagCompound tag = getTagCompound(string);
 		if (tag != null)
 			string = string.replace(tag.toString(), "");
@@ -96,6 +108,9 @@ public class StringParser
 
 	public static ItemStack getItemStack(String string)
 	{
+		if(string == null)
+			return null;
+		
 		Item item = getItem(string);
 		
 		if(item == null)
@@ -113,6 +128,9 @@ public class StringParser
 	public static NBTTagCompound getTagCompound(String string)
 	{
 		NBTTagCompound tag = null;
+		if(string == null)
+			return null;
+		
 		if (string.contains("{"))
 		{
 			if (!string.contains("}"))

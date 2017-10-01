@@ -7,6 +7,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
+import tschipp.carryon.common.scripting.ScriptChecker;
 
 public class CarrySlotPacketHandler implements IMessageHandler<CarrySlotPacket, IMessage>
 {
@@ -24,9 +25,19 @@ public class CarrySlotPacketHandler implements IMessageHandler<CarrySlotPacket, 
 			public void run()
 			{
 				if (message.slot >= 9)
+				{
 					player.getEntityData().removeTag("carrySlot");
+					player.getEntityData().removeTag("overrideKey");
+				}
 				else
+				{
 					player.getEntityData().setInteger("carrySlot", message.slot);
+					if(message.carryOverride != 0)
+						ScriptChecker.setCarryOnOverride(player, message.carryOverride);
+				}
+				
+				
+				
 			}
 
 		});

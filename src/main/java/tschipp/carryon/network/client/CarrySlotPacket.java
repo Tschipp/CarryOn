@@ -1,12 +1,14 @@
 package tschipp.carryon.network.client;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class CarrySlotPacket implements IMessage
 {
 	public int slot;
+	public int carryOverride = 0;
 	
 	public CarrySlotPacket()
 	{
@@ -16,17 +18,30 @@ public class CarrySlotPacket implements IMessage
 	{
 		this.slot = slot;
 	}
+	
+	public CarrySlotPacket(int slot, int carryOverride)
+	{
+		this.slot = slot;
+		this.carryOverride = carryOverride;
+	}
 
 	@Override
 	public void fromBytes(ByteBuf buf)
 	{
-		this.slot = ByteBufUtils.readVarInt(buf, 4);
+		NBTTagCompound tag =  ByteBufUtils.readTag(buf);
+		
+		this.slot = tag.getInteger("slot");
+		this.carryOverride = tag.getInteger("override");
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf)
 	{
-		ByteBufUtils.writeVarInt(buf, slot, 4);
+		NBTTagCompound tag = new NBTTagCompound();
+		tag.setInteger("slot", slot);
+		tag.setInteger("override", carryOverride);
+		ByteBufUtils.writeTag(buf, tag);
+
 	}
 
 }
