@@ -18,7 +18,23 @@ public class ListHandler
 
 	public static boolean isForbidden(Block block)
 	{
-		return FORBIDDEN_TILES.contains(block.getRegistryName().toString());
+		String name = block.getRegistryName().toString();
+		if (FORBIDDEN_TILES.contains(name))
+			return true;
+		else
+		{
+			boolean contains = false;
+			for (String s : FORBIDDEN_TILES)
+			{
+				if (s.contains("*"))
+				{
+					if(name.contains(s.replace("*", "")))
+						contains = true;
+				}
+			}
+			
+			return contains;
+		}
 	}
 
 	public static boolean isForbidden(Entity entity)
@@ -32,7 +48,8 @@ public class ListHandler
 		return true;
 	}
 
-	public static boolean isAllowed(Entity entity){
+	public static boolean isAllowed(Entity entity)
+	{
 		if (EntityList.getKey(entity) != null)
 		{
 			String name = EntityList.getKey(entity).toString();
@@ -41,12 +58,28 @@ public class ListHandler
 		}
 		return true;
 	}
-	
+
 	public static boolean isAllowed(Block block)
 	{
-		return ALLOWED_TILES.contains(block.getRegistryName().toString());
+		String name = block.getRegistryName().toString();
+		if (ALLOWED_TILES.contains(name))
+			return true;
+		else
+		{
+			boolean contains = false;
+			for (String s : ALLOWED_TILES)
+			{
+				if (s.contains("*"))
+				{
+					if(name.contains(s.replace("*", "")))
+						contains = true;
+				}
+			}
+			return contains;
+		}
+
 	}
-	
+
 	public static void initForbiddenTiles()
 	{
 		String[] forbidden = CarryOnConfig.blacklist.forbiddenTiles;
@@ -54,17 +87,6 @@ public class ListHandler
 
 		for (int i = 0; i < forbidden.length; i++)
 		{
-			if (forbidden[i].contains("*"))
-			{
-				String modid = forbidden[i].replace("*", "");
-				for (int k = 0; k < Block.REGISTRY.getKeys().size(); k++)
-				{
-					if (Block.REGISTRY.getKeys().toArray()[k].toString().contains(modid))
-					{
-						FORBIDDEN_TILES.add(Block.REGISTRY.getKeys().toArray()[k].toString());
-					}
-				}
-			}
 			FORBIDDEN_TILES.add(forbidden[i]);
 		}
 
@@ -86,39 +108,29 @@ public class ListHandler
 			}
 			FORBIDDEN_ENTITIES.add(forbiddenEntity[i]);
 		}
-		
-		String [] allowedEntities=CarryOnConfig.whitelist.allowedEntities;
-		ALLOWED_ENTITIES=new ArrayList<String>();
-		for(int i=0;i<allowedEntities.length;i++){
-			if(allowedEntities[i].contains("*"))
+
+		String[] allowedEntities = CarryOnConfig.whitelist.allowedEntities;
+		ALLOWED_ENTITIES = new ArrayList<String>();
+		for (int i = 0; i < allowedEntities.length; i++)
+		{
+			if (allowedEntities[i].contains("*"))
 			{
-				String modid=allowedEntities[i].replace("*", "");
-				for(int k=0;k<ForgeRegistries.ENTITIES.getKeys().size();k++)
+				String modid = allowedEntities[i].replace("*", "");
+				for (int k = 0; k < ForgeRegistries.ENTITIES.getKeys().size(); k++)
 				{
-					if(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid)){
+					if (ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid))
+					{
 						ALLOWED_ENTITIES.add(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString());
 					}
 				}
 			}
 			ALLOWED_ENTITIES.add(allowedEntities[i]);
 		}
-		
+
 		String[] allowedBlocks = CarryOnConfig.whitelist.allowedBlocks;
 		ALLOWED_TILES = new ArrayList<String>();
-
 		for (int i = 0; i < allowedBlocks.length; i++)
 		{
-			if (allowedBlocks[i].contains("*"))
-			{
-				String modid = allowedBlocks[i].replace("*", "");
-				for (int k = 0; k < Block.REGISTRY.getKeys().size(); k++)
-				{
-					if (Block.REGISTRY.getKeys().toArray()[k].toString().contains(modid))
-					{
-						ALLOWED_TILES.add(Block.REGISTRY.getKeys().toArray()[k].toString());
-					}
-				}
-			}
 			ALLOWED_TILES.add(allowedBlocks[i]);
 		}
 	}
