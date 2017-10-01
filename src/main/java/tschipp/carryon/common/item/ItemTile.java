@@ -143,6 +143,7 @@ public class ItemTile extends Item
 							clearTileData(stack);
 							player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
 							player.setHeldItem(hand, ItemStack.EMPTY);
+							player.getEntityData().removeTag("overrideKey");
 							return EnumActionResult.SUCCESS;
 						}
 

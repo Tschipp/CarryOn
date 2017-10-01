@@ -37,7 +37,7 @@ public class ScriptChecker
 		float resistance = block.getExplosionResistance(null);
 		NBTTagCompound nbt = tag;
 
-		for (CarryOnOverride override : ScriptReader.OVERRIDES)
+		for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
 		{
 			if (override.isBlock())
 			{
@@ -62,7 +62,7 @@ public class ScriptChecker
 		NBTTagCompound tag = new NBTTagCompound();
 		entity.writeToNBT(tag);
 
-		for (CarryOnOverride override : ScriptReader.OVERRIDES)
+		for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
 		{
 			if (override.isEntity())
 			{
@@ -76,7 +76,7 @@ public class ScriptChecker
 
 	public static boolean matchesAll(CarryOnOverride override, String name, float height, float width, float health, NBTTagCompound tag)
 	{
-		boolean matchname = name == null ? true : name.equals(override.getTypeNameEntity());
+		boolean matchname = override.getTypeNameEntity() == null ? true : name.equals(override.getTypeNameEntity());
 		boolean matchheight = ScriptParseHelper.matches(height, override.getTypeHeight());
 		boolean matchwidth = ScriptParseHelper.matches(width, override.getTypeWidth());
 		boolean matchhealth = ScriptParseHelper.matches(health, override.getTypeHealth());
@@ -111,4 +111,28 @@ public class ScriptChecker
 
 		return (achievement && gamemode && gamestage && position && xp && scoreboard);
 	}
+
+	@Nullable
+	public static CarryOnOverride getOverride(EntityPlayer player)
+	{
+		NBTTagCompound tag = player.getEntityData();
+
+		if (tag != null && tag.hasKey("overrideKey"))
+		{
+			int key = tag.getInteger("overrideKey");
+			
+			return ScriptReader.OVERRIDES.get(key);
+		}
+
+		return null;
+	}
+	
+	public static void setCarryOnOverride(EntityPlayer player, int i)
+	{
+		NBTTagCompound tag = player.getEntityData();
+
+		if (tag != null)
+			tag.setInteger("overrideKey", i);
+	}
+	
 }

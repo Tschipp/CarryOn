@@ -136,11 +136,6 @@ public class CommandCarryOn extends CommandBase implements ICommand
 					}
 				}
 			}
-			else if (args[0].toLowerCase().equals("reload"))
-			{
-				ScriptReader.reloadScripts();
-				sender.sendMessage(new TextComponentString("Successfully reloaded Scripts!"));
-			}
 			else
 			{
 				throw new WrongUsageException(this.getUsage(sender));

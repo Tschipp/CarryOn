@@ -24,19 +24,19 @@ public class ScriptParseHelper
 		{
 			if (cond.contains("<="))
 			{
-				return number >= Double.parseDouble(cond.replace("<=", ""));
+				return number <= Double.parseDouble(cond.replace("<=", ""));
 			}
 			if (cond.contains(">="))
 			{
-				return number <= Double.parseDouble(cond.replace(">=", ""));
+				return number >= Double.parseDouble(cond.replace(">=", ""));
 			}
 			if (cond.contains("<"))
 			{
-				return number > Double.parseDouble(cond.replace("<", ""));
+				return number < Double.parseDouble(cond.replace("<", ""));
 			}
 			if (cond.contains(">"))
 			{
-				return number < Double.parseDouble(cond.replace(">", ""));
+				return number > Double.parseDouble(cond.replace(">", ""));
 			}
 			if (cond.contains("="))
 			{

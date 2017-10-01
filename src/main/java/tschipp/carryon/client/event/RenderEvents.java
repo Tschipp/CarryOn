@@ -210,7 +210,7 @@ public class RenderEvents
 			{
 				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player);
 
-				CarryOnOverride carryOverride = ScriptChecker.inspectBlock(state, world, player.getPosition(), tag);
+				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
 				{
 					double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
@@ -260,15 +260,16 @@ public class RenderEvents
 
 				this.setLightmapDisabled(true);
 
+				if (perspective == 0)
+				{
+					event.setCanceled(true);
+				}
+
 			}
 
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 
-			if (perspective == 0)
-			{
-				event.setCanceled(true);
-			}
 		}
 		else
 		{
@@ -376,7 +377,7 @@ public class RenderEvents
 
 			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
 
-			CarryOnOverride carryOverride = ScriptChecker.inspectBlock(state, world, player.getPosition(), tag);
+			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
 			{
 				double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
@@ -397,7 +398,7 @@ public class RenderEvents
 				GlStateManager.scale(scale[0], scale[1], scale[2]);
 
 			}
-			
+
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 			{
 				Object override = ModelOverridesHandler.getOverrideObject(state, tag);
@@ -449,16 +450,41 @@ public class RenderEvents
 
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 			{
-				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				CarryOnOverride overrider = ScriptChecker.getOverride(player);
+				if (overrider != null)
 				{
-					for (int k = 0; k < model.bipedBody.childModels.size(); k++)
+					if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 					{
-						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
-
-						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+						for (int k = 0; k < model.bipedBody.childModels.size(); k++)
 						{
-							model.bipedBody.childModels.remove(k);
-							k = k - 1;
+							double[] rotLeft1 = ScriptParseHelper.getXYZArray(overrider.getRenderRotationLeftArm());
+							double[] rotRight1 = ScriptParseHelper.getXYZArray(overrider.getRenderRotationRightArm());
+
+							float rotX = model.bipedBody.childModels.get(k).rotateAngleX;
+							float rotY = model.bipedBody.childModels.get(k).rotateAngleY;
+							float rotZ = model.bipedBody.childModels.get(k).rotateAngleZ;
+
+							if (rotLeft1[0] == rotX || rotLeft1[1] == rotY || rotRight1[2] == rotZ || rotRight1[0] == rotX || rotRight1[1] == rotY || rotRight1[2] == rotZ || rotX == rotLeft1[0] - 0.5f || rotX == rotRight1[0] - 0.5f)
+							{
+								model.bipedBody.childModels.remove(k);
+								k = k - 1;
+							}
+						}
+					}
+				}
+				else
+				{
+					if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+					{
+						for (int k = 0; k < model.bipedBody.childModels.size(); k++)
+						{
+							float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
+
+							if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+							{
+								model.bipedBody.childModels.remove(k);
+								k = k - 1;
+							}
 						}
 					}
 				}
@@ -469,7 +495,11 @@ public class RenderEvents
 				model.bipedRightArm.isHidden = true;
 				model.bipedLeftArmwear.isHidden = true;
 				model.bipedRightArmwear.isHidden = true;
-
+				this.fakeLeftArm.isHidden = false;
+				this.fakeLeftArmwear.isHidden = false;
+				this.fakeRightArm.isHidden = false;
+				this.fakeRightArmwear.isHidden = false;
+				
 				Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 
 				if (aplayer.getSkinType().equals("default"))
@@ -493,44 +523,190 @@ public class RenderEvents
 					this.fakeRightArmwear.addBox(model.bipedRightArm.offsetX - 7.2F, model.bipedRightArm.offsetY, model.bipedRightArm.offsetZ, 3, 12, 4, .08F + 0.25F);
 				}
 
-				if (item == RegistrationHandler.itemTile)
+				CarryOnOverride override = ScriptChecker.getOverride(player);
+				if (override != null)
 				{
-					if (!player.isSneaking())
+					double[] rotLeft = null;
+					double[] rotRight = null;
+					if (override.getRenderRotationLeftArm() != null)
+						rotLeft = ScriptParseHelper.getXYZArray(override.getRenderRotationLeftArm());
+					if (override.getRenderRotationRightArm() != null)
+						rotRight = ScriptParseHelper.getXYZArray(override.getRenderRotationRightArm());
+
+					boolean renderRight = override.isRenderRightArm();
+					boolean renderLeft = override.isRenderLeftArm();
+
+					if (!renderRight)
 					{
-						this.fakeRightArm.rotateAngleX = -.9001F;
-						this.fakeLeftArm.rotateAngleX = -.9001F;
-						this.fakeLeftArmwear.rotateAngleX = -.9001F;
-						this.fakeRightArmwear.rotateAngleX = -.9001F;
+						this.fakeRightArm.isHidden = true;
+						this.fakeRightArmwear.isHidden = true;
+						model.bipedRightArm.isHidden = false;
+						model.bipedRightArmwear.isHidden = false;
+					}
+					
+
+					if (!renderLeft)
+					{
+						this.fakeLeftArm.isHidden = true;
+						this.fakeLeftArmwear.isHidden = true;
+						model.bipedLeftArm.isHidden = false;
+						model.bipedLeftArmwear.isHidden = false;
+					}
+					
+
+					if (rotLeft != null)
+					{
+						if (!player.isSneaking())
+						{
+							this.fakeLeftArm.rotateAngleX = (float) rotLeft[0];
+							this.fakeLeftArmwear.rotateAngleX = (float) rotLeft[0];
+						}
+						else
+						{
+							this.fakeLeftArm.rotateAngleX = (float) rotLeft[0] - 0.5f;
+							this.fakeLeftArmwear.rotateAngleX = (float) rotLeft[0] - 0.5f;
+						}
+
+						this.fakeLeftArmwear.rotateAngleY = (float) rotLeft[1];
+						this.fakeLeftArmwear.rotateAngleZ = (float) rotLeft[2];
+						this.fakeLeftArm.rotateAngleY = (float) rotLeft[1];
+						this.fakeLeftArm.rotateAngleZ = (float) rotLeft[2];
 					}
 					else
 					{
-						this.fakeRightArm.rotateAngleX = -1.4001F;
-						this.fakeLeftArm.rotateAngleX = -1.4001F;
-						this.fakeLeftArmwear.rotateAngleX = -1.4001F;
-						this.fakeRightArmwear.rotateAngleX = -1.4001F;
+						if (item == RegistrationHandler.itemTile)
+						{
+							if (!player.isSneaking())
+							{
+								this.fakeLeftArm.rotateAngleX = -.9001F;
+								this.fakeLeftArmwear.rotateAngleX = -.9001F;
+							}
+							else
+							{
+								this.fakeLeftArm.rotateAngleX = -1.4001F;
+								this.fakeLeftArmwear.rotateAngleX = -1.4001F;
+							}
+						}
+						else
+						{
+							if (!player.isSneaking())
+							{
+								this.fakeLeftArm.rotateAngleX = -1.2001F;
+								this.fakeLeftArmwear.rotateAngleX = -1.2001F;
+							}
+							else
+							{
+								this.fakeLeftArm.rotateAngleX = -1.7001F;
+								this.fakeLeftArmwear.rotateAngleX = -1.7001F;
+							}
+
+							this.fakeLeftArm.rotateAngleY = 0.15f;
+							this.fakeLeftArmwear.rotateAngleY = 0.15f;
+						}
+					}
+
+					if (rotRight != null)
+					{
+						if (!player.isSneaking())
+						{
+							this.fakeRightArm.rotateAngleX = (float) rotRight[0];
+							this.fakeRightArmwear.rotateAngleX = (float) rotRight[0];
+						}
+						else
+						{
+							this.fakeRightArm.rotateAngleX = (float) rotRight[0] - 0.5f;
+							this.fakeRightArmwear.rotateAngleX = (float) rotRight[0] - 0.5f;
+						}
+
+						this.fakeRightArmwear.rotateAngleY = (float) rotRight[1];
+						this.fakeRightArmwear.rotateAngleZ = (float) rotRight[2];
+						this.fakeRightArm.rotateAngleY = (float) rotRight[1];
+						this.fakeRightArm.rotateAngleZ = (float) rotRight[2];
+					}
+					else
+					{
+						if (item == RegistrationHandler.itemTile)
+						{
+							if (!player.isSneaking())
+							{
+								this.fakeRightArm.rotateAngleX = -.9001F;
+								this.fakeRightArmwear.rotateAngleX = -.9001F;
+							}
+							else
+							{
+								this.fakeRightArm.rotateAngleX = -1.4001F;
+								this.fakeRightArmwear.rotateAngleX = -1.4001F;
+							}
+						}
+						else
+						{
+							if (!player.isSneaking())
+							{
+								this.fakeRightArm.rotateAngleX = -1.2001F;
+								this.fakeRightArmwear.rotateAngleX = -1.2001F;
+							}
+							else
+							{
+								this.fakeRightArm.rotateAngleX = -1.7001F;
+								this.fakeRightArmwear.rotateAngleX = -1.7001F;
+							}
+
+							this.fakeRightArm.rotateAngleY = -0.15f;
+							this.fakeRightArmwear.rotateAngleY = -0.15f;
+						}
 					}
 				}
 				else
 				{
-					if (!player.isSneaking())
+					if (item == RegistrationHandler.itemTile)
 					{
-						this.fakeRightArm.rotateAngleX = -1.2001F;
-						this.fakeLeftArm.rotateAngleX = -1.2001F;
-						this.fakeLeftArmwear.rotateAngleX = -1.2001F;
-						this.fakeRightArmwear.rotateAngleX = -1.2001F;
+						if (!player.isSneaking())
+						{
+							this.fakeRightArm.rotateAngleX = -.9001F;
+							this.fakeLeftArm.rotateAngleX = -.9001F;
+							this.fakeLeftArmwear.rotateAngleX = -.9001F;
+							this.fakeRightArmwear.rotateAngleX = -.9001F;
+						}
+						else
+						{
+							this.fakeRightArm.rotateAngleX = -1.4001F;
+							this.fakeLeftArm.rotateAngleX = -1.4001F;
+							this.fakeLeftArmwear.rotateAngleX = -1.4001F;
+							this.fakeRightArmwear.rotateAngleX = -1.4001F;
+						}
+
+						this.fakeRightArm.rotateAngleY = 0f;
+						this.fakeLeftArm.rotateAngleY = 0f;
+						this.fakeLeftArmwear.rotateAngleY = 0f;
+						this.fakeRightArmwear.rotateAngleY = 0f;
 					}
 					else
 					{
-						this.fakeRightArm.rotateAngleX = -1.7001F;
-						this.fakeLeftArm.rotateAngleX = -1.7001F;
-						this.fakeLeftArmwear.rotateAngleX = -1.7001F;
-						this.fakeRightArmwear.rotateAngleX = -1.7001F;
+						if (!player.isSneaking())
+						{
+							this.fakeRightArm.rotateAngleX = -1.2001F;
+							this.fakeLeftArm.rotateAngleX = -1.2001F;
+							this.fakeLeftArmwear.rotateAngleX = -1.2001F;
+							this.fakeRightArmwear.rotateAngleX = -1.2001F;
+						}
+						else
+						{
+							this.fakeRightArm.rotateAngleX = -1.7001F;
+							this.fakeLeftArm.rotateAngleX = -1.7001F;
+							this.fakeLeftArmwear.rotateAngleX = -1.7001F;
+							this.fakeRightArmwear.rotateAngleX = -1.7001F;
+						}
+
+						this.fakeRightArm.rotateAngleY = -0.15f;
+						this.fakeLeftArm.rotateAngleY = 0.15f;
+						this.fakeLeftArmwear.rotateAngleY = 0.15f;
+						this.fakeRightArmwear.rotateAngleY = -0.15f;
 					}
 
-					this.fakeRightArm.rotateAngleY = -0.15f;
-					this.fakeLeftArm.rotateAngleY = 0.15f;
-					this.fakeLeftArmwear.rotateAngleY = 0.15f;
-					this.fakeRightArmwear.rotateAngleY = -0.15f;
+					this.fakeRightArm.rotateAngleZ = 0F;
+					this.fakeLeftArm.rotateAngleZ = 0F;
+					this.fakeLeftArmwear.rotateAngleZ = 0F;
+					this.fakeRightArmwear.rotateAngleZ = 0F;
 				}
 
 				model.bipedBody.addChild(this.fakeLeftArm);
@@ -552,16 +728,41 @@ public class RenderEvents
 				model.bipedLeftArmwear.isHidden = false;
 				model.bipedRightArmwear.isHidden = false;
 
-				if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+				CarryOnOverride overrider = ScriptChecker.getOverride(player);
+				if (overrider != null)
 				{
-					for (int k = 0; k < model.bipedBody.childModels.size(); k++)
+					if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
 					{
-						float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
-
-						if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+						for (int k = 0; k < model.bipedBody.childModels.size(); k++)
 						{
-							model.bipedBody.childModels.remove(k);
-							k = k - 1;
+							double[] rotLeft1 = ScriptParseHelper.getXYZArray(overrider.getRenderRotationLeftArm());
+							double[] rotRight1 = ScriptParseHelper.getXYZArray(overrider.getRenderRotationRightArm());
+
+							float rotX = model.bipedBody.childModels.get(k).rotateAngleX;
+							float rotY = model.bipedBody.childModels.get(k).rotateAngleY;
+							float rotZ = model.bipedBody.childModels.get(k).rotateAngleZ;
+
+							if (rotLeft1[0] == rotX || rotLeft1[1] == rotY || rotRight1[2] == rotZ || rotRight1[0] == rotX || rotRight1[1] == rotY || rotRight1[2] == rotZ || rotX == rotLeft1[0] - 0.5f || rotX == rotRight1[0] - 0.5f)
+							{
+								model.bipedBody.childModels.remove(k);
+								k = k - 1;
+							}
+						}
+					}
+				}
+				else
+				{
+					if (model.bipedBody.childModels != null && !model.bipedBody.childModels.isEmpty())
+					{
+						for (int k = 0; k < model.bipedBody.childModels.size(); k++)
+						{
+							float chkRot = model.bipedBody.childModels.get(k).rotateAngleX;
+
+							if (chkRot == -0.9001F || chkRot == -1.2001F || chkRot == -1.4001F || chkRot == -1.7001F)
+							{
+								model.bipedBody.childModels.remove(k);
+								k = k - 1;
+							}
 						}
 					}
 				}
