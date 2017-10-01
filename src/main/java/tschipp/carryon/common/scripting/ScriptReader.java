@@ -15,7 +15,6 @@ import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
@@ -23,8 +22,9 @@ import tschipp.carryon.common.config.CarryOnConfig;
 public class ScriptReader
 {
 	private static ArrayList<File> scripts = new ArrayList<File>();
-
-	public static HashSet<CarryOnOverride> OVERRIDES = new HashSet<CarryOnOverride>();
+	public static HashMap<Integer, CarryOnOverride> OVERRIDES = new HashMap<Integer, CarryOnOverride>();
+	
+	//public static HashSet<CarryOnOverride> OVERRIDES = new HashSet<CarryOnOverride>();
 
 	public static void preInit(FMLPreInitializationEvent event)
 	{
@@ -145,6 +145,8 @@ public class ScriptReader
 						JsonElement translation = render.get("translation");
 						JsonElement rotation = render.get("rotation");
 						JsonElement scale = render.get("scale");
+						JsonElement rotationLeftArm = render.get("rotation_left_arm");
+						JsonElement rotationRightArm = render.get("rotation_right_arm");
 
 						if(name_block != null)
 							override.setRenderNameBlock(name_block.getAsString());
@@ -160,9 +162,14 @@ public class ScriptReader
 							override.setRenderScale(scale.getAsString());
 						if (nbt != null)
 							override.setRenderNBT(JsonToNBT.getTagFromJson(nbt.toString()));
+						if(rotationLeftArm != null)
+							override.setRenderRotationLeftArm(rotationLeftArm.getAsString());
+						if(rotationRightArm != null)
+							override.setRenderRotationRightArm(rotationRightArm.getAsString());
+							
 					}
 					
-					OVERRIDES.add(override);
+					OVERRIDES.put(override.hashCode(), override);
 
 				}
 			}
