@@ -40,6 +40,9 @@ public class CarryOnOverride
 
 	private boolean isBlock;
 	private boolean isEntity;
+	
+	private boolean renderLeftArm = true;
+	private boolean renderRightArm = true;
 
 	public String getRenderRotationLeftArm()
 	{
@@ -61,6 +64,26 @@ public class CarryOnOverride
 		this.renderRotationRightArm = renderRotationRightArm;
 	}
 
+	public boolean isRenderLeftArm()
+	{
+		return renderLeftArm;
+	}
+
+	public void setRenderLeftArm(boolean renderLeftArm)
+	{
+		this.renderLeftArm = renderLeftArm;
+	}
+
+	public boolean isRenderRightArm()
+	{
+		return renderRightArm;
+	}
+
+	public void setRenderRightArm(boolean renderRightArm)
+	{
+		this.renderRightArm = renderRightArm;
+	}
+
 	@Override
 	public int hashCode()
 	{
@@ -74,6 +97,8 @@ public class CarryOnOverride
 		result = prime * result + ((conditionXp == null) ? 0 : conditionXp.hashCode());
 		result = prime * result + (isBlock ? 1231 : 1237);
 		result = prime * result + (isEntity ? 1231 : 1237);
+		result = prime * result + (renderLeftArm ? 1231 : 1237);
+		result = prime * result + (renderRightArm ? 1231 : 1237);
 		result = prime * result + renderMeta;
 		result = prime * result + ((renderNBT == null) ? 0 : renderNBT.hashCode());
 		result = prime * result + ((renderNameBlock == null) ? 0 : renderNameBlock.hashCode());

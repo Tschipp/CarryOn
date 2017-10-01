@@ -147,6 +147,8 @@ public class ScriptReader
 						JsonElement scale = render.get("scale");
 						JsonElement rotationLeftArm = render.get("rotation_left_arm");
 						JsonElement rotationRightArm = render.get("rotation_right_arm");
+						JsonElement renderLeftArm = render.get("render_left_arm");
+						JsonElement renderRightArm = render.get("render_right_arm");
 
 						if(name_block != null)
 							override.setRenderNameBlock(name_block.getAsString());
@@ -166,7 +168,10 @@ public class ScriptReader
 							override.setRenderRotationLeftArm(rotationLeftArm.getAsString());
 						if(rotationRightArm != null)
 							override.setRenderRotationRightArm(rotationRightArm.getAsString());
-							
+						if(renderLeftArm != null)
+							override.setRenderLeftArm(renderLeftArm.getAsBoolean());
+						if(renderRightArm != null)
+							override.setRenderRightArm(renderRightArm.getAsBoolean());
 					}
 					
 					OVERRIDES.put(override.hashCode(), override);

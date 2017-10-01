@@ -72,7 +72,7 @@ public class ScriptChecker
 
 	public static boolean matchesAll(CarryOnOverride override, String name, float height, float width, float health, NBTTagCompound tag)
 	{
-		boolean matchname = name == null ? true : name.equals(override.getTypeNameEntity());
+		boolean matchname = override.getTypeNameEntity() == null ? true : name.equals(override.getTypeNameEntity());
 		boolean matchheight = ScriptParseHelper.matches(height, override.getTypeHeight());
 		boolean matchwidth = ScriptParseHelper.matches(width, override.getTypeWidth());
 		boolean matchhealth = ScriptParseHelper.matches(health, override.getTypeHealth());

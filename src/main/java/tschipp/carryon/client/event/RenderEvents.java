@@ -259,15 +259,16 @@ public class RenderEvents
 
 				this.setLightmapDisabled(true);
 
+				if (perspective == 0)
+				{
+					event.setCanceled(true);
+				}
+
 			}
 
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 
-			if (perspective == 0)
-			{
-				event.setCanceled(true);
-			}
 		}
 		else
 		{
@@ -375,7 +376,7 @@ public class RenderEvents
 
 			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
 
-			CarryOnOverride carryOverride = ScriptChecker.inspectBlock(state, world, player.getPosition(), tag);
+			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
 			{
 				double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
@@ -462,7 +463,7 @@ public class RenderEvents
 							float rotY = model.bipedBody.childModels.get(k).rotateAngleY;
 							float rotZ = model.bipedBody.childModels.get(k).rotateAngleZ;
 
-							if (rotLeft1[0] == rotX || rotLeft1[1] == rotY || rotRight1[2] == rotZ || rotRight1[0] == rotX || rotRight1[1] == rotY || rotRight1[2] == rotZ || rotX == rotLeft1[0] -0.5f || rotX == rotRight1[0] -0.5f)
+							if (rotLeft1[0] == rotX || rotLeft1[1] == rotY || rotRight1[2] == rotZ || rotRight1[0] == rotX || rotRight1[1] == rotY || rotRight1[2] == rotZ || rotX == rotLeft1[0] - 0.5f || rotX == rotRight1[0] - 0.5f)
 							{
 								model.bipedBody.childModels.remove(k);
 								k = k - 1;
@@ -493,7 +494,11 @@ public class RenderEvents
 				model.bipedRightArm.isHidden = true;
 				model.bipedLeftArmwear.isHidden = true;
 				model.bipedRightArmwear.isHidden = true;
-
+				this.fakeLeftArm.isHidden = false;
+				this.fakeLeftArmwear.isHidden = false;
+				this.fakeRightArm.isHidden = false;
+				this.fakeRightArmwear.isHidden = false;
+				
 				Minecraft.getMinecraft().getTextureManager().bindTexture(skinLoc);
 
 				if (aplayer.getSkinType().equals("default"))
@@ -527,19 +532,40 @@ public class RenderEvents
 					if (override.getRenderRotationRightArm() != null)
 						rotRight = ScriptParseHelper.getXYZArray(override.getRenderRotationRightArm());
 
+					boolean renderRight = override.isRenderRightArm();
+					boolean renderLeft = override.isRenderLeftArm();
+
+					if (!renderRight)
+					{
+						this.fakeRightArm.isHidden = true;
+						this.fakeRightArmwear.isHidden = true;
+						model.bipedRightArm.isHidden = false;
+						model.bipedRightArmwear.isHidden = false;
+					}
+					
+
+					if (!renderLeft)
+					{
+						this.fakeLeftArm.isHidden = true;
+						this.fakeLeftArmwear.isHidden = true;
+						model.bipedLeftArm.isHidden = false;
+						model.bipedLeftArmwear.isHidden = false;
+					}
+					
+
 					if (rotLeft != null)
 					{
 						if (!player.isSneaking())
 						{
 							this.fakeLeftArm.rotateAngleX = (float) rotLeft[0];
-							this.fakeLeftArmwear.rotateAngleX = (float) rotLeft[0];		
+							this.fakeLeftArmwear.rotateAngleX = (float) rotLeft[0];
 						}
 						else
 						{
 							this.fakeLeftArm.rotateAngleX = (float) rotLeft[0] - 0.5f;
-							this.fakeLeftArmwear.rotateAngleX = (float) rotLeft[0] - 0.5f;	
+							this.fakeLeftArmwear.rotateAngleX = (float) rotLeft[0] - 0.5f;
 						}
-						
+
 						this.fakeLeftArmwear.rotateAngleY = (float) rotLeft[1];
 						this.fakeLeftArmwear.rotateAngleZ = (float) rotLeft[2];
 						this.fakeLeftArm.rotateAngleY = (float) rotLeft[1];
@@ -583,14 +609,14 @@ public class RenderEvents
 						if (!player.isSneaking())
 						{
 							this.fakeRightArm.rotateAngleX = (float) rotRight[0];
-							this.fakeRightArmwear.rotateAngleX = (float) rotRight[0];		
+							this.fakeRightArmwear.rotateAngleX = (float) rotRight[0];
 						}
 						else
 						{
 							this.fakeRightArm.rotateAngleX = (float) rotRight[0] - 0.5f;
-							this.fakeRightArmwear.rotateAngleX = (float) rotRight[0] - 0.5f;	
+							this.fakeRightArmwear.rotateAngleX = (float) rotRight[0] - 0.5f;
 						}
-						
+
 						this.fakeRightArmwear.rotateAngleY = (float) rotRight[1];
 						this.fakeRightArmwear.rotateAngleZ = (float) rotRight[2];
 						this.fakeRightArm.rotateAngleY = (float) rotRight[1];
@@ -647,7 +673,7 @@ public class RenderEvents
 							this.fakeLeftArmwear.rotateAngleX = -1.4001F;
 							this.fakeRightArmwear.rotateAngleX = -1.4001F;
 						}
-						
+
 						this.fakeRightArm.rotateAngleY = 0f;
 						this.fakeLeftArm.rotateAngleY = 0f;
 						this.fakeLeftArmwear.rotateAngleY = 0f;
@@ -675,7 +701,7 @@ public class RenderEvents
 						this.fakeLeftArmwear.rotateAngleY = 0.15f;
 						this.fakeRightArmwear.rotateAngleY = -0.15f;
 					}
-					
+
 					this.fakeRightArm.rotateAngleZ = 0F;
 					this.fakeLeftArm.rotateAngleZ = 0F;
 					this.fakeLeftArmwear.rotateAngleZ = 0F;
@@ -715,7 +741,7 @@ public class RenderEvents
 							float rotY = model.bipedBody.childModels.get(k).rotateAngleY;
 							float rotZ = model.bipedBody.childModels.get(k).rotateAngleZ;
 
-							if (rotLeft1[0] == rotX || rotLeft1[1] == rotY || rotRight1[2] == rotZ || rotRight1[0] == rotX || rotRight1[1] == rotY || rotRight1[2] == rotZ || rotX == rotLeft1[0] -0.5f || rotX == rotRight1[0] -0.5f)
+							if (rotLeft1[0] == rotX || rotLeft1[1] == rotY || rotRight1[2] == rotZ || rotRight1[0] == rotX || rotRight1[1] == rotY || rotRight1[2] == rotZ || rotX == rotLeft1[0] - 0.5f || rotX == rotRight1[0] - 0.5f)
 							{
 								model.bipedBody.childModels.remove(k);
 								k = k - 1;

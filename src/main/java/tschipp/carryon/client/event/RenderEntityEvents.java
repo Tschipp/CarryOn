@@ -336,7 +336,7 @@ public class RenderEntityEvents
 
 				Minecraft.getMinecraft().getRenderManager().setRenderShadow(false);
 				
-				CarryOnOverride carryOverride = ScriptChecker.inspectEntity(entity);
+				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
 				{
 					double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
