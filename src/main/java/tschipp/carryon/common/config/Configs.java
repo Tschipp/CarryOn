@@ -96,6 +96,7 @@ public class Configs {
     					"forestry:*",
     					"tconstruct:*",
     					"rustic:*",
+    					"botania:*",
     					"quark:colored_bed_*",
     					"immersiveengineering:*",
     					"embers:block_furnace",
