@@ -23,9 +23,9 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
-import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemTile;
@@ -123,7 +123,7 @@ public class ItemEvents
 						
 						try
 						{
-							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, overrideHash), (EntityPlayerMP) player);
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							world.removeTileEntity(pos);
 							world.setBlockToAir(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
@@ -132,7 +132,7 @@ public class ItemEvents
 						}
 						catch (Exception e)
 						{
-							CarryOn.network.sendTo(new CarrySlotPacket(9), (EntityPlayerMP) player);
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(9), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							world.setBlockState(pos, statee);
 							if (!tag.hasNoTags())
 								TileEntity.create(world, tag);

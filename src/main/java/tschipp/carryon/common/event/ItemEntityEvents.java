@@ -16,6 +16,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -91,21 +92,21 @@ public class ItemEntityEvents
 					{
 						if (ItemEntity.storeEntityData(entity, world, stack))
 						{
-							if(entity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+							if (entity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
 							{
 								IItemHandler handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-								for(int i = 0; i < handler.getSlots(); i++)
+								for (int i = 0; i < handler.getSlots(); i++)
 								{
 									handler.extractItem(i, 64, false);
 								}
 							}
-							
+
 							CarryOnOverride override = ScriptChecker.inspectEntity(entity);
 							int overrideHash = 0;
-							if(override != null)
+							if (override != null)
 								overrideHash = override.hashCode();
-							
-							CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, overrideHash), (EntityPlayerMP) player);
+
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);
