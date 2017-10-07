@@ -21,7 +21,7 @@ public class CarrySlotPacketHandler implements IMessageHandler<CarrySlotPacket, 
 
 		mainThread.addScheduledTask(new Runnable()
 		{
-			World world = Minecraft.getMinecraft().world;
+			World world = Minecraft.getMinecraft().theWorld;
 
 			@Override
 			public void run()

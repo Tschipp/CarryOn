@@ -18,7 +18,7 @@ public class ScriptReloadPacketHandler implements IMessageHandler<ScriptReloadPa
 
 		mainThread.addScheduledTask(new Runnable()
 		{
-			EntityPlayerSP player = Minecraft.getMinecraft().player;
+			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 
 			@Override
 			public void run()

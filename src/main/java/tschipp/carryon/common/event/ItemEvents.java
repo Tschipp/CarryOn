@@ -103,7 +103,7 @@ public class ItemEvents
 			World world = player.getEntityWorld();
 
 			ItemStack carried = player.getHeldItemMainhand();
-			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			if (carried != null && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
@@ -139,7 +139,7 @@ public class ItemEvents
 			World world = player.getEntityWorld();
 
 			ItemStack carried = player.getHeldItemMainhand();
-			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			if (carried != null && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
