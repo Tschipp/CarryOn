@@ -2,7 +2,6 @@ package tschipp.carryon.common.event;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,6 +19,7 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
@@ -159,6 +159,19 @@ public class ItemEvents
 				}
 			}
 
+		}
+	}
+	
+	
+	@SubscribeEvent
+	public void harvestSpeed(BreakSpeed event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+		if(player != null)
+		{
+			ItemStack stack = player.getHeldItemMainhand();
+			if(!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+					event.setNewSpeed(0);
 		}
 	}
 
