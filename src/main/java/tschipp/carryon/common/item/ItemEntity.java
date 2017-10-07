@@ -20,9 +20,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntity extends Item
 {
@@ -108,6 +110,7 @@ public class ItemEntity extends Item
 					}
 					clearEntityData(stack);
 					player.setHeldItem(hand, null);
+					CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 				}
 				player.getEntityData().removeTag("overrideKey");
 				return EnumActionResult.SUCCESS;

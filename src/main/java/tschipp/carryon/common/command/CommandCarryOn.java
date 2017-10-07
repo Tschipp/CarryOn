@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
@@ -77,7 +78,7 @@ public class CommandCarryOn extends CommandBase implements ICommand
 					cleared += player.inventory.clearMatchingItems(RegistrationHandler.itemTile, 0, 64, null);
 					cleared += player.inventory.clearMatchingItems(RegistrationHandler.itemEntity, 0, 64, null);
 
-					CarryOn.network.sendTo(new CarrySlotPacket(9), (EntityPlayerMP) player);
+					CarryOn.network.sendTo(new CarrySlotPacket(9, player.getEntityId()), (EntityPlayerMP) player);
 
 					if (cleared != 1)
 						player.addChatMessage(new TextComponentString("Cleared " + cleared + " Items!"));

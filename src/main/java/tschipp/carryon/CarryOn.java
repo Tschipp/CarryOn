@@ -65,13 +65,6 @@ public class CarryOn {
 
 	}
 	
-	public static File getMcDir()
-	{
-		if (FMLCommonHandler.instance().getMinecraftServerInstance() != null && FMLCommonHandler.instance().getMinecraftServerInstance().isDedicatedServer())
-		{
-			return new File(".");
-		}
-		return Minecraft.getMinecraft().mcDataDir;
-	}
+	
 
 }

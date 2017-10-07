@@ -351,7 +351,7 @@ public class RenderEntityEvents
 							if (nbttag != null)
 								newEntity.readFromNBT(nbttag);
 							entity = newEntity;
-							entity.setPosition(d0, d1, d2);
+							entity.setPosition(c0, c1, c2);
 							entity.rotationYaw = 0.0f;
 							entity.prevRotationYaw = 0.0f;
 							entity.setRotationYawHead(0.0f);

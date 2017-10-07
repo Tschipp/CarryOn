@@ -6,12 +6,13 @@ import java.util.List;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.scripting.ScriptReader;
+import tschipp.carryon.network.client.ScriptReloadPacket;
 
 public class CommandCarryOnReload extends CommandBase
 {
@@ -24,6 +25,7 @@ public class CommandCarryOnReload extends CommandBase
 		{
 			ScriptReader.reloadScripts();
 			sender.addChatMessage(new TextComponentString("Successfully reloaded scripts!"));
+			CarryOn.network.sendToAll(new ScriptReloadPacket());
 		}
 		else
 			sender.addChatMessage(new TextComponentString("To use custom Carry On scripts, enable them in the config!"));

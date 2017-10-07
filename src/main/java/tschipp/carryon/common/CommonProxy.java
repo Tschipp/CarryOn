@@ -17,6 +17,8 @@ import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 import tschipp.carryon.network.client.CarrySlotPacketHandler;
+import tschipp.carryon.network.client.ScriptReloadPacket;
+import tschipp.carryon.network.client.ScriptReloadPacketHandler;
 import tschipp.carryon.network.server.SyncKeybindPacket;
 import tschipp.carryon.network.server.SyncKeybindPacketHandler;
 
@@ -32,6 +34,7 @@ public class CommonProxy
 		
 		CarryOn.network.registerMessage(SyncKeybindPacketHandler.class, SyncKeybindPacket.class, 0, Side.SERVER);
 		CarryOn.network.registerMessage(CarrySlotPacketHandler.class, CarrySlotPacket.class, 1, Side.CLIENT);
+		CarryOn.network.registerMessage(ScriptReloadPacketHandler.class, ScriptReloadPacket.class, 2, Side.CLIENT);
 
 		RegistrationHandler.regItems();
 		RegistrationHandler.regCommonEvents();
