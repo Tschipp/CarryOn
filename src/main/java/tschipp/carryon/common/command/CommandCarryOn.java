@@ -77,7 +77,7 @@ public class CommandCarryOn extends CommandBase implements ICommand
 					cleared += player.inventory.clearMatchingItems(RegistrationHandler.itemTile, 0, 64, null);
 					cleared += player.inventory.clearMatchingItems(RegistrationHandler.itemEntity, 0, 64, null);
 
-					CarryOn.network.sendToAllAround(new CarrySlotPacket(9), new TargetPoint(player.world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+					CarryOn.network.sendTo(new CarrySlotPacket(9, player.getEntityId()), (EntityPlayerMP) player);
 
 					if (cleared != 1)
 						player.sendMessage(new TextComponentString("Cleared " + cleared + " Items!"));

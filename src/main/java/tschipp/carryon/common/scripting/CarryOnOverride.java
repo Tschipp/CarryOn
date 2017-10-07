@@ -37,13 +37,19 @@ public class CarryOnOverride
 	private String renderScale;
 	private String renderRotationLeftArm;
 	private String renderRotationRightArm;
-
-	private boolean isBlock;
-	private boolean isEntity;
-	
 	private boolean renderLeftArm = true;
 	private boolean renderRightArm = true;
+	
+	private boolean isBlock;
+	private boolean isEntity;
+	private final String path;
+	
 
+	public CarryOnOverride(String path)
+	{
+		this.path = path;
+	}
+	
 	public String getRenderRotationLeftArm()
 	{
 		return renderRotationLeftArm;
@@ -89,37 +95,14 @@ public class CarryOnOverride
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((conditionAchievement == null) ? 0 : conditionAchievement.hashCode());
-		result = prime * result + ((conditionGamemode == null) ? 0 : conditionGamemode.hashCode());
-		result = prime * result + ((conditionGamestage == null) ? 0 : conditionGamestage.hashCode());
-		result = prime * result + ((conditionPosition == null) ? 0 : conditionPosition.hashCode());
-		result = prime * result + ((conditionScoreboard == null) ? 0 : conditionScoreboard.hashCode());
-		result = prime * result + ((conditionXp == null) ? 0 : conditionXp.hashCode());
-		result = prime * result + (isBlock ? 1231 : 1237);
-		result = prime * result + (isEntity ? 1231 : 1237);
-		result = prime * result + (renderLeftArm ? 1231 : 1237);
-		result = prime * result + (renderRightArm ? 1231 : 1237);
-		result = prime * result + renderMeta;
-		result = prime * result + ((renderNBT == null) ? 0 : renderNBT.hashCode());
-		result = prime * result + ((renderNameBlock == null) ? 0 : renderNameBlock.hashCode());
-		result = prime * result + ((renderNameEntity == null) ? 0 : renderNameEntity.hashCode());
-		result = prime * result + ((renderRotation == null) ? 0 : renderRotation.hashCode());
-		result = prime * result + ((renderRotationLeftArm == null) ? 0 : renderRotationLeftArm.hashCode());
-		result = prime * result + ((renderRotationRightArm == null) ? 0 : renderRotationRightArm.hashCode());
-		result = prime * result + ((renderScale == null) ? 0 : renderScale.hashCode());
-		result = prime * result + ((renderTranslation == null) ? 0 : renderTranslation.hashCode());
-		result = prime * result + ((typeBlockTag == null) ? 0 : typeBlockTag.hashCode());
-		result = prime * result + ((typeEntityTag == null) ? 0 : typeEntityTag.hashCode());
-		result = prime * result + ((typeHardness == null) ? 0 : typeHardness.hashCode());
-		result = prime * result + ((typeHealth == null) ? 0 : typeHealth.hashCode());
-		result = prime * result + ((typeHeight == null) ? 0 : typeHeight.hashCode());
-		result = prime * result + ((typeMaterial == null) ? 0 : typeMaterial.hashCode());
-		result = prime * result + ((typeMeta == null) ? 0 : typeMeta.hashCode());
-		result = prime * result + ((typeNameBlock == null) ? 0 : typeNameBlock.hashCode());
-		result = prime * result + ((typeNameEntity == null) ? 0 : typeNameEntity.hashCode());
-		result = prime * result + ((typeResistance == null) ? 0 : typeResistance.hashCode());
-		result = prime * result + ((typeWidth == null) ? 0 : typeWidth.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		return result;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "Code: " + this.hashCode();
 	}
 
 	@Override

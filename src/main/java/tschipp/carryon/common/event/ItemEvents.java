@@ -19,15 +19,19 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
+import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
+import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
@@ -87,6 +91,88 @@ public class ItemEvents
 				eitem.setItem(ItemStack.EMPTY);
 			}
 		}
+		
+	}
+	
+	@SubscribeEvent
+	public void onPlayerLogin(PlayerLoggedInEvent event)
+	{
+		if (event.player instanceof EntityPlayer)
+		{
+			EntityPlayer player = (EntityPlayer) event.player;
+			World world = player.getEntityWorld();
+
+			ItemStack carried = player.getHeldItemMainhand();
+			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			{
+				if (carried.getItem() == RegistrationHandler.itemTile)
+				{
+					CarryOnOverride override = ScriptChecker.inspectBlock(((ItemTile) carried.getItem()).getBlockState(carried), world, player.getPosition(), ((ItemTile) carried.getItem()).getTileData(carried));
+					if (override != null)
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) player);
+					else
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) player);
+				}
+				else
+				{
+					CarryOnOverride override = ScriptChecker.inspectEntity(((ItemEntity) carried.getItem()).getEntity(carried, world));
+					if (override != null)
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) player);
+					else
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) player);
+				}
+			}
+
+		}
+	}
+	
+
+	@SubscribeEvent
+	public void onEntityStartTracking(StartTracking event)
+	{
+		Entity e = event.getTarget();
+		EntityPlayer tracker = event.getEntityPlayer();
+
+		if (e instanceof EntityPlayer && tracker instanceof EntityPlayerMP)
+		{
+			EntityPlayer player = (EntityPlayer) e;
+			World world = player.getEntityWorld();
+
+			ItemStack carried = player.getHeldItemMainhand();
+			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			{
+				if (carried.getItem() == RegistrationHandler.itemTile)
+				{
+					CarryOnOverride override = ScriptChecker.inspectBlock(((ItemTile) carried.getItem()).getBlockState(carried), world, player.getPosition(), ((ItemTile) carried.getItem()).getTileData(carried));
+					if (override != null)
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) tracker);
+					else
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) tracker);
+				}
+				else
+				{
+					CarryOnOverride override = ScriptChecker.inspectEntity(((ItemEntity) carried.getItem()).getEntity(carried, world));
+					if (override != null)
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) tracker);
+					else
+						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) tracker);
+				}
+			}
+
+		}
+	}
+	
+	
+	@SubscribeEvent
+	public void harvestSpeed(BreakSpeed event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+		if(player != null)
+		{
+			ItemStack stack = player.getHeldItemMainhand();
+			if(!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+					event.setNewSpeed(0);
+		}
 	}
 
 	@SubscribeEvent
@@ -118,12 +204,12 @@ public class ItemEvents
 						tag = world.getTileEntity(pos) != null ? world.getTileEntity(pos).writeToNBT(tag) : new NBTTagCompound();
 						CarryOnOverride override = ScriptChecker.inspectBlock(state, world, pos, tag);
 						int overrideHash = 0;
-						if(override != null)
+						if (override != null)
 							overrideHash = override.hashCode();
-						
+
 						try
 						{
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							world.removeTileEntity(pos);
 							world.setBlockToAir(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
@@ -132,7 +218,7 @@ public class ItemEvents
 						}
 						catch (Exception e)
 						{
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(9), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							world.setBlockState(pos, statee);
 							if (!tag.hasNoTags())
 								TileEntity.create(world, tag);

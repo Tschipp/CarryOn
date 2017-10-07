@@ -67,7 +67,7 @@ public class ScriptReader
 				
 				if (!errored)
 				{
-					CarryOnOverride override = new CarryOnOverride();
+					CarryOnOverride override = new CarryOnOverride(file.getAbsolutePath());
 					
 					if (block != null)
 					{
