@@ -106,7 +106,7 @@ public class ItemEntityEvents
 							if (override != null)
 								overrideHash = override.hashCode();
 
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);

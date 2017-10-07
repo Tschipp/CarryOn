@@ -33,11 +33,13 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
+import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemTile extends Item
 {
@@ -142,6 +144,7 @@ public class ItemTile extends Item
 							player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
 							player.setHeldItem(hand, ItemStack.EMPTY);
 							player.getEntityData().removeTag("overrideKey");
+							CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							return EnumActionResult.SUCCESS;
 						}
 
