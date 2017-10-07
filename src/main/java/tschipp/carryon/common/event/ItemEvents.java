@@ -170,7 +170,7 @@ public class ItemEvents
 		if(player != null)
 		{
 			ItemStack stack = player.getHeldItemMainhand();
-			if(!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			if(stack != null && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 					event.setNewSpeed(0);
 		}
 	}
