@@ -189,9 +189,6 @@ public class RenderEvents
 		{
 			if(Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr"))
 			{
-				GlStateManager.pushMatrix();
-				GlStateManager.translate(1, 0, 0);
-				GlStateManager.popMatrix();
 				return;
 			}
 			
