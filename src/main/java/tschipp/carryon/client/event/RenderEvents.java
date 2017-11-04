@@ -187,6 +187,14 @@ public class RenderEvents
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
+			if(Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr"))
+			{
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(1, 0, 0);
+				GlStateManager.popMatrix();
+				return;
+			}
+			
 			Block block = ItemTile.getBlock(stack);
 			NBTTagCompound tag = ItemTile.getTileData(stack);
 			IBlockState state = ItemTile.getBlockState(stack);
@@ -359,15 +367,20 @@ public class RenderEvents
 			GlStateManager.translate(xOffset, yOffset, zOffset);
 			GlStateManager.scale(0.6, 0.6, 0.6);
 
+
 			if (CarryOnConfig.settings.facePlayer ? !isChest(block) : isChest(block))
 			{
 				GlStateManager.rotate(rotation, 0, 1.0f, 0);
 				GlStateManager.translate(0, 1.6, 0.65);
+				if((Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr")) && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0)
+					GlStateManager.translate(0, 0, -0.4);
 			}
 			else
 			{
 				GlStateManager.rotate(rotation + 180, 0, 1.0f, 0);
 				GlStateManager.translate(0, 1.6, -0.65);
+				if((Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr")) && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0)
+					GlStateManager.translate(0, 0, 0.4);
 			}
 
 			if (player.isSneaking())

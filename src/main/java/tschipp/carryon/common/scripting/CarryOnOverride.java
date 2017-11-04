@@ -26,6 +26,7 @@ public class CarryOnOverride
 	private String conditionGamemode;
 	private String conditionScoreboard;
 	private String conditionPosition;
+	private String conditionEffects;
 
 	// RENDER
 	private String renderNameBlock;
@@ -50,6 +51,16 @@ public class CarryOnOverride
 		this.path = path;
 	}
 	
+	public String getConditionEffects()
+	{
+		return conditionEffects;
+	}
+
+	public void setConditionEffects(String conditionEffects)
+	{
+		this.conditionEffects = conditionEffects;
+	}
+
 	public String getRenderRotationLeftArm()
 	{
 		return renderRotationLeftArm;

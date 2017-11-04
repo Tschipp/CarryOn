@@ -25,6 +25,7 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -138,6 +139,10 @@ public class RenderEntityEvents
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 		{
+			if(Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr"))
+				return;
+			
+			
 			Entity entity = ItemEntity.getEntity(stack, world);
 
 			if (entity != null)
@@ -329,6 +334,9 @@ public class RenderEntityEvents
 				GlStateManager.rotate(rotation, 0, 1f, 0);
 				GlStateManager.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
 
+				if((Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr")) && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0)
+					GlStateManager.translate(0, 0, -0.3);
+				
 				if (player.isSneaking())
 				{
 					GlStateManager.translate(0, -0.3, 0);
