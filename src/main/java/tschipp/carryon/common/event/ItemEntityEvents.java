@@ -38,7 +38,7 @@ public class ItemEntityEvents
 	{
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
-		if (stack != null && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (stack == null ? false : (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)))
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);

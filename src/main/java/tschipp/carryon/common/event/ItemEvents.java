@@ -45,7 +45,7 @@ public class ItemEvents
 	{
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
-		if (stack != null && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (stack == null ? false : (stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)))
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
@@ -103,7 +103,7 @@ public class ItemEvents
 			World world = player.getEntityWorld();
 
 			ItemStack carried = player.getHeldItemMainhand();
-			if (carried != null && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			if (carried == null ? false : (carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity))
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
@@ -139,7 +139,7 @@ public class ItemEvents
 			World world = player.getEntityWorld();
 
 			ItemStack carried = player.getHeldItemMainhand();
-			if (carried != null && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			if (carried == null ? false : (carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity))
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
@@ -170,7 +170,7 @@ public class ItemEvents
 		if(player != null)
 		{
 			ItemStack stack = player.getHeldItemMainhand();
-			if(stack != null && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			if(stack == null ? false : (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 					event.setNewSpeed(0);
 		}
 	}

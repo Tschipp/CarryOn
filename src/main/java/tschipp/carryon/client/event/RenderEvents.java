@@ -71,7 +71,7 @@ public class RenderEvents
 		if (event.getDwheel() > 0 || event.getDwheel() < 0 || Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed())
 		{
 			ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
-			if (stack != null && stack.getItem() == RegistrationHandler.itemTile)
+			if (stack == null ? false : stack.getItem() == RegistrationHandler.itemTile)
 			{
 				if (ItemTile.hasTileData(stack))
 				{

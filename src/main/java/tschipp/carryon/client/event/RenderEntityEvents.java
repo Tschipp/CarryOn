@@ -49,7 +49,7 @@ public class RenderEntityEvents
 		if (event.getDwheel() > 0 || event.getDwheel() < 0 || Minecraft.getMinecraft().gameSettings.keyBindPickBlock.isPressed())
 		{
 			ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
-			if (stack != null && stack.getItem() == RegistrationHandler.itemEntity)
+			if (stack == null ? false : (stack.getItem() == RegistrationHandler.itemEntity))
 			{
 				if (ItemEntity.hasEntityData(stack))
 				{
@@ -94,7 +94,7 @@ public class RenderEntityEvents
 		field.setAccessible(true);
 		ItemStack stack = Minecraft.getMinecraft().thePlayer.getHeldItemMainhand();
 		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-		if (stack != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false)
+		if (stack != null ? (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)) : false)
 		{
 			if (settings.keyBindDrop.isPressed())
 			{
@@ -136,7 +136,7 @@ public class RenderEntityEvents
 		int perspective = Minecraft.getMinecraft().gameSettings.thirdPersonView;
 		float partialticks = event.getPartialTicks();
 
-		if (stack != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false)
+		if (stack != null ? (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack)) : false)
 		{
 			Entity entity = ItemEntity.getEntity(stack, world);
 
