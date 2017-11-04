@@ -188,9 +188,7 @@ public class RenderEvents
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 		{
 			if(Loader.isModLoaded("realrender") || Loader.isModLoaded("rfpr"))
-			{
 				return;
-			}
 			
 			Block block = ItemTile.getBlock(stack);
 			NBTTagCompound tag = ItemTile.getTileData(stack);

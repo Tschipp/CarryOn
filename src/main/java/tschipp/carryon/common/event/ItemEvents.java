@@ -258,7 +258,9 @@ public class ItemEvents
 			
 			EntityItem item = new EntityItem(world);
 			item.setItem(stack);
-			BlockPos pos = player.getPosition();
+			BlockPos pos = original.getBedLocation();
+			if(pos == null)
+				pos = player.getPosition();
 			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			world.spawnEntity(item);
 		}
