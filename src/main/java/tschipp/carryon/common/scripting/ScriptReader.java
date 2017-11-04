@@ -120,6 +120,7 @@ public class ScriptReader
 						JsonElement gamemode = conditions.get("gamemode");
 						JsonElement scoreboard = conditions.get("scoreboard");
 						JsonElement position = conditions.get("position");
+						JsonElement effects = conditions.get("effects");
 
 						
 						if(achievement != null)
@@ -132,6 +133,8 @@ public class ScriptReader
 							override.setConditionScoreboard(scoreboard.getAsString());
 						if(position != null)
 							override.setConditionPosition(position.getAsString());
+						if(effects != null)
+							override.setConditionEffects(effects.getAsString());
 					}
 					
 					if (render != null)

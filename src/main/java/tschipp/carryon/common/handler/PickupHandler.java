@@ -1,5 +1,7 @@
 package tschipp.carryon.common.handler;
 
+import java.util.UUID;
+
 import javax.annotation.Nullable;
 
 import com.feed_the_beast.ftbl.lib.math.BlockPosContainer;
@@ -146,7 +148,9 @@ public class PickupHandler
 							if (toPickUp instanceof EntityTameable)
 							{
 								EntityTameable tame = (EntityTameable) toPickUp;
-								if (tame.getOwnerId() != null && tame.getOwnerId() != player.getUUID(player.getGameProfile()))
+								UUID owner = tame.getOwnerId();
+								UUID playerID = player.getUUID(player.getGameProfile());
+								if (owner != null && !owner.equals(playerID))
 									return false;
 							}
 	

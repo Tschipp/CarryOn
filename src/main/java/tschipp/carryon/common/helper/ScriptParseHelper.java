@@ -1,5 +1,8 @@
 package tschipp.carryon.common.helper;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
@@ -7,6 +10,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
@@ -226,6 +230,62 @@ public class ScriptParseHelper
 		}
 
 		return 0;
+	}
+	
+	public static boolean hasEffects(EntityPlayer player, String cond)
+	{
+		if(cond == null)
+			return true;
+		
+		Collection<PotionEffect> effects = player.getActivePotionEffects();
+		String[] potions = cond.split(",");
+		
+		List<String> names = new ArrayList<String>();
+		List<Integer> levels = new ArrayList<Integer>();
+		
+		for(int i = 0; i < potions.length; i++)
+		{
+			String pot = potions[i];
+			if(pot.contains("#"))
+			{
+				String level = pot.substring(pot.indexOf("#"));
+				String name = pot.substring(0, pot.indexOf("#"));
+				level = level.replace("#", "");
+				int lev = 0;
+				try
+				{
+					lev = Integer.parseInt(level);
+				}
+				catch(Exception e)
+				{}
+				
+				levels.add(lev);
+				names.add(name);
+			}
+			else
+			{
+				levels.add(0);
+				names.add(pot);
+			}
+		}
+		
+		int matches = 0;
+		for(PotionEffect effect : effects)
+		{
+			int amp = effect.getAmplifier();
+			String name = effect.getPotion().getRegistryName().toString();
+			
+			if(names.contains(name))
+			{
+				int idx = names.indexOf(name);
+				int lev = levels.get(idx);
+				
+				if(lev == amp)
+					matches++;
+			}
+		}
+		
+		return matches == potions.length;
 	}
 
 	public static boolean matches(Material material, String cond)

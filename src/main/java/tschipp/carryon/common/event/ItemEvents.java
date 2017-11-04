@@ -17,8 +17,10 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -234,6 +236,33 @@ public class ItemEvents
 				}
 
 			}
+		}
+	}
+	
+	@SubscribeEvent
+	public void onRespawn(PlayerEvent.Clone event)
+	{
+		EntityPlayer original = event.getOriginal();
+		EntityPlayer player = event.getEntityPlayer();
+		boolean wasDead = event.isWasDeath();
+		GameRules rules = player.worldObj.getGameRules();
+		boolean keepInv = rules.getBoolean("keepInventory");
+		boolean wasCarrying = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
+		
+		if((wasDead ? keepInv : true) && wasCarrying)
+		{
+			int carrySlot = original.inventory.currentItem;
+			
+			ItemStack stack = player.inventory.removeStackFromSlot(carrySlot);
+			World world = player.worldObj;
+			
+			EntityItem item = new EntityItem(world);
+			item.setEntityItemStack(stack);
+			BlockPos pos = original.getBedLocation();
+			if(pos == null)
+				pos = player.getPosition();
+			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
+			world.spawnEntityInWorld(item);
 		}
 	}
 
