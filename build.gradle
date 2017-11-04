@@ -47,8 +47,8 @@ dependencies {
   
       deobfCompile "net.darkhax.gamestages:GameStages-1.12:1.0.13"
 	  
-	  deobfCompile "LatMod:FTBUtilities:4.1.0"
-	  deobfCompile "LatMod:FTBLib:4.1.0"
+	  deobfCompile "LatMod:FTBUtilities:4.1.6"
+	  deobfCompile "LatMod:FTBLib:4.1.6"
 
 		
 }

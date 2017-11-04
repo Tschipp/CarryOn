@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import com.feed_the_beast.ftbl.lib.math.BlockPosContainer;
 import com.feed_the_beast.ftbu.api.chunks.BlockInteractionType;
-import com.feed_the_beast.ftbu.api_impl.ClaimedChunkStorage;
+import com.feed_the_beast.ftbu.api_impl.ClaimedChunks;
 
 import net.darkhax.gamestages.capabilities.PlayerDataHandler;
 import net.darkhax.gamestages.capabilities.PlayerDataHandler.IStageData;
@@ -192,7 +192,7 @@ public class PickupHandler
 		if (Loader.isModLoaded("ftbu"))
 		{
 			BlockPosContainer container = new BlockPosContainer(world, pos, state);
-			return ClaimedChunkStorage.INSTANCE.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
+			return ClaimedChunks.INSTANCE.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
 		}
 		return true;
 	}

@@ -21,7 +21,7 @@ import tschipp.carryon.common.command.CommandCarryOn;
 import tschipp.carryon.common.command.CommandCarryOnReload;
 
 @EventBusSubscriber
-@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = "required-after:forge@[13.20.1.2386,)", updateJSON = CarryOn.UPDATE_JSON)
+@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = "required-after:forge@[13.20.1.2386,);after:ftbu@[4.1.4,)", updateJSON = CarryOn.UPDATE_JSON)
 public class CarryOn {
 
 	@SidedProxy(clientSide = "tschipp.carryon.client.ClientProxy", serverSide = "tschipp.carryon.common.CommonProxy")
@@ -32,7 +32,7 @@ public class CarryOn {
 	public static CarryOn instance;
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.6";
+	public static final String VERSION = "1.6.1";
 	public static final String NAME = "Carry On";
 	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
