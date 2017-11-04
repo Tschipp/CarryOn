@@ -189,7 +189,7 @@ public class Configs {
     	            "storagedrawers:basicdrawers;4{Mat:\"jungle\"}->storagedrawers:basicdrawers;4{material:\"jungle\"}",
     	            "storagedrawers:basicdrawers;4{Mat:\"acacia\"}->storagedrawers:basicdrawers;4{material:\"acacia\"}",
     	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}",
-    	            "animania:nest->(block)animania:nest",
+    	            "animania:block_nest->(block)animania:block_nest",
     	            "animania:cheese_mold;0->(block)cheese_mold;0",
     	            "animania:cheese_mold;1->(block)cheese_mold;1",
     	            "animania:cheese_mold;2->(block)cheese_mold;2",

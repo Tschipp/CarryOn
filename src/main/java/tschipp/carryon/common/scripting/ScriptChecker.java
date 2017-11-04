@@ -101,8 +101,9 @@ public class ScriptChecker
 		boolean position = ScriptParseHelper.matches(player.getPosition(), override.getConditionPosition());
 		boolean xp = ScriptParseHelper.matches(player.experienceLevel, override.getConditionXp());
 		boolean scoreboard = ScriptParseHelper.matchesScore(player, override.getConditionScoreboard());
-
-		return (achievement && gamemode && gamestage && position && xp && scoreboard);
+		boolean effects = ScriptParseHelper.hasEffects(player, override.getConditionEffects());
+		
+		return (achievement && gamemode && gamestage && position && xp && scoreboard && effects);
 	}
 
 	@Nullable
