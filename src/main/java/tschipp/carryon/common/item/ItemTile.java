@@ -7,8 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDirectional;
-import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
@@ -31,7 +30,6 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -119,7 +117,7 @@ public class ItemTile extends Item
 
 								if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
 								{
-									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+									world.setBlockState(pos2, containedstate.withProperty(prop, containedblock instanceof BlockStairs ? facing2 : facing2.getOpposite()));
 									set = true;
 								}
 								else if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))

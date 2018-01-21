@@ -131,6 +131,8 @@ public class Configs {
 						"animania:hamster",
 						"animania:ferret*",
 						"animania:hedgehog*",
+						"animania:cart",
+						"animania:wagon",
 						"mynko:*"
 				};
 	}
@@ -154,6 +156,7 @@ public class Configs {
     				"minecraft:flower_pot->(block)minecraft:flower_pot",
     				"minecraft:leaves2->(item)minecraft:leaves2",
     				"minecraft:reeds->(block)minecraft:reeds",
+    				"minecraft:daylight_detector_inverted->minecraft:daylight_detector",
     	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
     	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
     	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
@@ -190,17 +193,17 @@ public class Configs {
     	            "storagedrawers:basicdrawers;4{Mat:\"acacia\"}->storagedrawers:basicdrawers;4{material:\"acacia\"}",
     	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}",
     	            "animania:block_nest->(block)animania:block_nest",
-    	            "animania:cheese_mold;0->(block)cheese_mold;0",
-    	            "animania:cheese_mold;1->(block)cheese_mold;1",
-    	            "animania:cheese_mold;2->(block)cheese_mold;2",
-    	            "animania:cheese_mold;3->(block)cheese_mold;3",
-    	            "animania:cheese_mold;4->(block)cheese_mold;4",
-    	            "animania:cheese_mold;5->(block)cheese_mold;5",
-    	            "animania:cheese_mold;6->(block)cheese_mold;6",
-    	            "animania:cheese_mold;7->(block)cheese_mold;7",
-    	            "animania:cheese_mold;8->(block)cheese_mold;8",
-    	            "animania:cheese_mold;9->(block)cheese_mold;9",
-    	            "animania:cheese_mold;10->(block)cheese_mold;10",
+    	            "animania:cheese_mold;0->(block)animania:cheese_mold;0",
+    	            "animania:cheese_mold;1->(block)animania:cheese_mold;1",
+    	            "animania:cheese_mold;2->(block)animania:cheese_mold;2",
+    	            "animania:cheese_mold;3->(block)animania:cheese_mold;3",
+    	            "animania:cheese_mold;4->(block)animania:cheese_mold;4",
+    	            "animania:cheese_mold;5->(block)animania:cheese_mold;5",
+    	            "animania:cheese_mold;6->(block)animania:cheese_mold;6",
+    	            "animania:cheese_mold;7->(block)animania:cheese_mold;7",
+    	            "animania:cheese_mold;8->(block)animania:cheese_mold;8",
+    	            "animania:cheese_mold;9->(block)animania:cheese_mold;9",
+    	            "animania:cheese_mold;10->(block)animania:cheese_mold;10",
 
     			};
 	}

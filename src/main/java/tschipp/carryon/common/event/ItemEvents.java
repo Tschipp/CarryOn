@@ -93,9 +93,9 @@ public class ItemEvents
 				eitem.setEntityItemStack(ItemStack.EMPTY);
 			}
 		}
-		
+
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
@@ -127,7 +127,6 @@ public class ItemEvents
 
 		}
 	}
-	
 
 	@SubscribeEvent
 	public void onEntityStartTracking(StartTracking event)
@@ -163,17 +162,16 @@ public class ItemEvents
 
 		}
 	}
-	
-	
+
 	@SubscribeEvent
 	public void harvestSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		if(player != null)
+		if (player != null)
 		{
 			ItemStack stack = player.getHeldItemMainhand();
-			if(!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
-					event.setNewSpeed(0);
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+				event.setNewSpeed(0);
 		}
 	}
 
@@ -238,7 +236,7 @@ public class ItemEvents
 			}
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onRespawn(PlayerEvent.Clone event)
 	{
@@ -248,18 +246,18 @@ public class ItemEvents
 		GameRules rules = player.world.getGameRules();
 		boolean keepInv = rules.getBoolean("keepInventory");
 		boolean wasCarrying = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
-		
-		if((wasDead ? keepInv : true) && wasCarrying)
+
+		if ((wasDead ? keepInv : true) && wasCarrying)
 		{
 			int carrySlot = original.inventory.currentItem;
-			
+
 			ItemStack stack = player.inventory.removeStackFromSlot(carrySlot);
 			World world = player.world;
-			
+
 			EntityItem item = new EntityItem(world);
 			item.setEntityItemStack(stack);
 			BlockPos pos = original.getBedLocation();
-			if(pos == null)
+			if (pos == null)
 				pos = player.getPosition();
 			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			world.spawnEntity(item);
