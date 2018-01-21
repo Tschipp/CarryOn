@@ -3,6 +3,7 @@ package tschipp.carryon.common.event;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,6 +21,7 @@ import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
@@ -31,6 +33,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
+import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
@@ -167,11 +170,32 @@ public class ItemEvents
 	public void harvestSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		if (player != null)
+		if (player != null && !CarryOnConfig.settings.breakBlocksWhileCarrying)
 		{
 			ItemStack stack = player.getHeldItemMainhand();
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 				event.setNewSpeed(0);
+		}
+	}
+
+	@SubscribeEvent
+	public void playerAttack(LivingAttackEvent event)
+	{
+		EntityLivingBase eliving = event.getEntityLiving();
+		if (eliving instanceof EntityPlayer && CarryOnConfig.settings.dropCarriedWhenHit)
+		{
+			EntityPlayer player = (EntityPlayer) eliving;
+			ItemStack stack = player.getHeldItemMainhand();
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			{
+				if (!player.world.isRemote)
+				{
+					player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+					EntityItem item = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack);
+					player.world.spawnEntity(item);
+				}
+			}
+
 		}
 	}
 
