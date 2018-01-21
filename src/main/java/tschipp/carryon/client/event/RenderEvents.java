@@ -206,7 +206,7 @@ public class RenderEvents
 
 			if (perspective == 0)
 			{
-				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player);
+				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack == null ? stack : tileStack, world, player);
 
 				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
@@ -377,7 +377,7 @@ public class RenderEvents
 				GlStateManager.translate(0, -0.3, 0);
 			}
 
-			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem, world, player);
+			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileItem == null ? stack : tileItem, world, player);
 
 			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
