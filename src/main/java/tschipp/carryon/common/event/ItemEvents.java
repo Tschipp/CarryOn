@@ -22,10 +22,12 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -170,7 +172,7 @@ public class ItemEvents
 	public void harvestSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		if (player != null && !CarryOnConfig.settings.breakBlocksWhileCarrying)
+		if (player != null && !CarryOnConfig.settings.hitWhileCarrying)
 		{
 			ItemStack stack = player.getHeldItemMainhand();
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
@@ -178,6 +180,30 @@ public class ItemEvents
 		}
 	}
 
+	@SubscribeEvent
+	public void attackEntity(AttackEntityEvent event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+		ItemStack stack = player.getHeldItemMainhand();
+		if (!stack.isEmpty() && !CarryOnConfig.settings.hitWhileCarrying && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+		{
+			event.setCanceled(true);
+		}
+	}
+	
+	@SubscribeEvent
+	public void harvestSpeed(BreakEvent event)
+	{
+		EntityPlayer player = event.getPlayer();
+		if (player != null && !CarryOnConfig.settings.hitWhileCarrying)
+		{
+			ItemStack stack = player.getHeldItemMainhand();
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+				event.setCanceled(true);
+		}
+	}
+	
+	
 	@SubscribeEvent
 	public void playerAttack(LivingAttackEvent event)
 	{

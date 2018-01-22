@@ -55,8 +55,8 @@ public class Configs {
 		@Comment("Use Whitelist instead of Blacklist for Entities")
 		public boolean useWhitelistEntities=false;
 		
-		@Comment("Whether the player can break blocks while carrying or not")
-		public boolean breakBlocksWhileCarrying=false;
+		@Comment("Whether the player can hit blocks and entities while carrying or not")
+		public boolean hitWhileCarrying=false;
 		
 		@Comment("Whether the player drops the carried object when hit or not")
 		public boolean dropCarriedWhenHit=false;
