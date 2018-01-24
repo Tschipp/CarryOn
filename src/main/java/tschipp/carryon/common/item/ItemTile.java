@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
@@ -119,7 +120,7 @@ public class ItemTile extends Item
 
 								if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
 								{
-									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+									world.setBlockState(pos2, containedstate.withProperty(prop, containedblock instanceof BlockStairs ? facing2 : facing2.getOpposite()));
 									set = true;
 								}
 								else if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
