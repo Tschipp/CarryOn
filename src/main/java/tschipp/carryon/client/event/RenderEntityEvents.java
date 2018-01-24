@@ -249,7 +249,7 @@ public class RenderEntityEvents
 		
 		
 		
-		Minecraft.getMinecraft().getRenderManager().doRenderEntity(entity, 0.0D, 0.0D, 0.0D, f, 0.0F, true);
+		Minecraft.getMinecraft().getRenderManager().renderEntity(entity, 0.0D, 0.0D, 0.0D, f, 0.0F, true);
 		this.setLightmapDisabled(true);
 	}
 

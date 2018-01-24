@@ -3,6 +3,7 @@ package tschipp.carryon.common.event;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,10 +21,13 @@ import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -31,6 +35,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
+import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
@@ -93,9 +98,9 @@ public class ItemEvents
 				eitem.setItem(ItemStack.EMPTY);
 			}
 		}
-		
+
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
@@ -127,7 +132,6 @@ public class ItemEvents
 
 		}
 	}
-	
 
 	@SubscribeEvent
 	public void onEntityStartTracking(StartTracking event)
@@ -163,17 +167,61 @@ public class ItemEvents
 
 		}
 	}
-	
-	
+
 	@SubscribeEvent
 	public void harvestSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		if(player != null)
+		if (player != null && !CarryOnConfig.settings.hitWhileCarrying)
 		{
 			ItemStack stack = player.getHeldItemMainhand();
-			if(!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
-					event.setNewSpeed(0);
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+				event.setNewSpeed(0);
+		}
+	}
+
+	@SubscribeEvent
+	public void attackEntity(AttackEntityEvent event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+		ItemStack stack = player.getHeldItemMainhand();
+		if (!stack.isEmpty() && !CarryOnConfig.settings.hitWhileCarrying && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+		{
+			event.setCanceled(true);
+		}
+	}
+	
+	@SubscribeEvent
+	public void harvestSpeed(BreakEvent event)
+	{
+		EntityPlayer player = event.getPlayer();
+		if (player != null && !CarryOnConfig.settings.hitWhileCarrying)
+		{
+			ItemStack stack = player.getHeldItemMainhand();
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+				event.setCanceled(true);
+		}
+	}
+	
+	
+	@SubscribeEvent
+	public void playerAttack(LivingAttackEvent event)
+	{
+		EntityLivingBase eliving = event.getEntityLiving();
+		if (eliving instanceof EntityPlayer && CarryOnConfig.settings.dropCarriedWhenHit)
+		{
+			EntityPlayer player = (EntityPlayer) eliving;
+			ItemStack stack = player.getHeldItemMainhand();
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			{
+				if (!player.world.isRemote)
+				{
+					player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+					EntityItem item = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack);
+					player.world.spawnEntity(item);
+				}
+			}
+
 		}
 	}
 
@@ -238,7 +286,7 @@ public class ItemEvents
 			}
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onRespawn(PlayerEvent.Clone event)
 	{
@@ -248,18 +296,18 @@ public class ItemEvents
 		GameRules rules = player.world.getGameRules();
 		boolean keepInv = rules.getBoolean("keepInventory");
 		boolean wasCarrying = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
-		
-		if((wasDead ? keepInv : true) && wasCarrying)
+
+		if ((wasDead ? keepInv : true) && wasCarrying)
 		{
 			int carrySlot = original.inventory.currentItem;
-			
+
 			ItemStack stack = player.inventory.removeStackFromSlot(carrySlot);
 			World world = player.world;
-			
+
 			EntityItem item = new EntityItem(world);
 			item.setItem(stack);
 			BlockPos pos = original.getBedLocation();
-			if(pos == null)
+			if (pos == null)
 				pos = player.getPosition();
 			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			world.spawnEntity(item);

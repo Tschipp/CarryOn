@@ -24,10 +24,10 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12-14.21.1.2387"
+    version = "1.12.2-14.23.1.2555"
     runDir = "run"
  
-    mappings = "snapshot_20170624"
+    mappings = "snapshot_20171003"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
@@ -45,10 +45,10 @@ repositories {
 
 dependencies {
   
-      deobfCompile "net.darkhax.gamestages:GameStages-1.12:1.0.13"
+      deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:1.0.76"
 	  
-	  deobfCompile "LatMod:FTBUtilities:4.1.6"
-	  deobfCompile "LatMod:FTBLib:4.1.6"
+	  deobfCompile "LatMod:FTBUtilities:5.0.0"
+	  deobfCompile "LatMod:FTBLib:5.0.0"
 
 		
 }
