@@ -131,6 +131,7 @@ public class RenderEvents
 					event.setCanceled(true);
 					Minecraft.getMinecraft().currentScreen = null;
 				}
+				
 			}
 		}
 	}

@@ -33,9 +33,11 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
@@ -84,6 +86,13 @@ public class ItemTile extends Item
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
 	{
+		if(Loader.isModLoaded("betterplacement"))
+		{
+			if(CarryOnKeybinds.isKeyPressed(player))
+				return EnumActionResult.FAIL;
+		}
+		
+		
 		Block block = world.getBlockState(pos).getBlock();
 		ItemStack stack = player.getHeldItem(hand);
 		if (hasTileData(stack))

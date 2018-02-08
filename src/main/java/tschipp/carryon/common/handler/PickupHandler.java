@@ -4,9 +4,9 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import com.feed_the_beast.ftblib.lib.math.BlockPosContainer;
-import com.feed_the_beast.ftbutilities.data.BlockInteractionType;
-import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
+import com.feed_the_beast.ftbl.lib.math.BlockPosContainer;
+import com.feed_the_beast.ftbu.api.chunks.BlockInteractionType;
+import com.feed_the_beast.ftbu.api_impl.ClaimedChunks;
 
 import net.darkhax.gamestages.capabilities.PlayerDataHandler;
 import net.darkhax.gamestages.capabilities.PlayerDataHandler.IStageData;
@@ -24,6 +24,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Loader;
+import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
@@ -56,6 +57,7 @@ public class PickupHandler
 				{
 					return false;
 				}
+				CarryOn.LOGGER.info("Block is allowed");
 			}
 			else
 			{
@@ -71,8 +73,10 @@ public class PickupHandler
 
 				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 				{
+
 					if (!ItemTile.isLocked(pos, world))
 					{
+
 						if (CustomPickupOverrideHandler.hasSpecialPickupConditions(state))
 						{
 							IStageData stageData = PlayerDataHandler.getStageData(player);
@@ -83,6 +87,7 @@ public class PickupHandler
 						}
 						else if (CarryOnConfig.settings.pickupAllBlocks ? true : tile != null)
 						{
+
 							return true && handleFTBUtils((EntityPlayerMP) player, world, pos, state);
 						}
 
@@ -195,9 +200,14 @@ public class PickupHandler
 	{
 		if (Loader.isModLoaded("ftbu"))
 		{
+
 			BlockPosContainer container = new BlockPosContainer(world, pos, state);
-			return ClaimedChunks.instance.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
+
+			boolean work = ClaimedChunks.INSTANCE.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
+
+			return work;
 		}
+
 		return true;
 	}
 

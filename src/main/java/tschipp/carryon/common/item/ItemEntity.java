@@ -21,9 +21,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
@@ -90,6 +92,12 @@ public class ItemEntity extends Item
 		ItemStack stack = player.getHeldItem(hand);
 		Block block = world.getBlockState(pos).getBlock();
 
+		if(Loader.isModLoaded("betterplacement"))
+		{
+			if(CarryOnKeybinds.isKeyPressed(player))
+				return EnumActionResult.FAIL;
+		}
+		
 		if (hasEntityData(stack))
 		{
 			BlockPos finalPos = pos;

@@ -50,6 +50,9 @@ public class ItemEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
+		if(event.isCanceled())
+			return;
+		
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
@@ -240,15 +243,19 @@ public class ItemEvents
 			Block block = world.getBlockState(pos).getBlock();
 			IBlockState state = world.getBlockState(pos);
 
+			
 			if (main.isEmpty() && off.isEmpty() && CarryOnKeybinds.isKeyPressed(player))
 			{
+
 				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
 				TileEntity te = world.getTileEntity(pos);
 				if (PickupHandler.canPlayerPickUpBlock(player, te, world, pos))
 				{
+
 					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{
+
 						IBlockState statee = world.getBlockState(pos);
 						NBTTagCompound tag = new NBTTagCompound();
 						tag = world.getTileEntity(pos) != null ? world.getTileEntity(pos).writeToNBT(tag) : new NBTTagCompound();
