@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.settings.GameSettings;
@@ -31,13 +30,11 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -115,21 +112,23 @@ public class RenderEvents
 	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onGuiOpen(GuiOpenEvent event)
+	public void onGuiInit(InitGuiEvent.Pre event)
 	{
 		if (event.getGui() != null)
 		{
 			boolean inventory = event.getGui() instanceof GuiContainer;
 			EntityPlayer player = Minecraft.getMinecraft().player;
 
-			if (player != null)
+			if (player != null && inventory)
 			{
 				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
 
-				if (inventory && !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+				if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
 				{
-					event.setCanceled(true);
+					Minecraft.getMinecraft().player.closeScreen();
 					Minecraft.getMinecraft().currentScreen = null;
+					Minecraft.getMinecraft().setIngameFocus();
+
 				}
 			}
 		}
