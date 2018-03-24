@@ -4,9 +4,9 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import com.feed_the_beast.ftbl.lib.math.BlockPosContainer;
-import com.feed_the_beast.ftbu.api.chunks.BlockInteractionType;
-import com.feed_the_beast.ftbu.api_impl.ClaimedChunks;
+import com.feed_the_beast.ftblib.lib.math.BlockPosContainer;
+import com.feed_the_beast.ftbutilities.data.BlockInteractionType;
+import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 
 import net.darkhax.gamestages.capabilities.PlayerDataHandler;
 import net.darkhax.gamestages.capabilities.PlayerDataHandler.IStageData;
@@ -203,7 +203,7 @@ public class PickupHandler
 
 			BlockPosContainer container = new BlockPosContainer(world, pos, state);
 
-			boolean work = ClaimedChunks.INSTANCE.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
+			boolean work = ClaimedChunks.instance.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
 
 			return work;
 		}

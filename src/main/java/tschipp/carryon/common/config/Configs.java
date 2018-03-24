@@ -123,6 +123,10 @@ public class Configs {
     					"embers:field_chart",
     					"embers:inferno_forge",
     					"storagedrawers:framingtable",
+    					"skyresources:*",
+    					"lootbags:*",
+    					"exsartagine:*",
+    					
     			};
 		
 		@Config.RequiresMcRestart()
@@ -133,6 +137,11 @@ public class Configs {
 						"minecraft:ender_dragon",
 						"minecraft:ghast",
 						"minecraft:shulker",
+						"minecraft:leash_knot",
+						"minecraft:armor_stand",
+						"minecraft:item_frame",
+						"minecraft:painting",
+						"minecraft:shulker_bullet",
 						"animania:textures/entity/pigs/hamster_tarou.png",
 						"animania:hamster",
 						"animania:ferret*",

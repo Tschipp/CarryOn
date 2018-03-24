@@ -164,7 +164,7 @@ public class ItemTile extends Item
 			{
 				e.printStackTrace();
 
-				if (world.isRemote)
+				if (world != null && world.isRemote)
 				{
 					CarryOn.LOGGER.info("Block: " + ItemTile.getBlock(stack));
 					CarryOn.LOGGER.info("BlockState: " + ItemTile.getBlockState(stack));

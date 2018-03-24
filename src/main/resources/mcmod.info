@@ -2,7 +2,7 @@
 {
   "modid" : "carryon",
   "name" : "Carry On",
-  "version" : "1.7.2", "mcversion" : "1.12.2",
+  "version" : "1.8", "mcversion" : "1.12.2",
   "url" : "",
   "credits" : "Tschipp, Purplicious_Cow, cy4n",
   "authorList" : ["Tschipp, Purplicious_Cow, cy4n"],

@@ -24,7 +24,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.2-14.23.1.2555"
+    version = "1.12.2-14.23.2.2611"
     runDir = "run"
  
     mappings = "snapshot_20171003"
@@ -35,10 +35,7 @@ repositories {
 
     maven { url 'http://maven.epoxide.org' }
 	
-	ivy {
-        name "LatMod"
-        artifactPattern "http://mods.latmod.com/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"
-    }
+    maven { url 'http://maven.latmod.com' }
 }
 
 
@@ -47,8 +44,8 @@ dependencies {
   
       deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:1.0.76"
 	  
-	  deobfCompile "LatMod:FTBUtilities:4.2.4"
-	  deobfCompile "LatMod:FTBLib:4.2.5"
+	  deobfCompile "com.feed_the_beast.ftblib:FTBLib:5.0.0.11"
+	  deobfCompile "com.feed_the_beast.ftbutilities:FTBUtilities:5.0.0.11"
 
 		
 }
