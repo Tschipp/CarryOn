@@ -119,6 +119,10 @@ public class Configs {
     					"embers:field_chart",
     					"embers:inferno_forge",
     					"storagedrawers:framingtable",
+    					"skyresources:*",
+    					"lootbags:*",
+    					"exsartagine:*",
+    					
     			};
 		
 		@Comment("Entities that cannot be picked up")
@@ -128,6 +132,11 @@ public class Configs {
 						"EnderDragon",
 						"Ghast",
 						"Shulker",
+						"LeashKnot",
+						"ArmorStand",
+						"ItemFrame",
+						"Painting",
+						"ShulkerBullet",
 						"animania:textures/entity/pigs/hamster_tarou.png",
 						"animania:hamster",
 						"animania:ferret*",

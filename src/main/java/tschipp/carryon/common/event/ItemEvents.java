@@ -218,6 +218,7 @@ public class ItemEvents
 				{
 					player.setHeldItem(EnumHand.MAIN_HAND, null);
 					EntityItem item = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, stack);
+					CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(player.worldObj.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 					player.worldObj.spawnEntityInWorld(item);
 				}
 			}

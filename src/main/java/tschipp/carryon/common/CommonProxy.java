@@ -52,6 +52,7 @@ public class CommonProxy
 			e.printStackTrace();
 		}
 		RegistrationHandler.regOverrideList();
+		RegistrationHandler.regCaps();
 	}
 
 	@EventHandler

@@ -27,6 +27,7 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -35,6 +36,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 
@@ -65,19 +67,21 @@ public class RenderEntityEvents
 	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onGuiOpen(GuiOpenEvent event)
+	public void onGuiInit(InitGuiEvent.Pre event)
 	{
 		if (event.getGui() != null)
 		{
 			boolean inventory = event.getGui() instanceof GuiContainer;
 			EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-			if (player != null)
+			if (player != null && inventory)
 			{
 				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
 				if (inventory && (stack != null ? stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack) : false))
 				{
-					event.setCanceled(true);
+					Minecraft.getMinecraft().thePlayer.closeScreen();
 					Minecraft.getMinecraft().currentScreen = null;
+					Minecraft.getMinecraft().setIngameFocus();
+
 				}
 			}
 		}
