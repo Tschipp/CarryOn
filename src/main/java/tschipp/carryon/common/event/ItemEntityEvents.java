@@ -1,16 +1,23 @@
 package tschipp.carryon.common.event;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityAnimal;
+import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -24,6 +31,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
+import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
@@ -33,6 +41,9 @@ import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntityEvents
 {
+
+
+	private final List<Entity> riddenByEntities = Lists.<Entity>newArrayList();
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
@@ -91,7 +102,7 @@ public class ItemEntityEvents
 				{
 					if(entity instanceof EntityAnimal)
 						((EntityAnimal) entity).clearLeashed(true, true);
-					
+
 					if (PickupHandler.canPlayerPickUpEntity(player, entity))
 					{
 						if (ItemEntity.storeEntityData(entity, world, stack))
@@ -118,7 +129,83 @@ public class ItemEntityEvents
 					}
 				}
 
+			} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main) && CarryOnKeybinds.isKeyPressed(player) && CarryOnConfig.settings.stackableEntities) {
+
+
+				Entity entityHeld = ItemEntity.getEntity(main, world);
+				
+				if (entity.hurtResistantTime == 0 && entityHeld instanceof EntityLivingBase) {
+
+					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.isDead && !entity.isDead) {
+
+						//if no riders
+						if (!entity.isBeingRidden()) {
+							//Tame Horse so it doens't buck rider
+							if (entity instanceof EntityHorse) {
+								EntityHorse horse = (EntityHorse) entity;
+								horse.setHorseTamed(true);
+							}
+							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+							
+							//if too close, change position (and back) to bypass protected canBeRidden
+							if (distance < 6) {
+								double tempX = entity.posX;
+								double tempY = entity.posY;
+								double tempZ = entity.posZ;
+								entity.setPosition(tempX, tempY + 2.6, tempZ);
+								world.spawnEntity(entityHeld);
+								entityHeld.startRiding(entity, false);
+								entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+							} else {
+								world.spawnEntity(entityHeld);
+								entityHeld.startRiding(entity, false);
+							}
+
+						//if multiple riders, loop through and add next to top (elevator style)
+						} else {
+							Entity entityTry = entity.getPassengers().get(0);
+							int tempLimit = CarryOnConfig.settings.maxEntityStackLimit;
+							
+							//force limit to prevent crash
+							if (tempLimit < 0) {
+								tempLimit = 1;
+							}
+							for (int i = 0; i <= tempLimit; i++) { 
+
+								if (entityTry.isBeingRidden()) {
+									entityTry = entityTry.getPassengers().get(0);
+								} else {
+									break;
+								}
+							}
+
+							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+							if (distance < 6) {
+								double tempX = entity.posX;
+								double tempY = entity.posY;
+								double tempZ = entity.posZ;
+								entity.setPosition(tempX, tempY + 2.6, tempZ);
+								world.spawnEntity(entityHeld);
+								if (entityTry != null) {
+									entityHeld.startRiding(entityTry, false);
+									entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+								}
+							} else {
+								world.spawnEntity(entityHeld);
+								entityHeld.startRiding(entityTry, false);
+							}
+						}
+
+						world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
+						ItemEntity.clearEntityData(main);
+						player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+						CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+						event.setCanceled(true);
+					}
+				}
+
 			}
+
 		}
 
 	}

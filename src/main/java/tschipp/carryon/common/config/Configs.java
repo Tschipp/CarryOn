@@ -64,6 +64,15 @@ public class Configs {
 		@Config.RequiresMcRestart()
 		@Comment("Use custom Pickup Scripts. Having this set to false, will not allow you to run scripts, but will save you some performance")
 		public boolean useScripts=false;
+		
+		@Comment("Allows entities to be stacked using Carry On")
+		public boolean stackableEntities = true;
+		
+		@Comment("Maximum stack limit for entities")
+		public int maxEntityStackLimit = 20;
+		
+		@Comment("Whether entities size matters when stacking or not")
+		public boolean entitySizeMattersStacking = true;
 	}
 	
 	public static class WhiteList
