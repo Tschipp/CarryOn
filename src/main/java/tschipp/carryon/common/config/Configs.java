@@ -71,7 +71,7 @@ public class Configs {
 		@Comment("Maximum stack limit for entities")
 		public int maxEntityStackLimit = 20;
 		
-		@Comment("Whether entities size matters when stacking or not")
+		@Comment("Whether entities' size matters when stacking or not")
 		public boolean entitySizeMattersStacking = true;
 	}
 	
