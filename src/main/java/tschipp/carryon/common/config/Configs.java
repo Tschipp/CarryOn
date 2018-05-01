@@ -116,6 +116,7 @@ public class Configs {
     					"tconstruct:*",
     					"rustic:*",
     					"botania:*",
+					"astralsorcery:*",
     					"quark:colored_bed_*",
     					"immersiveengineering:*",
     					"embers:block_furnace",
