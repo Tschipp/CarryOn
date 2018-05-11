@@ -33,6 +33,8 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
@@ -268,7 +270,7 @@ public class ItemEvents
 						try
 						{
 							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
-							world.removeTileEntity(pos);
+							emptyTileEntity(te);
 							world.setBlockToAir(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
@@ -276,6 +278,7 @@ public class ItemEvents
 						}
 						catch (Exception e)
 						{
+							e.printStackTrace();
 							CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
 							world.setBlockState(pos, statee);
 							if (!tag.hasNoTags())
@@ -291,6 +294,33 @@ public class ItemEvents
 
 				}
 
+			}
+		}
+	}
+	
+	public static void emptyTileEntity(TileEntity te)
+	{
+		if (te != null && !te.isInvalid())
+		{
+			for (EnumFacing facing : EnumFacing.VALUES)
+			{
+				if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing))
+				{
+					IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+					for (int i = 0; i < itemHandler.getSlots(); i++)
+					{
+						itemHandler.extractItem(i, 64, false);
+					}
+				}
+			}
+
+			if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+			{
+				IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+				for (int i = 0; i < itemHandler.getSlots(); i++)
+				{
+					itemHandler.extractItem(i, 64, false);
+				}
 			}
 		}
 	}

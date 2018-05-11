@@ -62,8 +62,18 @@ public class Configs {
 		public boolean dropCarriedWhenHit=false;
 		
 		@Config.RequiresMcRestart()
-		@Comment("Use custom Pickup Scripts. Having this set to false, will not allow you to run scripts, but will save you some performance")
+		@Comment("Use custom Pickup Scripts. Having this set to false, will not allow you to run scripts, but will increase your performance")
 		public boolean useScripts=false;
+		
+		@Comment("Allows entities to be stacked using Carry On")
+		public boolean stackableEntities = true;
+		
+		@Config.RangeInt(min = 1)
+		@Comment("Maximum stack limit for entities")
+		public int maxEntityStackLimit = 10;
+		
+		@Comment("Whether entities' size matters when stacking or not")
+		public boolean entitySizeMattersStacking = true;
 	}
 	
 	public static class WhiteList
@@ -98,6 +108,8 @@ public class Configs {
     					"minecraft:jungle_door",
     					"minecraft:acacia_door",
     					"minecraft:dark_oak_door",
+    					"minecraft:waterlily",
+    					"minecraft:cake",
     					"animania:block_trough",
     					"animania:block_invisiblock",
     					"colossalchests:*",
@@ -107,6 +119,7 @@ public class Configs {
     					"tconstruct:*",
     					"rustic:*",
     					"botania:*",
+					"astralsorcery:*",
     					"quark:colored_bed_*",
     					"immersiveengineering:*",
     					"embers:block_furnace",
@@ -126,6 +139,7 @@ public class Configs {
     					"skyresources:*",
     					"lootbags:*",
     					"exsartagine:*",
+    					"aquamunda:tank"
     					
     			};
 		
