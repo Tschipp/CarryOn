@@ -43,9 +43,6 @@ import tschipp.carryon.network.client.CarrySlotPacket;
 public class ItemEntityEvents
 {
 
-
-	private final List<Entity> riddenByEntities = Lists.<Entity>newArrayList();
-
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -101,7 +98,7 @@ public class ItemEntityEvents
 
 				if (entity.hurtResistantTime == 0)
 				{
-					if(entity instanceof EntityAnimal)
+					if (entity instanceof EntityAnimal)
 						((EntityAnimal) entity).clearLeashed(true, true);
 
 					if (PickupHandler.canPlayerPickUpEntity(player, entity))
@@ -130,105 +127,108 @@ public class ItemEntityEvents
 					}
 				}
 
-			} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main) && CarryOnKeybinds.isKeyPressed(player) && CarryOnConfig.settings.stackableEntities) {
-
-
+			}
+			else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && CarryOnConfig.settings.stackableEntities)
+			{
 				Entity entityHeld = ItemEntity.getEntity(main, world);
 
-				if (entity.hurtResistantTime == 0 && entityHeld instanceof EntityLivingBase) {
+				if (entity.hurtResistantTime == 0 && entityHeld instanceof EntityLivingBase)
+				{
 
-					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.isDead && !entity.isDead) {
+					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.isDead && !entity.isDead)
+					{
 
-						double sizeEntity = entity.height * entity.width;
 						double sizeHeldEntity = entityHeld.height * entityHeld.width;
-						//if no riders
-						if (!entity.isBeingRidden()) {
-							//if entity size matters in stacking
-							if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking) {
-								//Tame Horse so it doens't buck rider
-								if (entity instanceof EntityHorse) {
-									EntityHorse horse = (EntityHorse) entity;
+						double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+						Entity lowestEntity = entity.getLowestRidingEntity();
+						int numPassengers = getAllPassengers(lowestEntity);
+						if (numPassengers < CarryOnConfig.settings.maxEntityStackLimit - 1)
+						{
+							Entity topEntity = getTopPassenger(lowestEntity);
+
+							double sizeEntity = topEntity.height * topEntity.width;
+							if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking)
+							{
+								if (topEntity instanceof EntityHorse)
+								{
+									EntityHorse horse = (EntityHorse) topEntity;
 									horse.setHorseTamed(true);
 								}
-								double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
-
-								//if too close, change position (and back) to bypass protected canBeRidden
-								if (distance < 6) {
+								
+								if (distance < 6)
+								{
 									double tempX = entity.posX;
 									double tempY = entity.posY;
 									double tempZ = entity.posZ;
-									entity.setPosition(tempX, tempY + 2.6, tempZ);
+									entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
 									world.spawnEntity(entityHeld);
-									entityHeld.startRiding(entity, false);
+									entityHeld.startRiding(topEntity, false);
 									entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
-								} else {
+								}
+								else
+								{
+									entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
 									world.spawnEntity(entityHeld);
-									entityHeld.startRiding(entity, false);
+									entityHeld.startRiding(topEntity, false);
 								}
-							} else {
+								
+
+								ItemEntity.clearEntityData(main);
+								player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+								CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+								event.setCanceled(true);
+								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							}
+							else
+							{
 								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
-								world.spawnEntity(entityHeld);
-							}
-
-							//if multiple riders, loop through and add next to top (elevator style)
-						} else {
-							Entity entityTry = entity.getPassengers().get(0);
-							int tempLimit = CarryOnConfig.settings.maxEntityStackLimit;
-
-							//force limit to prevent crash
-							if (tempLimit < 0) {
-								tempLimit = 1;
-							}
-							for (int i = 0; i <= tempLimit; i++) { 
-
-								if (entityTry.isBeingRidden()) {
-									entityTry = entityTry.getPassengers().get(0);
-								} else {
-									break;
-								}
-							}
-
-							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
-							if (distance < 6) {
-								double tempX = entity.posX;
-								double tempY = entity.posY;
-								double tempZ = entity.posZ;
-								entity.setPosition(tempX, tempY + 2.6, tempZ);
-								world.spawnEntity(entityHeld);
-								if (entityTry != null) {
-									//if entity size matters in stacking
-									if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking) {
-										entityHeld.startRiding(entityTry, false);
-										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
-									} else { 
-										world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
-									}
-								}
-							} else {
-								world.spawnEntity(entityHeld);
-								if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking) {
-									entityHeld.startRiding(entityTry, false);
-								} else {
-									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
-								}
+								return;
 							}
 						}
-
-						if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking) {
-							world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
+						else
+						{
+							world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							return;
 						}
-
-						ItemEntity.clearEntityData(main);
-						player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-						CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
-						event.setCanceled(true);
 					}
+
 				}
 
 			}
-
 		}
 
+	}
+
+	public static int getAllPassengers(Entity entity)
+	{
+		int passengers = 0;
+		while (entity.isBeingRidden())
+		{
+			List<Entity> pass = entity.getPassengers();
+			if (!pass.isEmpty())
+			{
+				entity = pass.get(0);
+				passengers++;
+			}
+		}
+
+		return passengers;
+	}
+
+	public static Entity getTopPassenger(Entity entity)
+	{
+		Entity top = entity;
+		while (entity.isBeingRidden())
+		{
+			List<Entity> pass = entity.getPassengers();
+			if (!pass.isEmpty())
+			{
+				entity = pass.get(0);
+				top = entity;
+			}
+		}
+
+		return top;
 	}
 
 	@SubscribeEvent
