@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -270,7 +271,7 @@ public class ItemEvents
 						try
 						{
 							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
-							emptyTileEntity(te);
+							world.removeTileEntity(pos);
 							world.setBlockToAir(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
@@ -278,16 +279,27 @@ public class ItemEvents
 						}
 						catch (Exception e)
 						{
-							e.printStackTrace();
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
-							world.setBlockState(pos, statee);
-							if (!tag.hasNoTags())
-								TileEntity.create(world, tag);
+							try
+							{
+								CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+								emptyTileEntity(te);
+								world.setBlockToAir(pos);
+								player.setHeldItem(EnumHand.MAIN_HAND, stack);
+								event.setUseBlock(Result.DENY);
+								event.setCanceled(true);
+							}
+							catch (Exception ex)
+							{
+								CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+								world.setBlockState(pos, statee);
+								if (!tag.hasNoTags())
+									TileEntity.create(world, tag);
 
-							player.sendMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot pick up block."));
-							TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
-							s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-							player.sendMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
+								player.sendMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot pick up block."));
+								TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
+								s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
+								player.sendMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
+							}
 						}
 
 					}
@@ -297,7 +309,7 @@ public class ItemEvents
 			}
 		}
 	}
-	
+
 	public static void emptyTileEntity(TileEntity te)
 	{
 		if (te != null && !te.isInvalid())
@@ -317,6 +329,21 @@ public class ItemEvents
 			if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
 			{
 				IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+				for (int i = 0; i < itemHandler.getSlots(); i++)
+				{
+					itemHandler.extractItem(i, 64, false);
+				}
+			}
+
+			if (te instanceof IInventory)
+			{
+				IInventory inv = (IInventory) te;
+				inv.clear();
+			}
+
+			if (te instanceof IItemHandler)
+			{
+				IItemHandler itemHandler = (IItemHandler) te;
 				for (int i = 0; i < itemHandler.getSlots(); i++)
 				{
 					itemHandler.extractItem(i, 64, false);
