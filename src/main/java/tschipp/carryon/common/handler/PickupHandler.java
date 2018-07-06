@@ -4,28 +4,26 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import com.feed_the_beast.ftblib.lib.math.BlockPosContainer;
-import com.feed_the_beast.ftbutilities.data.BlockInteractionType;
-import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
-
 import net.darkhax.gamestages.GameStageHelper;
 import net.darkhax.gamestages.data.IStageData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fml.common.Loader;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.item.ItemTile;
@@ -111,7 +109,7 @@ public class PickupHandler
 		CarryOnOverride override = ScriptChecker.inspectEntity(toPickUp);
 		if (override != null)
 		{
-			return (ScriptChecker.fulfillsConditions(override, player));
+			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((EntityPlayerMP) player, toPickUp);
 		}
 		else
 		{
@@ -139,10 +137,10 @@ public class PickupHandler
 						IStageData stageData = GameStageHelper.getPlayerData(player);
 						String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
 						if (stageData.hasStage(condition))
-							return true;
+							return true && handleProtections((EntityPlayerMP) player, toPickUp);
 					}
 					else
-						return true;
+						return true && handleProtections((EntityPlayerMP) player, toPickUp);
 				}
 			}
 
@@ -184,10 +182,10 @@ public class PickupHandler
 								IStageData stageData = GameStageHelper.getPlayerData(player);
 								String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
 								if (stageData.hasStage(condition))
-									return true;
+									return true && handleProtections((EntityPlayerMP) player, toPickUp);
 							}
 							else
-								return true;
+								return true && handleProtections((EntityPlayerMP) player, toPickUp);
 						}
 					}
 				}
@@ -201,12 +199,6 @@ public class PickupHandler
 	private static boolean handleProtections(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
 	{
 		boolean breakable = true;
-		if (Loader.isModLoaded("ftbu"))
-		{
-			BlockPosContainer container = new BlockPosContainer(world, pos, state);
-
-			breakable = ClaimedChunks.instance.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
-		}
 
 		BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
 		MinecraftForge.EVENT_BUS.post(event);
@@ -215,6 +207,19 @@ public class PickupHandler
 			breakable = false;
 		
 		return breakable;
+	}
+	
+	private static boolean handleProtections(EntityPlayerMP player, Entity entity)
+	{
+		boolean canPickup = true;
+
+		AttackEntityEvent event = new AttackEntityEvent(player, entity);
+		MinecraftForge.EVENT_BUS.post(event);
+
+		if(event.isCanceled())
+			canPickup = false;
+		
+		return canPickup;
 	}
 
 }

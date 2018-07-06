@@ -24,7 +24,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.2-14.23.2.2611"
+    version = "1.12.2-14.23.4.2705"
     runDir = "run"
  
     mappings = "snapshot_20171003"
@@ -35,7 +35,6 @@ repositories {
 
     maven { url 'http://maven.epoxide.org' }
 	
-    maven { url 'http://maven.latmod.com' }
 }
 
 
@@ -44,10 +43,6 @@ dependencies {
   
       deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
 	  
-	  deobfCompile "com.feed_the_beast.mods:FTBLib:5.0.2.11"
-	  deobfCompile "com.feed_the_beast.mods:FTBUtilities:5.0.2.11"
-
-		
 }
 
 processResources {

@@ -32,12 +32,12 @@ public class CarryOn {
 	public static CarryOn instance;
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.9";
+	public static final String VERSION = "1.9.1";
 	public static final String NAME = "Carry On";
 	public static final String ACCEPTED_VERSIONS = "[1.12.2,1.13)";
 	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
-	public static final String DEPENDENCIES = "required-after:forge@[13.20.1.2386,);after:ftbu@[5.0.0.11,);after:gamestages@[2.0.91,)";
+	public static final String DEPENDENCIES = "required-after:forge@[13.20.1.2386,);after:gamestages@[2.0.91,)";
 	public static File CONFIGURATION_FILE;
  
 	public static SimpleNetworkWrapper network;
