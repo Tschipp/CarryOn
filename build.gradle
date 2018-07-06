@@ -42,7 +42,7 @@ repositories {
 
 dependencies {
   
-      deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:1.0.76"
+      deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
 	  
 	  deobfCompile "com.feed_the_beast.mods:FTBLib:5.0.2.11"
 	  deobfCompile "com.feed_the_beast.mods:FTBUtilities:5.0.2.11"

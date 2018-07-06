@@ -2,7 +2,7 @@ package tschipp.carryon.common.scripting;
 
 import javax.annotation.Nullable;
 
-import net.darkhax.gamestages.capabilities.PlayerDataHandler;
+import net.darkhax.gamestages.GameStageHelper;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementManager;
 import net.minecraft.block.Block;
@@ -104,7 +104,7 @@ public class ScriptChecker
 		
 		boolean achievement = adv == null ? true : ((EntityPlayerMP)player).getAdvancements().getProgress(adv).isDone();
 		boolean gamemode = ScriptParseHelper.matches(((EntityPlayerMP) player).interactionManager.getGameType().getID(), override.getConditionGamemode());
-		boolean gamestage = Loader.isModLoaded("gamestages") ? (override.getConditionGamestage() != null ? PlayerDataHandler.getStageData(player).hasUnlockedStage(override.getConditionGamestage()) : true) : true;
+		boolean gamestage = Loader.isModLoaded("gamestages") ? (override.getConditionGamestage() != null ? GameStageHelper.getPlayerData(player).hasStage(override.getConditionGamestage()) : true) : true;
 		boolean position = ScriptParseHelper.matches(player.getPosition(), override.getConditionPosition());
 		boolean xp = ScriptParseHelper.matches(player.experienceLevel, override.getConditionXp());
 		boolean scoreboard = ScriptParseHelper.matchesScore(player, override.getConditionScoreboard());

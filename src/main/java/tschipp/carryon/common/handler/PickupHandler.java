@@ -8,8 +8,8 @@ import com.feed_the_beast.ftblib.lib.math.BlockPosContainer;
 import com.feed_the_beast.ftbutilities.data.BlockInteractionType;
 import com.feed_the_beast.ftbutilities.data.ClaimedChunks;
 
-import net.darkhax.gamestages.capabilities.PlayerDataHandler;
-import net.darkhax.gamestages.capabilities.PlayerDataHandler.IStageData;
+import net.darkhax.gamestages.GameStageHelper;
+import net.darkhax.gamestages.data.IStageData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -23,6 +23,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Loader;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
@@ -47,7 +49,7 @@ public class PickupHandler
 		CarryOnOverride override = ScriptChecker.inspectBlock(world.getBlockState(pos), world, pos, tag);
 		if (override != null)
 		{
-			return (ScriptChecker.fulfillsConditions(override, player)) && handleFTBUtils((EntityPlayerMP) player, world, pos, state);
+			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((EntityPlayerMP) player, world, pos, state);
 		}
 		else
 		{
@@ -79,16 +81,16 @@ public class PickupHandler
 
 						if (CustomPickupOverrideHandler.hasSpecialPickupConditions(state))
 						{
-							IStageData stageData = PlayerDataHandler.getStageData(player);
+							IStageData stageData = GameStageHelper.getPlayerData(player);
 							String condition = CustomPickupOverrideHandler.getPickupCondition(state);
-							if (stageData.hasUnlockedStage(condition))
-								return true && handleFTBUtils((EntityPlayerMP) player, world, pos, state);
+							if (stageData.hasStage(condition))
+								return true && handleProtections((EntityPlayerMP) player, world, pos, state);
 
 						}
 						else if (CarryOnConfig.settings.pickupAllBlocks ? true : tile != null)
 						{
 
-							return true && handleFTBUtils((EntityPlayerMP) player, world, pos, state);
+							return true && handleProtections((EntityPlayerMP) player, world, pos, state);
 						}
 
 					}
@@ -134,9 +136,9 @@ public class PickupHandler
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 					{
-						IStageData stageData = PlayerDataHandler.getStageData(player);
+						IStageData stageData = GameStageHelper.getPlayerData(player);
 						String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
-						if (stageData.hasUnlockedStage(condition))
+						if (stageData.hasStage(condition))
 							return true;
 					}
 					else
@@ -179,9 +181,9 @@ public class PickupHandler
 
 							if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 							{
-								IStageData stageData = PlayerDataHandler.getStageData(player);
+								IStageData stageData = GameStageHelper.getPlayerData(player);
 								String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
-								if (stageData.hasUnlockedStage(condition))
+								if (stageData.hasStage(condition))
 									return true;
 							}
 							else
@@ -196,19 +198,23 @@ public class PickupHandler
 		return false;
 	}
 
-	private static boolean handleFTBUtils(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
+	private static boolean handleProtections(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
 	{
+		boolean breakable = true;
 		if (Loader.isModLoaded("ftbu"))
 		{
-
 			BlockPosContainer container = new BlockPosContainer(world, pos, state);
 
-			boolean work = ClaimedChunks.instance.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
-
-			return work;
+			breakable = ClaimedChunks.instance.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
 		}
 
-		return true;
+		BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
+		MinecraftForge.EVENT_BUS.post(event);
+
+		if(event.isCanceled())
+			breakable = false;
+		
+		return breakable;
 	}
 
 }
