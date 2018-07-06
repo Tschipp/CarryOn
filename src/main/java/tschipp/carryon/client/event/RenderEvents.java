@@ -208,29 +208,29 @@ public class RenderEvents
 				GlStateManager.rotate(8, 1f, 0, 0);
 			}
 
-				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player);
+			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(tileStack, world, player);
 
-				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
-				if (carryOverride != null)
+			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
+			if (carryOverride != null)
+			{
+				double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
+				double[] rotation = ScriptParseHelper.getXYZArray(carryOverride.getRenderRotation());
+				double[] scale = ScriptParseHelper.getScale(carryOverride.getRenderScale());
+				Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
+				if (b != null)
 				{
-					double[] translation = ScriptParseHelper.getXYZArray(carryOverride.getRenderTranslation());
-					double[] rotation = ScriptParseHelper.getXYZArray(carryOverride.getRenderRotation());
-					double[] scale = ScriptParseHelper.getScale(carryOverride.getRenderScale());
-					Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
-					if (b != null)
-					{
-						ItemStack s = new ItemStack(b, 1, carryOverride.getRenderMeta());
-						s.setTagCompound(carryOverride.getRenderNBT());
-						model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(s, world, player);
-					}
-
-					GlStateManager.translate(translation[0], translation[1], translation[2]);
-					GlStateManager.rotate((float) rotation[0], 1, 0, 0);
-					GlStateManager.rotate((float) rotation[1], 0, 1, 0);
-					GlStateManager.rotate((float) rotation[2], 0, 0, 1);
-					GlStateManager.scale(scale[0], scale[1], scale[2]);
-
+					ItemStack s = new ItemStack(b, 1, carryOverride.getRenderMeta());
+					s.setTagCompound(carryOverride.getRenderNBT());
+					model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(s, world, player);
 				}
+
+				GlStateManager.translate(translation[0], translation[1], translation[2]);
+				GlStateManager.rotate((float) rotation[0], 1, 0, 0);
+				GlStateManager.rotate((float) rotation[1], 0, 1, 0);
+				GlStateManager.rotate((float) rotation[2], 0, 0, 1);
+				GlStateManager.scale(scale[0], scale[1], scale[2]);
+
+			}
 
 				int i = this.getBrightnessForRender(Minecraft.getMinecraft().thePlayer);
 				int j = i % 65536;
@@ -239,34 +239,33 @@ public class RenderEvents
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 				this.setLightmapDisabled(false);
 
-				Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+			Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-				if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
+			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
+			{
+				Object override = ModelOverridesHandler.getOverrideObject(state, tag);
+
+				if (override instanceof ItemStack)
 				{
-					Object override = ModelOverridesHandler.getOverrideObject(state, tag);
 
-					if (override instanceof ItemStack)
-					{
-
-						Minecraft.getMinecraft().getRenderItem().renderItem((ItemStack) override, model);
-					}
-					else
-					{
-						Minecraft.getMinecraft().getRenderItem().renderItem(tileStack == null ? stack : tileStack, model);
-					}
+					Minecraft.getMinecraft().getRenderItem().renderItem((ItemStack) override, model);
 				}
 				else
 				{
 					Minecraft.getMinecraft().getRenderItem().renderItem(tileStack == null ? stack : tileStack, model);
 				}
-				
-				this.setLightmapDisabled(true);
+			}
+			else
+			{
+				Minecraft.getMinecraft().getRenderItem().renderItem(tileStack == null ? stack : tileStack, model);
+			}
 
-				if (perspective == 0)
-				{
-					event.setCanceled(true);
-				}
+			this.setLightmapDisabled(true);
 
+			if (perspective == 0)
+			{
+				event.setCanceled(true);
+			}
 
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
@@ -281,14 +280,20 @@ public class RenderEvents
 				RenderManager manager = mc.getRenderManager();
 				RenderPlayer renderPlayer = manager.getSkinMap().get(aplayer.getSkinType());
 				ModelPlayer modelPlayer = renderPlayer.getMainModel();
-				modelPlayer.bipedLeftArm.isHidden = false;
-				modelPlayer.bipedRightArm.isHidden = false;
-				modelPlayer.bipedLeftArmwear.isHidden = false;
-				modelPlayer.bipedRightArmwear.isHidden = false;
+
+				if (modelPlayer != null)
+				{
+					if (modelPlayer.bipedLeftArm != null && modelPlayer.bipedRightArm != null)
+					{
+						modelPlayer.bipedLeftArm.isHidden = false;
+						modelPlayer.bipedRightArm.isHidden = false;
+						modelPlayer.bipedLeftArmwear.isHidden = false;
+						modelPlayer.bipedRightArmwear.isHidden = false;
+					}
+				}
 			}
 		}
 	}
-
 
 	@SideOnly(Side.CLIENT)
 	private int getBrightnessForRender(EntityPlayer player)
@@ -406,7 +411,7 @@ public class RenderEvents
 			}
 
 			Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-			
+
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 			{
 				Object override = ModelOverridesHandler.getOverrideObject(state, tag);

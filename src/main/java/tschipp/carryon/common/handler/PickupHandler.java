@@ -4,10 +4,6 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import com.feed_the_beast.ftbl.lib.math.BlockPosContainer;
-import com.feed_the_beast.ftbu.api.chunks.BlockInteractionType;
-import com.feed_the_beast.ftbu.api_impl.ClaimedChunkStorage;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -18,10 +14,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.world.BlockEvent;
+import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
@@ -44,7 +42,7 @@ public class PickupHandler
 		CarryOnOverride override = ScriptChecker.inspectBlock(world.getBlockState(pos), world, pos, tag);
 		if (override != null)
 		{
-			return (ScriptChecker.fulfillsConditions(override, player)) && handleFTBUtils((EntityPlayerMP) player, world, pos, state);
+			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((EntityPlayerMP) player, world, pos, state);
 		}
 		else
 		{
@@ -54,6 +52,7 @@ public class PickupHandler
 				{
 					return false;
 				}
+				CarryOn.LOGGER.info("Block is allowed");
 			}
 			else
 			{
@@ -69,11 +68,12 @@ public class PickupHandler
 
 				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 				{
+
 					if (!ItemTile.isLocked(pos, world))
 					{
 						if (CarryOnConfig.settings.pickupAllBlocks ? true : tile != null)
 						{
-							return true && handleFTBUtils((EntityPlayerMP) player, world, pos, state);
+							return true && handleProtections((EntityPlayerMP) player, world, pos, state);
 						}
 
 					}
@@ -94,7 +94,7 @@ public class PickupHandler
 		CarryOnOverride override = ScriptChecker.inspectEntity(toPickUp);
 		if (override != null)
 		{
-			return (ScriptChecker.fulfillsConditions(override, player));
+			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((EntityPlayerMP) player, toPickUp);
 		}
 		else
 		{
@@ -115,9 +115,9 @@ public class PickupHandler
 							if (tame.getOwnerId() != null && tame.getOwnerId() != player.getUUID(player.getGameProfile()))
 								return false;
 						}
-
-						return true;
 					}
+					else
+						return true && handleProtections((EntityPlayerMP) player, toPickUp);
 				}
 			}
 
@@ -153,8 +153,7 @@ public class PickupHandler
 								if (owner != null && !owner.equals(playerID))
 									return false;
 							}
-	
-							return true;
+							return true && handleProtections((EntityPlayerMP) player, toPickUp);
 						}
 					}
 				}
@@ -165,14 +164,30 @@ public class PickupHandler
 		return false;
 	}
 
-	private static boolean handleFTBUtils(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
+	private static boolean handleProtections(EntityPlayerMP player, World world, BlockPos pos, IBlockState state)
 	{
-		if (Loader.isModLoaded("ftbu"))
-		{
-			BlockPosContainer container = new BlockPosContainer(world, pos, state);
-			return ClaimedChunkStorage.INSTANCE.canPlayerInteract((EntityPlayerMP) player, EnumHand.MAIN_HAND, container, BlockInteractionType.CNB_BREAK);
-		}
-		return true;
+		boolean breakable = true;
+
+		BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
+		MinecraftForge.EVENT_BUS.post(event);
+
+		if (event.isCanceled())
+			breakable = false;
+
+		return breakable;
+	}
+
+	private static boolean handleProtections(EntityPlayerMP player, Entity entity)
+	{
+		boolean canPickup = true;
+
+		AttackEntityEvent event = new AttackEntityEvent(player, entity);
+		MinecraftForge.EVENT_BUS.post(event);
+
+		if (event.isCanceled())
+			canPickup = false;
+
+		return canPickup;
 	}
 
 }

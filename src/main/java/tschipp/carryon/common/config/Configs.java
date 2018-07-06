@@ -115,7 +115,7 @@ public class Configs {
     					"tconstruct:*",
     					"rustic:*",
     					"botania:*",
-					"astralsorcery:*",
+    					"astralsorcery:*",
     					"quark:colored_bed_*",
     					"immersiveengineering:*",
     					"embers:block_furnace",
@@ -135,8 +135,11 @@ public class Configs {
     					"skyresources:*",
     					"lootbags:*",
     					"exsartagine:*",
-    					"aquamunda:tank"
-    					
+    					"aquamunda:tank",
+    					"opencomputers:*",
+    					"malisisdoors:*",
+    					"industrialforegoing:*",
+    					"minecolonies:*",
     			};
 		
 		@Comment("Entities that cannot be picked up")
