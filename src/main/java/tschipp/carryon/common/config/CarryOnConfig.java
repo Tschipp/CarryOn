@@ -62,12 +62,12 @@ public class CarryOnConfig
 		 *
 		 * @return The Configuration instance
 		 */
-		public static Configuration getConfiguration(String modid)
+		public static Configuration getConfiguration()
 		{
 			if (EventHandler.configuration == null)
 				try
 				{
-					final String fileName = modid + ".cfg";
+					final String fileName = CarryOn.MODID + ".cfg";
 
 					@SuppressWarnings("unchecked")
 					final Map<String, Configuration> configsMap = (Map<String, Configuration>) EventHandler.CONFIGS_GETTER.invokeExact();
