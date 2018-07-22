@@ -29,6 +29,7 @@ public class ScriptReader
 	public static void preInit(FMLPreInitializationEvent event)
 	{
 		CarryOn.CONFIGURATION_FILE = new File(event.getModConfigurationDirectory(), "carryon-scripts/");
+		
 		if (!CarryOn.CONFIGURATION_FILE.exists())
 			CarryOn.CONFIGURATION_FILE.mkdir();
 

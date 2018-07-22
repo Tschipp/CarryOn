@@ -13,6 +13,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -291,7 +292,7 @@ public class RenderEntityEvents
 	}
 
 	/*
-	 * Renders the Block in Third Person
+	 * Renders the Entity in Third Person
 	 */
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -307,8 +308,13 @@ public class RenderEntityEvents
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 		{
 			Entity entity = ItemEntity.getEntity(stack, world);
-			float rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
+			float rotation = 0;
 
+			if (player.isRiding() && player.getRidingEntity() instanceof EntityLivingBase)
+				rotation = -(player.prevRotationYawHead + (player.rotationYawHead - player.prevRotationYawHead) * partialticks);
+			else
+				rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
+			
 			if (entity != null)
 			{
 				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;

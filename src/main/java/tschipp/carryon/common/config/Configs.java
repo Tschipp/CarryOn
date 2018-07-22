@@ -144,6 +144,13 @@ public class Configs {
     					"malisisdoors:*",
     					"industrialforegoing:*",
     					"minecolonies:*",
+    					"thaumcraft:pillar*",
+    					"thaumcraft:infernal_furnace",
+    					"thaumcraft:placeholder*",
+    					"thaumcraft:infusion_matrix",
+    					"thaumcraft:golem_builder",
+    					"thaumcraft:thaumatorium*",
+
     			};
 		
 		@Config.RequiresMcRestart()
