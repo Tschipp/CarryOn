@@ -1,8 +1,9 @@
 package tschipp.carryon.common.scripting;
 
+import java.lang.reflect.Method;
+
 import javax.annotation.Nullable;
 
-import net.darkhax.gamestages.GameStageHelper;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementManager;
 import net.minecraft.block.Block;
@@ -19,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 
@@ -99,17 +101,56 @@ public class ScriptChecker
 
 	public static boolean fulfillsConditions(CarryOnOverride override, EntityPlayer player)
 	{
-		AdvancementManager manager = ((WorldServer)((EntityPlayerMP)player).world).getAdvancementManager();
+		AdvancementManager manager = ((WorldServer) ((EntityPlayerMP) player).world).getAdvancementManager();
 		Advancement adv = manager.getAdvancement(new ResourceLocation((override.getConditionAchievement()) == null ? "" : override.getConditionAchievement()));
-		
-		boolean achievement = adv == null ? true : ((EntityPlayerMP)player).getAdvancements().getProgress(adv).isDone();
+
+		boolean achievement = adv == null ? true : ((EntityPlayerMP) player).getAdvancements().getProgress(adv).isDone();
 		boolean gamemode = ScriptParseHelper.matches(((EntityPlayerMP) player).interactionManager.getGameType().getID(), override.getConditionGamemode());
-		boolean gamestage = Loader.isModLoaded("gamestages") ? (override.getConditionGamestage() != null ? GameStageHelper.getPlayerData(player).hasStage(override.getConditionGamestage()) : true) : true;
+		boolean gamestage = true;
+		if (Loader.isModLoaded("gamestages"))
+		{
+			if (override.getConditionGamestage() != null)
+			{
+				try
+				{
+					Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+					Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+
+					Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
+					Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+
+					Object stageData = getPlayerData.invoke(null, player);
+					String condition = override.getConditionGamestage();
+					gamestage = (boolean) hasStage.invoke(stageData, condition);
+				}
+				catch (Exception e)
+				{
+					try
+					{
+						Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+						Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
+
+						Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
+						Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+
+						Object stageData = getStageData.invoke(null, player);
+						String condition = override.getConditionGamestage();
+						gamestage = (boolean) hasUnlockedStage.invoke(stageData, condition);
+
+					}
+					catch (Exception ex)
+					{
+					}
+				}
+
+			}
+		}
+
 		boolean position = ScriptParseHelper.matches(player.getPosition(), override.getConditionPosition());
 		boolean xp = ScriptParseHelper.matches(player.experienceLevel, override.getConditionXp());
 		boolean scoreboard = ScriptParseHelper.matchesScore(player, override.getConditionScoreboard());
 		boolean effects = ScriptParseHelper.hasEffects(player, override.getConditionEffects());
-		
+
 		return (achievement && gamemode && gamestage && position && xp && scoreboard && effects);
 	}
 
@@ -121,13 +162,13 @@ public class ScriptChecker
 		if (tag != null && tag.hasKey("overrideKey"))
 		{
 			int key = tag.getInteger("overrideKey");
-			
+
 			return ScriptReader.OVERRIDES.get(key);
 		}
 
 		return null;
 	}
-	
+
 	public static void setCarryOnOverride(EntityPlayer player, int i)
 	{
 		NBTTagCompound tag = player.getEntityData();
@@ -135,5 +176,5 @@ public class ScriptChecker
 		if (tag != null)
 			tag.setInteger("overrideKey", i);
 	}
-	
+
 }

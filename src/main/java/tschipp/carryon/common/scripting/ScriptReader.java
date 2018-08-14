@@ -57,8 +57,9 @@ public class ScriptReader
 			JsonObject object = (JsonObject) json.get("object");
 			JsonObject conditions = (JsonObject) json.get("conditions");
 			JsonObject render = (JsonObject) json.get("render");
+			JsonObject effects = (JsonObject) json.get("effects");
 
-			if ((object != null && conditions != null) || (object != null && render != null))
+			if ((object != null && conditions != null) || (object != null && render != null) || (object != null && effects != null))
 			{
 				JsonObject block = (JsonObject) object.get("block");
 				JsonObject entity = (JsonObject) object.get("entity");
@@ -122,7 +123,7 @@ public class ScriptReader
 						JsonElement gamemode = conditions.get("gamemode");
 						JsonElement scoreboard = conditions.get("scoreboard");
 						JsonElement position = conditions.get("position");
-						JsonElement effects = conditions.get("effects");
+						JsonElement potionEffects = conditions.get("effects");
 
 						if(gamestage != null)
 							override.setConditionGamestage(gamestage.getAsString());
@@ -136,8 +137,8 @@ public class ScriptReader
 							override.setConditionScoreboard(scoreboard.getAsString());
 						if(position != null)
 							override.setConditionPosition(position.getAsString());
-						if(effects != null)
-							override.setConditionEffects(effects.getAsString());
+						if(potionEffects != null)
+							override.setConditionEffects(potionEffects.getAsString());
 					}
 					
 					if (render != null)
@@ -178,8 +179,21 @@ public class ScriptReader
 							override.setRenderRightArm(renderRightArm.getAsBoolean());
 					}
 					
-					OVERRIDES.put(override.hashCode(), override);
+					if(effects != null)
+					{
+						JsonElement commandInit = effects.get("commandPickup");
+						JsonElement commandLoop = effects.get("commandLoop");
+						JsonElement commandPlace = effects.get("commandPlace");
 
+						if(commandInit != null)
+							override.setCommandInit(commandInit.getAsString());
+						if(commandLoop != null)
+							override.setCommandLoop(commandLoop.getAsString());
+						if(commandPlace != null)
+							override.setCommandPlace(commandPlace.getAsString());
+					}
+					
+					OVERRIDES.put(override.hashCode(), override);
 				}
 			}
 		}

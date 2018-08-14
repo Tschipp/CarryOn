@@ -41,6 +41,11 @@ public class CarryOnOverride
 	private boolean renderLeftArm = true;
 	private boolean renderRightArm = true;
 	
+	//EFFECTS
+	private String commandInit;
+	private String commandLoop;
+	private String commandPlace;
+
 	private boolean isBlock;
 	private boolean isEntity;
 	private final String path;
@@ -51,6 +56,28 @@ public class CarryOnOverride
 		this.path = path;
 	}
 	
+	
+	
+	public String getCommandInit()
+	{
+		return commandInit;
+	}
+
+	public void setCommandInit(String commandInit)
+	{
+		this.commandInit = commandInit;
+	}
+
+	public String getCommandLoop()
+	{
+		return commandLoop;
+	}
+
+	public void setCommandLoop(String commandLoop)
+	{
+		this.commandLoop = commandLoop;
+	}
+
 	public String getConditionEffects()
 	{
 		return conditionEffects;
@@ -115,7 +142,7 @@ public class CarryOnOverride
 	{
 		return "Code: " + this.hashCode();
 	}
-
+	
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -126,12 +153,40 @@ public class CarryOnOverride
 		if (getClass() != obj.getClass())
 			return false;
 		CarryOnOverride other = (CarryOnOverride) obj;
+		if (commandInit == null)
+		{
+			if (other.commandInit != null)
+				return false;
+		}
+		else if (!commandInit.equals(other.commandInit))
+			return false;
+		if (commandLoop == null)
+		{
+			if (other.commandLoop != null)
+				return false;
+		}
+		else if (!commandLoop.equals(other.commandLoop))
+			return false;
+		if (commandPlace == null)
+		{
+			if (other.commandPlace != null)
+				return false;
+		}
+		else if (!commandPlace.equals(other.commandPlace))
+			return false;
 		if (conditionAchievement == null)
 		{
 			if (other.conditionAchievement != null)
 				return false;
 		}
 		else if (!conditionAchievement.equals(other.conditionAchievement))
+			return false;
+		if (conditionEffects == null)
+		{
+			if (other.conditionEffects != null)
+				return false;
+		}
+		else if (!conditionEffects.equals(other.conditionEffects))
 			return false;
 		if (conditionGamemode == null)
 		{
@@ -172,6 +227,15 @@ public class CarryOnOverride
 			return false;
 		if (isEntity != other.isEntity)
 			return false;
+		if (path == null)
+		{
+			if (other.path != null)
+				return false;
+		}
+		else if (!path.equals(other.path))
+			return false;
+		if (renderLeftArm != other.renderLeftArm)
+			return false;
 		if (renderMeta != other.renderMeta)
 			return false;
 		if (renderNBT == null)
@@ -194,6 +258,8 @@ public class CarryOnOverride
 				return false;
 		}
 		else if (!renderNameEntity.equals(other.renderNameEntity))
+			return false;
+		if (renderRightArm != other.renderRightArm)
 			return false;
 		if (renderRotation == null)
 		{
@@ -309,6 +375,8 @@ public class CarryOnOverride
 			return false;
 		return true;
 	}
+
+
 
 	public boolean isBlock()
 	{
@@ -569,5 +637,19 @@ public class CarryOnOverride
 	{
 		this.renderScale = renderScale;
 	}
+
+
+
+	public String getCommandPlace()
+	{
+		return commandPlace;
+	}
+
+	public void setCommandPlace(String commandPlace)
+	{
+		this.commandPlace = commandPlace;
+	}
+	
+	
 
 }

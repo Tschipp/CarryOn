@@ -150,6 +150,9 @@ public class Configs {
     					"thaumcraft:infusion_matrix",
     					"thaumcraft:golem_builder",
     					"thaumcraft:thaumatorium*",
+    					"refinedstorage:*",
+    					"practicallogistics2:*",
+    					"mcmultipart:*",
 
     			};
 		

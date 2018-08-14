@@ -27,6 +27,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntity extends Item
@@ -120,7 +121,8 @@ public class ItemEntity extends Item
 					}
 					clearEntityData(stack);
 					player.setHeldItem(hand, ItemStack.EMPTY);
-					CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+					ItemEvents.sendPacket(player, 9, 0);
+				
 				}
 				player.getEntityData().removeTag("overrideKey");
 				return EnumActionResult.SUCCESS;

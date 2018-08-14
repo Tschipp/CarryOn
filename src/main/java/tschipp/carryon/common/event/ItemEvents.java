@@ -47,6 +47,7 @@ import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.client.CarrySlotPacket;
+import tschipp.carryon.network.server.SyncKeybindPacket;
 
 public class ItemEvents
 {
@@ -63,6 +64,18 @@ public class ItemEvents
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
+
+
+			if (!player.world.isRemote)
+			{
+				CarryOnOverride override = ScriptChecker.getOverride(player);
+				if (override != null)
+				{
+					String command = override.getCommandPlace();
+					if (command != null)
+						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+				}
+			}
 		}
 
 	}
@@ -224,7 +237,7 @@ public class ItemEvents
 				{
 					player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
 					EntityItem item = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack);
-					CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(player.world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+					sendPacket(player, 9, 0);
 					player.world.spawnEntity(item);
 				}
 			}
@@ -267,29 +280,33 @@ public class ItemEvents
 						if (override != null)
 							overrideHash = override.hashCode();
 
+						boolean success = false;
+
 						try
 						{
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							sendPacket(player, player.inventory.currentItem, overrideHash);
 							world.removeTileEntity(pos);
 							world.setBlockToAir(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
 							event.setCanceled(true);
+							success = true;
 						}
 						catch (Exception e)
 						{
 							try
 							{
-								CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+								sendPacket(player, player.inventory.currentItem, overrideHash);
 								emptyTileEntity(te);
 								world.setBlockToAir(pos);
 								player.setHeldItem(EnumHand.MAIN_HAND, stack);
 								event.setUseBlock(Result.DENY);
 								event.setCanceled(true);
+								success = true;
 							}
 							catch (Exception ex)
 							{
-								CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+								sendPacket(player, 9, 0);
 								world.setBlockState(pos, statee);
 								if (!tag.hasNoTags())
 									TileEntity.create(world, tag);
@@ -300,6 +317,13 @@ public class ItemEvents
 								player.sendMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
 							}
 
+						}
+
+						if (success && override != null)
+						{
+							String command = override.getCommandInit();
+							if (command != null)
+								player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
 						}
 
 					}
@@ -375,56 +399,92 @@ public class ItemEvents
 			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			world.spawnEntity(item);
 		}
+
 	}
 
 	@SubscribeEvent
 	public void dropNonHotbarItems(LivingUpdateEvent event)
 	{
 		EntityLivingBase entity = event.getEntityLiving();
-		if (entity instanceof EntityPlayer && !entity.world.isRemote)
+		if (entity instanceof EntityPlayer)
 		{
 			EntityPlayer player = (EntityPlayer) entity;
 
-			boolean hasCarried = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
-			ItemStack inHand = player.getHeldItemMainhand();
-
-			if (hasCarried)
+			if (!entity.world.isRemote)
 			{
-				if (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)
-				{
-					int slotBlock = getSlot(player, RegistrationHandler.itemTile);
-					int slotEntity = getSlot(player, RegistrationHandler.itemEntity);
+				boolean hasCarried = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
+				ItemStack inHand = player.getHeldItemMainhand();
 
-					EntityItem item = null;
-					if(slotBlock != -1)
+				if (hasCarried)
+				{
+					if (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)
 					{
-						ItemStack dropped = player.inventory.removeStackFromSlot(slotBlock);
-						item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
-					}
-					if(slotEntity != -1)
-					{
-						ItemStack dropped = player.inventory.removeStackFromSlot(slotEntity);
-						item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
-					}
-					if(item != null)
-					{
-						player.world.spawnEntity(item);
-						CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(player.world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+						int slotBlock = getSlot(player, RegistrationHandler.itemTile);
+						int slotEntity = getSlot(player, RegistrationHandler.itemEntity);
+
+						EntityItem item = null;
+						if (slotBlock != -1)
+						{
+							ItemStack dropped = player.inventory.removeStackFromSlot(slotBlock);
+							item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
+						}
+						if (slotEntity != -1)
+						{
+							ItemStack dropped = player.inventory.removeStackFromSlot(slotEntity);
+							item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
+						}
+						if (item != null)
+						{
+							player.world.spawnEntity(item);
+							sendPacket(player, 9, 0);
+						}
 					}
 				}
+
+				CarryOnOverride override = ScriptChecker.getOverride(player);
+
+				if (override != null)
+				{
+					String command = override.getCommandLoop();
+					if (command != null)
+						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+				}
+
 			}
 		}
 	}
 
 	public int getSlot(EntityPlayer player, Item item)
 	{
-		for(int i = 0; i < player.inventory.getSizeInventory(); i++)
+		for (int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
 			ItemStack stack = player.inventory.getStackInSlot(i);
-			if(stack.getItem() == item)
+			if (stack.getItem() == item)
 				return i;
 		}
 		return -1;
+	}
+
+	public static void sendPacket(EntityPlayer player, int currentItem, int hash)
+	{
+		if (player instanceof EntityPlayerMP)
+		{
+			CarryOn.network.sendToAllAround(new CarrySlotPacket(currentItem, player.getEntityId(), hash), new TargetPoint(player.world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+			CarryOn.network.sendTo(new CarrySlotPacket(currentItem, player.getEntityId(), hash), (EntityPlayerMP) player);
+
+			if (currentItem >= 9)
+			{
+				player.getEntityData().removeTag("carrySlot");
+				player.getEntityData().removeTag("overrideKey");
+			}
+			else
+			{
+
+				player.getEntityData().setInteger("carrySlot", currentItem);
+				if (hash != 0)
+					ScriptChecker.setCarryOnOverride(player, hash);
+			}
+		}
 	}
 
 }

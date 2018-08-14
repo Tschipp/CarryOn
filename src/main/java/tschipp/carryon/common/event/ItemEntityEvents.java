@@ -52,6 +52,18 @@ public class ItemEntityEvents
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
+
+
+			if (!player.world.isRemote)
+			{
+				CarryOnOverride override = ScriptChecker.getOverride(player);
+				if (override != null)
+				{
+					String command = override.getCommandPlace();
+					if (command != null)
+						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+				}
+			}
 		}
 
 	}
@@ -119,7 +131,7 @@ public class ItemEntityEvents
 							if (override != null)
 								overrideHash = override.hashCode();
 
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							ItemEvents.sendPacket(player, player.inventory.currentItem, overrideHash);
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);
@@ -154,7 +166,7 @@ public class ItemEntityEvents
 									EntityHorse horse = (EntityHorse) topEntity;
 									horse.setHorseTamed(true);
 								}
-								
+
 								if (distance < 6)
 								{
 									double tempX = entity.posX;
@@ -171,11 +183,10 @@ public class ItemEntityEvents
 									world.spawnEntity(entityHeld);
 									entityHeld.startRiding(topEntity, false);
 								}
-								
 
 								ItemEntity.clearEntityData(main);
 								player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-								CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+								ItemEvents.sendPacket(player, 9, 0);
 								event.setCanceled(true);
 								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 							}

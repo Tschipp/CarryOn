@@ -35,6 +35,7 @@ import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -97,6 +98,21 @@ public class RenderEvents
 				CarryOn.network.sendToServer(new SyncKeybindPacket(true));
 			}
 			else if (!keyPressed && playerKeyPressed)
+			{
+				CarryOnKeybinds.setKeyPressed(player, false);
+				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
+			}
+		}
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onJoinWorld(EntityJoinWorldEvent event)
+	{
+		if (event.getEntity() instanceof EntityPlayer)
+		{
+			EntityPlayer player = (EntityPlayer) event.getEntity();
+			if (player.world.isRemote)
 			{
 				CarryOnKeybinds.setKeyPressed(player, false);
 				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
@@ -199,6 +215,7 @@ public class RenderEvents
 			GlStateManager.pushMatrix();
 			GlStateManager.scale(2.5, 2.5, 2.5);
 			GlStateManager.translate(0, -0.6, -1);
+			GlStateManager.enableBlend();
 
 			if (CarryOnConfig.settings.facePlayer ? !isChest(block) : isChest(block))
 			{
@@ -269,6 +286,7 @@ public class RenderEvents
 				event.setCanceled(true);
 			}
 
+			GlStateManager.disableBlend();
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 
@@ -350,6 +368,7 @@ public class RenderEvents
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(xOffset, yOffset, zOffset);
 			GlStateManager.scale(0.6, 0.6, 0.6);
+			GlStateManager.enableBlend();
 
 			if (CarryOnConfig.settings.facePlayer ? !isChest(block) : isChest(block))
 			{
@@ -415,6 +434,7 @@ public class RenderEvents
 				Minecraft.getMinecraft().getRenderItem().renderItem(tileItem.isEmpty() ? stack : tileItem, model);
 			}
 
+			GlStateManager.disableBlend();
 			GlStateManager.scale(1, 1, 1);
 			GlStateManager.popMatrix();
 		}
@@ -424,7 +444,7 @@ public class RenderEvents
 	 * Renders correct arm rotation
 	 */
 	@SideOnly(Side.CLIENT)
-	@SubscribeEvent(priority = EventPriority.NORMAL)
+	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onEvent(RenderPlayerEvent.Post event)
 	{
 		if (handleMobends())
@@ -594,7 +614,7 @@ public class RenderEvents
 		if (Loader.isModLoaded("mobends"))
 		{
 			Configuration config = new Configuration(new File(CarryOn.CONFIGURATION_FILE.getPath().substring(0, CarryOn.CONFIGURATION_FILE.getPath().length() - 16), "mobends.cfg"));
-			
+
 			boolean renderPlayer = config.get("animated", "player", true).getBoolean();
 			return !renderPlayer;
 		}

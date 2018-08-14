@@ -1,29 +1,28 @@
 package tschipp.carryon.common.handler;
 
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import net.darkhax.gamestages.GameStageHelper;
-import net.darkhax.gamestages.data.IStageData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.item.ItemTile;
@@ -34,7 +33,8 @@ public class PickupHandler
 {
 
 	public static boolean canPlayerPickUpBlock(EntityPlayer player, @Nullable TileEntity tile, World world, BlockPos pos)
-	{
+	{		
+		
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
 
@@ -79,16 +79,48 @@ public class PickupHandler
 
 						if (CustomPickupOverrideHandler.hasSpecialPickupConditions(state))
 						{
-							IStageData stageData = GameStageHelper.getPlayerData(player);
-							String condition = CustomPickupOverrideHandler.getPickupCondition(state);
-							if (stageData.hasStage(condition))
-								return true && handleProtections((EntityPlayerMP) player, world, pos, state);
+							try
+							{
+								Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+								Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+
+								Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
+								Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+
+								Object stageData = getPlayerData.invoke(null, player);
+								String condition = CustomPickupOverrideHandler.getPickupCondition(state);
+								boolean has = (boolean) hasStage.invoke(stageData, condition);
+
+								if (has)
+									return handleProtections((EntityPlayerMP) player, world, pos, state);
+							}
+							catch (Exception e)
+							{
+								try
+								{
+									Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+									Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
+
+									Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
+									Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+
+									Object stageData = getStageData.invoke(null, player);
+									String condition = CustomPickupOverrideHandler.getPickupCondition(state);
+									boolean has = (boolean) hasUnlockedStage.invoke(stageData, condition);
+
+									if (has)
+										return handleProtections((EntityPlayerMP) player, world, pos, state);
+								}
+								catch (Exception ex)
+								{
+									return handleProtections((EntityPlayerMP) player, world, pos, state);
+								}
+							}
 
 						}
 						else if (CarryOnConfig.settings.pickupAllBlocks ? true : tile != null)
 						{
-
-							return true && handleProtections((EntityPlayerMP) player, world, pos, state);
+							return handleProtections((EntityPlayerMP) player, world, pos, state);
 						}
 
 					}
@@ -113,8 +145,6 @@ public class PickupHandler
 		}
 		else
 		{
-
-			// check for allow babies to be picked up
 			if (toPickUp instanceof EntityAgeable && CarryOnConfig.settings.allowBabies)
 			{
 				EntityAgeable living = (EntityAgeable) toPickUp;
@@ -134,10 +164,43 @@ public class PickupHandler
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 					{
-						IStageData stageData = GameStageHelper.getPlayerData(player);
-						String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
-						if (stageData.hasStage(condition))
-							return true && handleProtections((EntityPlayerMP) player, toPickUp);
+						try
+						{
+							Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+							Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+
+							Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
+							Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+
+							Object stageData = getPlayerData.invoke(null, player);
+							String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+							boolean has = (boolean) hasStage.invoke(stageData, condition);
+
+							if (has)
+								return handleProtections((EntityPlayerMP) player, toPickUp);
+						}
+						catch (Exception e)
+						{
+							try
+							{
+								Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+								Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
+
+								Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
+								Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+
+								Object stageData = getStageData.invoke(null, player);
+								String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+								boolean has = (boolean) hasUnlockedStage.invoke(stageData, condition);
+
+								if (has)
+									return handleProtections((EntityPlayerMP) player, toPickUp);
+							}
+							catch (Exception ex)
+							{
+								return handleProtections((EntityPlayerMP) player, toPickUp);
+							}
+						}
 					}
 					else
 						return true && handleProtections((EntityPlayerMP) player, toPickUp);
@@ -179,14 +242,49 @@ public class PickupHandler
 
 							if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 							{
-								IStageData stageData = GameStageHelper.getPlayerData(player);
-								String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
-								if (stageData.hasStage(condition))
-									return true && handleProtections((EntityPlayerMP) player, toPickUp);
+								try
+								{
+									Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+									Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+
+									Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
+									Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+
+									Object stageData = getPlayerData.invoke(null, player);
+									String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+									boolean has = (boolean) hasStage.invoke(stageData, condition);
+
+									if (has)
+										return handleProtections((EntityPlayerMP) player, toPickUp);
+								}
+								catch (Exception e)
+								{
+									try
+									{
+										Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+										Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
+
+										Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
+										Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+
+										Object stageData = getStageData.invoke(null, player);
+										String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+										boolean has = (boolean) hasUnlockedStage.invoke(stageData, condition);
+
+										if (has)
+											return handleProtections((EntityPlayerMP) player, toPickUp);
+									}
+									catch (Exception ex)
+									{
+										return handleProtections((EntityPlayerMP) player, toPickUp);
+									}
+								}
 							}
 							else
 								return true && handleProtections((EntityPlayerMP) player, toPickUp);
 						}
+						
+
 					}
 				}
 
@@ -203,12 +301,12 @@ public class PickupHandler
 		BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
 		MinecraftForge.EVENT_BUS.post(event);
 
-		if(event.isCanceled())
+		if (event.isCanceled())
 			breakable = false;
-		
+
 		return breakable;
 	}
-	
+
 	private static boolean handleProtections(EntityPlayerMP player, Entity entity)
 	{
 		boolean canPickup = true;
@@ -216,9 +314,9 @@ public class PickupHandler
 		AttackEntityEvent event = new AttackEntityEvent(player, entity);
 		MinecraftForge.EVENT_BUS.post(event);
 
-		if(event.isCanceled())
+		if (event.isCanceled())
 			canPickup = false;
-		
+
 		return canPickup;
 	}
 
