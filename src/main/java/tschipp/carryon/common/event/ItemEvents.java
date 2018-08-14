@@ -268,6 +268,7 @@ public class ItemEvents
 				TileEntity te = world.getTileEntity(pos);
 				if (PickupHandler.canPlayerPickUpBlock(player, te, world, pos))
 				{
+					player.closeScreen();
 
 					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{

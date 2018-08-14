@@ -38,8 +38,6 @@ public class PickupHandler
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
 
-		player.closeScreen();
-
 		NBTTagCompound tag = new NBTTagCompound();
 		if (tile != null)
 			tile.writeToNBT(tag);
@@ -57,7 +55,6 @@ public class PickupHandler
 				{
 					return false;
 				}
-				CarryOn.LOGGER.info("Block is allowed");
 			}
 			else
 			{
