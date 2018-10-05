@@ -168,6 +168,8 @@ public class Configs {
     					"refinedstorage:*",
     					"practicallogistics2:*",
     					"mcmultipart:*",
+    					"enderstorage:*",
+    					"betterstorage:*"
 
     			};
 		

@@ -1,5 +1,9 @@
 package tschipp.carryon.common.event;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -7,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,10 +35,12 @@ import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -47,11 +54,12 @@ import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.client.CarrySlotPacket;
-import tschipp.carryon.network.server.SyncKeybindPacket;
 
 public class ItemEvents
 {
 
+	public static Map<BlockPos, Integer> positions = new HashMap<BlockPos, Integer>();
+	
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -64,7 +72,6 @@ public class ItemEvents
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
-
 
 			if (!player.world.isRemote)
 			{
@@ -116,6 +123,13 @@ public class ItemEvents
 				}
 				ItemTile.clearTileData(stack);
 				eitem.setItem(ItemStack.EMPTY);
+			}
+			
+			
+			BlockPos pos = new BlockPos(Math.floor(eitem.posX), Math.floor(eitem.posY), Math.floor(eitem.posZ));
+			if(positions.containsKey(pos))
+			{
+				event.setCanceled(true);
 			}
 		}
 
@@ -245,8 +259,30 @@ public class ItemEvents
 		}
 	}
 
+
 	@SubscribeEvent
-	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) throws InstantiationException, IllegalAccessException
+	public void onWorldTick(TickEvent.WorldTickEvent event)
+	{
+		for(Entry<BlockPos, Integer> entry : positions.entrySet())
+		{
+			entry.setValue(entry.getValue() + 1);
+			
+			if(entry.getValue() > 3)
+				positions.remove(entry.getKey());
+		}
+	}
+	
+	@SubscribeEvent
+	public void onDrop(HarvestDropsEvent event)
+	{
+		if(positions.containsKey(event.getPos()))
+		{
+			event.getDrops().clear();
+		}
+	}
+	
+	@SubscribeEvent
+	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
 
@@ -270,6 +306,7 @@ public class ItemEvents
 				{
 					player.closeScreen();
 
+					
 					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{
 
@@ -281,15 +318,19 @@ public class ItemEvents
 						if (override != null)
 							overrideHash = override.hashCode();
 
+						positions.put(pos, 0);
+						
 						boolean success = false;
 
 						try
 						{
 							sendPacket(player, player.inventory.currentItem, overrideHash);
+
 							world.removeTileEntity(pos);
-							world.setBlockToAir(pos);
+							world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
+							event.setUseItem(Result.DENY);
 							event.setCanceled(true);
 							success = true;
 						}
@@ -302,6 +343,7 @@ public class ItemEvents
 								world.setBlockToAir(pos);
 								player.setHeldItem(EnumHand.MAIN_HAND, stack);
 								event.setUseBlock(Result.DENY);
+								event.setUseItem(Result.DENY);
 								event.setCanceled(true);
 								success = true;
 							}
@@ -326,6 +368,7 @@ public class ItemEvents
 							if (command != null)
 								player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
 						}
+						
 
 					}
 				}
@@ -335,7 +378,7 @@ public class ItemEvents
 
 	public static void emptyTileEntity(TileEntity te)
 	{
-		if (te != null && !te.isInvalid())
+		if (te != null)
 		{
 			for (EnumFacing facing : EnumFacing.VALUES)
 			{
@@ -372,6 +415,8 @@ public class ItemEvents
 					itemHandler.extractItem(i, 64, false);
 				}
 			}
+
+			te.markDirty();
 		}
 	}
 

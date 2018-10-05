@@ -546,7 +546,7 @@ public class RenderEvents
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 			{
 				ModelPlayer model = event.getRenderer().getMainModel();
-
+				
 				CarryOnOverride overrider = ScriptChecker.getOverride(player);
 				if (overrider != null)
 				{
@@ -557,6 +557,8 @@ public class RenderEvents
 					{
 						renderArmPre(model.bipedRightArm);
 						renderArmPre(model.bipedRightArmwear);
+						
+						
 					}
 
 					if (renderLeft)

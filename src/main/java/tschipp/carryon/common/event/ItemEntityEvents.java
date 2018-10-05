@@ -2,20 +2,19 @@ package tschipp.carryon.common.event;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
@@ -27,10 +26,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.handler.PickupHandler;
@@ -38,7 +35,6 @@ import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
-import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntityEvents
 {
@@ -52,7 +48,6 @@ public class ItemEntityEvents
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
-
 
 			if (!player.world.isRemote)
 			{
@@ -132,9 +127,14 @@ public class ItemEntityEvents
 								overrideHash = override.hashCode();
 
 							ItemEvents.sendPacket(player, player.inventory.currentItem, overrideHash);
+
+							if (entity instanceof EntityLiving)
+								((EntityLiving) entity).setHealth(0);
+
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);
+							event.setCancellationResult(EnumActionResult.FAIL);
 						}
 					}
 				}
