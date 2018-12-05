@@ -447,12 +447,17 @@ public class RenderEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onEvent(RenderPlayerEvent.Post event)
 	{
-		if (handleMobends())
+		if(!CarryOnConfig.settings.renderArms)
+			return;
+		
+		if (handleMobends() && !Loader.isModLoaded("obfuscate"))
 		{
 			EntityPlayer player = event.getEntityPlayer();
 			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
 			float partialticks = event.getPartialRenderTick();
 
+			RenderPlayer render = event.getRenderer();
+			
 			ItemStack stack = player.getHeldItemMainhand();
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 			{
@@ -539,7 +544,10 @@ public class RenderEvents
 	@SubscribeEvent(priority = EventPriority.NORMAL)
 	public void onEvent(RenderPlayerEvent.Pre event)
 	{
-		if (handleMobends())
+		if(!CarryOnConfig.settings.renderArms)
+			return;
+		
+		if (handleMobends() && !Loader.isModLoaded("obfuscate"))
 		{
 			EntityPlayer player = event.getEntityPlayer();
 			ItemStack stack = player.getHeldItemMainhand();

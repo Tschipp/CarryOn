@@ -30,6 +30,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
@@ -158,42 +159,46 @@ public class ItemEntityEvents
 						{
 							Entity topEntity = getTopPassenger(lowestEntity);
 
-							double sizeEntity = topEntity.height * topEntity.width;
-							if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking)
+							if (CarryOnConfig.settings.useWhitelistStacking ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
 							{
-								if (topEntity instanceof EntityHorse)
+								double sizeEntity = topEntity.height * topEntity.width;
+								if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking)
 								{
-									EntityHorse horse = (EntityHorse) topEntity;
-									horse.setHorseTamed(true);
-								}
+									if (topEntity instanceof EntityHorse)
+									{
+										EntityHorse horse = (EntityHorse) topEntity;
+										horse.setHorseTamed(true);
+									}
 
-								if (distance < 6)
-								{
-									double tempX = entity.posX;
-									double tempY = entity.posY;
-									double tempZ = entity.posZ;
-									entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
-									world.spawnEntity(entityHeld);
-									entityHeld.startRiding(topEntity, false);
-									entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+									if (distance < 6)
+									{
+										double tempX = entity.posX;
+										double tempY = entity.posY;
+										double tempZ = entity.posZ;
+										entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
+										world.spawnEntity(entityHeld);
+										entityHeld.startRiding(topEntity, false);
+										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+									}
+									else
+									{
+										entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
+										world.spawnEntity(entityHeld);
+										entityHeld.startRiding(topEntity, false);
+									}
+
+									ItemEntity.clearEntityData(main);
+									player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+									ItemEvents.sendPacket(player, 9, 0);
+									event.setCanceled(true);
+									event.setCancellationResult(EnumActionResult.FAIL);
+									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 								}
 								else
 								{
-									entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
-									world.spawnEntity(entityHeld);
-									entityHeld.startRiding(topEntity, false);
+									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									return;
 								}
-
-								ItemEntity.clearEntityData(main);
-								player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-								ItemEvents.sendPacket(player, 9, 0);
-								event.setCanceled(true);
-								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
-							}
-							else
-							{
-								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
-								return;
 							}
 						}
 						else

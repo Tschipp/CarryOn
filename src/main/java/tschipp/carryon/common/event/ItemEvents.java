@@ -26,6 +26,8 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -36,6 +38,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -47,6 +50,7 @@ import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
@@ -59,7 +63,7 @@ public class ItemEvents
 {
 
 	public static Map<BlockPos, Integer> positions = new HashMap<BlockPos, Integer>();
-	
+
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -124,10 +128,9 @@ public class ItemEvents
 				ItemTile.clearTileData(stack);
 				eitem.setItem(ItemStack.EMPTY);
 			}
-			
-			
+
 			BlockPos pos = new BlockPos(Math.floor(eitem.posX), Math.floor(eitem.posY), Math.floor(eitem.posZ));
-			if(positions.containsKey(pos))
+			if (positions.containsKey(pos))
 			{
 				event.setCanceled(true);
 			}
@@ -259,28 +262,27 @@ public class ItemEvents
 		}
 	}
 
-
 	@SubscribeEvent
 	public void onWorldTick(TickEvent.WorldTickEvent event)
 	{
-		for(Entry<BlockPos, Integer> entry : positions.entrySet())
+		for (Entry<BlockPos, Integer> entry : positions.entrySet())
 		{
 			entry.setValue(entry.getValue() + 1);
-			
-			if(entry.getValue() > 3)
+
+			if (entry.getValue() > 3)
 				positions.remove(entry.getKey());
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onDrop(HarvestDropsEvent event)
 	{
-		if(positions.containsKey(event.getPos()))
+		if (positions.containsKey(event.getPos()))
 		{
 			event.getDrops().clear();
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -306,7 +308,6 @@ public class ItemEvents
 				{
 					player.closeScreen();
 
-					
 					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
 					{
 
@@ -319,7 +320,7 @@ public class ItemEvents
 							overrideHash = override.hashCode();
 
 						positions.put(pos, 0);
-						
+
 						boolean success = false;
 
 						try
@@ -368,7 +369,6 @@ public class ItemEvents
 							if (command != null)
 								player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
 						}
-						
 
 					}
 				}
@@ -497,6 +497,16 @@ public class ItemEvents
 				}
 
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
+	{
+		if (event.getModID().equals(CarryOn.MODID))
+		{
+			ListHandler.initLists();
+			ConfigManager.load(CarryOn.MODID, Config.Type.INSTANCE);
 		}
 	}
 

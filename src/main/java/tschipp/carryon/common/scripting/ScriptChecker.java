@@ -22,6 +22,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 
 public class ScriptChecker
@@ -39,12 +40,17 @@ public class ScriptChecker
 		float resistance = block.getExplosionResistance(null);
 		NBTTagCompound nbt = tag;
 
-		for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
+		boolean isAllowed = CarryOnConfig.settings.useWhitelistBlocks ? ListHandler.isAllowed(block) : !ListHandler.isForbidden(block);
+
+		if (isAllowed)
 		{
-			if (override.isBlock())
+			for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
 			{
-				if (matchesAll(override, block, meta, material, hardness, resistance, nbt))
-					return override;
+				if (override.isBlock())
+				{
+					if (matchesAll(override, block, meta, material, hardness, resistance, nbt))
+						return override;
+				}
 			}
 		}
 
@@ -64,12 +70,17 @@ public class ScriptChecker
 		NBTTagCompound tag = new NBTTagCompound();
 		entity.writeToNBT(tag);
 
-		for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
+		boolean isAllowed = CarryOnConfig.settings.useWhitelistEntities ? ListHandler.isAllowed(entity) : !ListHandler.isForbidden(entity);
+
+		if (isAllowed)
 		{
-			if (override.isEntity())
+			for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
 			{
-				if (matchesAll(override, name, height, width, health, tag))
-					return override;
+				if (override.isEntity())
+				{
+					if (matchesAll(override, name, height, width, health, tag))
+						return override;
+				}
 			}
 		}
 

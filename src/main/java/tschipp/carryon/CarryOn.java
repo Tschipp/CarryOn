@@ -1,16 +1,16 @@
 package tschipp.carryon;
 
 import java.io.File;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -21,7 +21,7 @@ import tschipp.carryon.common.command.CommandCarryOn;
 import tschipp.carryon.common.command.CommandCarryOnReload;
 
 @EventBusSubscriber
-@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = CarryOn.DEPENDENCIES, updateJSON = CarryOn.UPDATE_JSON, acceptedMinecraftVersions = CarryOn.ACCEPTED_VERSIONS)
+@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = CarryOn.DEPENDENCIES, updateJSON = CarryOn.UPDATE_JSON, acceptedMinecraftVersions = CarryOn.ACCEPTED_VERSIONS, certificateFingerprint = CarryOn.CERTIFICATE_FINGERPRINT)
 public class CarryOn {
 
 	@SidedProxy(clientSide = "tschipp.carryon.client.ClientProxy", serverSide = "tschipp.carryon.common.CommonProxy")
@@ -32,12 +32,13 @@ public class CarryOn {
 	public static CarryOn instance;
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.11.1";
+	public static final String VERSION = "1.12";
 	public static final String NAME = "Carry On";
 	public static final String ACCEPTED_VERSIONS = "[1.12.2,1.13)";
 	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
 	public static final String DEPENDENCIES = "required-after:forge@[13.20.1.2386,);after:gamestages;";
+	public static final String CERTIFICATE_FINGERPRINT = "55e88f24d04398481ae6f1ce76f65fd776f14227";
 	public static File CONFIGURATION_FILE;
  
 	public static SimpleNetworkWrapper network;
@@ -64,6 +65,10 @@ public class CarryOn {
 		event.registerServerCommand(new CommandCarryOnReload());
 	}
 	
-	
+	@EventHandler
+    public void onFingerprintViolation(FMLFingerprintViolationEvent event) {
+        
+		LOGGER.error("WARNING! Invalid fingerprint detected! The file " + event.getSource().getName() + " may have been tampered with! If you didn't download the file from https://minecraft.curseforge.com/projects/carry-on or through any kind of mod launcher, immediately delete the file and re-download it from https://minecraft.curseforge.com/projects/carry-on");
+    }
 
 }

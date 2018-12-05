@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.fml.common.Loader;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.event.RenderEntityEvents;
 import tschipp.carryon.client.event.RenderEvents;
@@ -17,6 +18,7 @@ import tschipp.carryon.common.event.ItemEntityEvents;
 import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.compat.obfuscate.ObfuscateEvents;
 
 public class RegistrationHandler
 {
@@ -47,13 +49,17 @@ public class RegistrationHandler
 		MinecraftForge.EVENT_BUS.register(new RenderEvents());
 		MinecraftForge.EVENT_BUS.register(new RenderEntityEvents());
 		MinecraftForge.EVENT_BUS.register(new PositionClientEvents());
+		
+		if(Loader.isModLoaded("obfuscate"))
+			MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
+
 	}
 	
 	public static void regOverrideList()
 	{
 		ModelOverridesHandler.initOverrides();
 		CustomPickupOverrideHandler.initPickupOverrides();
-		ListHandler.initForbiddenTiles();
+		ListHandler.initLists();
 	}
 	
 	public static void regCaps()
