@@ -1,0 +1,12 @@
+{
+  "id": "carryon",
+  "name": "Carry On",
+  "version": "1.0.0",
+  "side": "universal",
+  "initializer": "tschipp.carryon.CarryOn",
+  "description": "Carry On for Fabric",
+  "mixins": {
+    "client": "carryon.client.json",
+    "common": "carryon.common.json"
+  }
+}

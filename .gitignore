@@ -1,3 +1,24 @@
+# gradle
+
+.gradle/
+build/
+out/
+bin/
+
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+#vscode
+.vscode/
+.project
+.classpath
+
+
 # eclipse
 bin
 *.launch
@@ -7,17 +28,5 @@ bin
 .project
 .DS_Store
 
-# idea
-out
-*.ipr
-*.iws
-*.iml
-.idea
-
-# gradle
-build
-.gradle
-
-# other
-eclipse
-run
+# fabric
+run/

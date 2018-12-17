@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "tschipp.carryon.mixin.common",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "BlockStateMixin",
+    "EntityMixin",
+    "PlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

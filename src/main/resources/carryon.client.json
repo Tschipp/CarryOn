@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "tschipp.carryon.mixin.client",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "PlayerRendererMixin",
+    "BipedModelMixin",
+    "ArmorRendererMixin",
+    "FirstPersonMixin",
+    "MouseMixin",
+    "KeyboardMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
