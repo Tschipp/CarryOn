@@ -4,15 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,8 +25,7 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -38,18 +36,24 @@ import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.PacketDistributor.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
-import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.command.CommandCarryOn;
+import tschipp.carryon.common.config.Configs;
+import tschipp.carryon.common.config.Configs.Settings;
+import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
@@ -57,6 +61,7 @@ import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
+import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEvents
@@ -83,8 +88,9 @@ public class ItemEvents
 				if (override != null)
 				{
 					String command = override.getCommandPlace();
+
 					if (command != null)
-						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+						player.getServer().getCommandManager().handleCommand(player.getServer().getCommandSource(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
 			}
 		}
@@ -105,13 +111,15 @@ public class ItemEvents
 			{
 				BlockPos pos = eitem.getPosition();
 				BlockPos finalPos = pos;
-				Block block = ItemTile.getBlock(stack);
-				if (!world.getBlockState(pos).getBlock().isReplaceable(world, pos) || !block.canPlaceBlockAt(world, pos))
+				BlockItemUseContext context = new BlockItemUseContext(world, null, stack, pos, EnumFacing.DOWN, 0f, 0f, 0f);
+
+				if (!world.getBlockState(pos).isReplaceable(context) || !context.canPlace())
 				{
-					for (EnumFacing facing : EnumFacing.VALUES)
+					for (EnumFacing facing : EnumFacing.values())
 					{
 						BlockPos offsetPos = pos.offset(facing);
-						if (world.getBlockState(offsetPos).getBlock().isReplaceable(world, offsetPos) && block.canPlaceBlockAt(world, offsetPos))
+						BlockItemUseContext newContext = new BlockItemUseContext(world, null, stack, offsetPos, EnumFacing.DOWN, 0, 0, 0);
+						if (world.getBlockState(offsetPos).isReplaceable(newContext) && newContext.canPlace())
 						{
 							finalPos = offsetPos;
 							break;
@@ -122,7 +130,7 @@ public class ItemEvents
 				TileEntity tile = world.getTileEntity(finalPos);
 				if (tile != null)
 				{
-					tile.readFromNBT(ItemTile.getTileData(stack));
+					tile.deserializeNBT(ItemTile.getTileData(stack));
 					tile.setPos(finalPos);
 				}
 				ItemTile.clearTileData(stack);
@@ -141,9 +149,9 @@ public class ItemEvents
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
-		if (event.player instanceof EntityPlayer)
+		if (event.getPlayer() instanceof EntityPlayer)
 		{
-			EntityPlayer player = (EntityPlayer) event.player;
+			EntityPlayer player = (EntityPlayer) event.getPlayer();
 			World world = player.getEntityWorld();
 
 			ItemStack carried = player.getHeldItemMainhand();
@@ -151,23 +159,33 @@ public class ItemEvents
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
-					CarryOnOverride override = ScriptChecker.inspectBlock(((ItemTile) carried.getItem()).getBlockState(carried), world, player.getPosition(), ((ItemTile) carried.getItem()).getTileData(carried));
+					CarryOnOverride override = ScriptChecker.inspectBlock(ItemTile.getBlockState(carried), world, player.getPosition(), ItemTile.getTileData(carried));
 					if (override != null)
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) player);
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) player), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()));
 					else
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) player);
-				}
-				else
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) player), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()));
+				} else
 				{
-					CarryOnOverride override = ScriptChecker.inspectEntity(((ItemEntity) carried.getItem()).getEntity(carried, world));
+					CarryOnOverride override = ScriptChecker.inspectEntity(ItemEntity.getEntity(carried, world));
 					if (override != null)
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) player);
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) player), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()));
 					else
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) player);
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) player), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()));
+
 				}
 			}
 
 		}
+	}
+
+	@SubscribeEvent
+	public void serverLoad(FMLServerStartingEvent event)
+	{
+		CommandCarryOn.register(event.getCommandDispatcher());
+		ScriptReader.reloadScripts();
+		CustomPickupOverrideHandler.initPickupOverrides();
+		ListHandler.initLists();
+
 	}
 
 	@SubscribeEvent
@@ -186,19 +204,18 @@ public class ItemEvents
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
-					CarryOnOverride override = ScriptChecker.inspectBlock(((ItemTile) carried.getItem()).getBlockState(carried), world, player.getPosition(), ((ItemTile) carried.getItem()).getTileData(carried));
+					CarryOnOverride override = ScriptChecker.inspectBlock(ItemTile.getBlockState(carried), world, player.getPosition(), ItemTile.getTileData(carried));
 					if (override != null)
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) tracker);
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) tracker), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()));
 					else
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) tracker);
-				}
-				else
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) tracker), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()));
+				} else
 				{
-					CarryOnOverride override = ScriptChecker.inspectEntity(((ItemEntity) carried.getItem()).getEntity(carried, world));
+					CarryOnOverride override = ScriptChecker.inspectEntity(ItemEntity.getEntity(carried, world));
 					if (override != null)
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()), (EntityPlayerMP) tracker);
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) tracker), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), override.hashCode()));
 					else
-						CarryOn.network.sendTo(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()), (EntityPlayerMP) tracker);
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) tracker), new CarrySlotPacket(player.inventory.currentItem, player.getEntityId()));
 				}
 			}
 
@@ -209,7 +226,7 @@ public class ItemEvents
 	public void harvestSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
-		if (player != null && !CarryOnConfig.settings.hitWhileCarrying)
+		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getHeldItemMainhand();
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
@@ -222,7 +239,7 @@ public class ItemEvents
 	{
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
-		if (!stack.isEmpty() && !CarryOnConfig.settings.hitWhileCarrying && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+		if (!stack.isEmpty() && !Settings.hitWhileCarrying.get() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 		{
 			event.setCanceled(true);
 		}
@@ -232,7 +249,7 @@ public class ItemEvents
 	public void harvestSpeed(BreakEvent event)
 	{
 		EntityPlayer player = event.getPlayer();
-		if (player != null && !CarryOnConfig.settings.hitWhileCarrying)
+		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getHeldItemMainhand();
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
@@ -244,7 +261,7 @@ public class ItemEvents
 	public void playerAttack(LivingAttackEvent event)
 	{
 		EntityLivingBase eliving = event.getEntityLiving();
-		if (eliving instanceof EntityPlayer && CarryOnConfig.settings.dropCarriedWhenHit)
+		if (eliving instanceof EntityPlayer && Settings.dropCarriedWhenHit.get())
 		{
 			EntityPlayer player = (EntityPlayer) eliving;
 			ItemStack stack = player.getHeldItemMainhand();
@@ -295,7 +312,6 @@ public class ItemEvents
 			ItemStack off = player.getHeldItemOffhand();
 			World world = event.getWorld();
 			BlockPos pos = event.getPos();
-			Block block = world.getBlockState(pos).getBlock();
 			IBlockState state = world.getBlockState(pos);
 
 			if (main.isEmpty() && off.isEmpty() && CarryOnKeybinds.isKeyPressed(player))
@@ -308,12 +324,12 @@ public class ItemEvents
 				{
 					player.closeScreen();
 
-					if (ItemTile.storeTileData(te, world, pos, state.getActualState(world, pos), stack))
+					if (ItemTile.storeTileData(te, world, pos, state, stack))
 					{
 
 						IBlockState statee = world.getBlockState(pos);
 						NBTTagCompound tag = new NBTTagCompound();
-						tag = world.getTileEntity(pos) != null ? world.getTileEntity(pos).writeToNBT(tag) : new NBTTagCompound();
+						tag = world.getTileEntity(pos) != null ? world.getTileEntity(pos).write(tag) : new NBTTagCompound();
 						CarryOnOverride override = ScriptChecker.inspectBlock(state, world, pos, tag);
 						int overrideHash = 0;
 						if (override != null)
@@ -328,32 +344,30 @@ public class ItemEvents
 							sendPacket(player, player.inventory.currentItem, overrideHash);
 
 							world.removeTileEntity(pos);
-							world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+							world.removeBlock(pos);
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
 							event.setUseItem(Result.DENY);
 							event.setCanceled(true);
 							success = true;
-						}
-						catch (Exception e)
+						} catch (Exception e)
 						{
 							try
 							{
 								sendPacket(player, player.inventory.currentItem, overrideHash);
 								emptyTileEntity(te);
-								world.setBlockToAir(pos);
+								world.removeBlock(pos);
 								player.setHeldItem(EnumHand.MAIN_HAND, stack);
 								event.setUseBlock(Result.DENY);
 								event.setUseItem(Result.DENY);
 								event.setCanceled(true);
 								success = true;
-							}
-							catch (Exception ex)
+							} catch (Exception ex)
 							{
 								sendPacket(player, 9, 0);
 								world.setBlockState(pos, statee);
-								if (!tag.hasNoTags())
-									TileEntity.create(world, tag);
+								if (!tag.isEmpty())
+									TileEntity.create(tag);
 
 								player.sendMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot pick up block."));
 								TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
@@ -366,8 +380,9 @@ public class ItemEvents
 						if (success && override != null)
 						{
 							String command = override.getCommandInit();
+
 							if (command != null)
-								player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+								player.getServer().getCommandManager().handleCommand(player.getServer().getCommandSource(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 						}
 
 					}
@@ -380,26 +395,31 @@ public class ItemEvents
 	{
 		if (te != null)
 		{
-			for (EnumFacing facing : EnumFacing.VALUES)
+			for (EnumFacing facing : EnumFacing.values())
 			{
-				if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing))
-				{
-					IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
-					for (int i = 0; i < itemHandler.getSlots(); i++)
+				LazyOptional<IItemHandler> itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
+
+				itemHandler.ifPresent((handler) -> {
+
+					for (int i = 0; i < handler.getSlots(); i++)
 					{
-						itemHandler.extractItem(i, 64, false);
+						handler.extractItem(i, 64, false);
 					}
-				}
+
+				});
+
 			}
 
-			if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
-			{
-				IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-				for (int i = 0; i < itemHandler.getSlots(); i++)
+			LazyOptional<IItemHandler> itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+
+			itemHandler.ifPresent((handler) -> {
+
+				for (int i = 0; i < handler.getSlots(); i++)
 				{
-					itemHandler.extractItem(i, 64, false);
+					handler.extractItem(i, 64, false);
 				}
-			}
+
+			});
 
 			if (te instanceof IInventory)
 			{
@@ -409,10 +429,10 @@ public class ItemEvents
 
 			if (te instanceof IItemHandler)
 			{
-				IItemHandler itemHandler = (IItemHandler) te;
-				for (int i = 0; i < itemHandler.getSlots(); i++)
+				IItemHandler itemHandler1 = (IItemHandler) te;
+				for (int i = 0; i < itemHandler1.getSlots(); i++)
 				{
-					itemHandler.extractItem(i, 64, false);
+					itemHandler1.extractItem(i, 64, false);
 				}
 			}
 
@@ -439,7 +459,7 @@ public class ItemEvents
 
 			EntityItem item = new EntityItem(world);
 			item.setItem(stack);
-			BlockPos pos = original.getBedLocation();
+			BlockPos pos = original.getBedLocation(original.dimension);
 			if (pos == null)
 				pos = player.getPosition();
 			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
@@ -463,11 +483,13 @@ public class ItemEvents
 
 				if (hasCarried)
 				{
-					if (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)
+					if ((inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity) && player.getPortalCooldown() == 0)
 					{
 						int slotBlock = getSlot(player, RegistrationHandler.itemTile);
 						int slotEntity = getSlot(player, RegistrationHandler.itemEntity);
 
+						
+						
 						EntityItem item = null;
 						if (slotBlock != -1)
 						{
@@ -492,8 +514,9 @@ public class ItemEvents
 				if (override != null)
 				{
 					String command = override.getCommandLoop();
+
 					if (command != null)
-						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+						player.getServer().getCommandManager().handleCommand(player.getServer().getCommandSource(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
 
 			}
@@ -501,12 +524,14 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
+	public void onConfigChanged(ModConfig.ConfigReloading event)
 	{
-		if (event.getModID().equals(CarryOn.MODID))
+		if (event.getConfig().getModId().equals(CarryOn.MODID))
 		{
 			ListHandler.initLists();
-			ConfigManager.load(CarryOn.MODID, Config.Type.INSTANCE);
+
+			Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-client.toml"));
+			Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));
 		}
 	}
 
@@ -525,18 +550,16 @@ public class ItemEvents
 	{
 		if (player instanceof EntityPlayerMP)
 		{
-			CarryOn.network.sendToAllAround(new CarrySlotPacket(currentItem, player.getEntityId(), hash), new TargetPoint(player.world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
-			CarryOn.network.sendTo(new CarrySlotPacket(currentItem, player.getEntityId(), hash), (EntityPlayerMP) player);
+			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.posX, player.posY, player.posZ, 128, player.world.getDimension().getType())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) player), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 
 			if (currentItem >= 9)
 			{
 				player.getEntityData().removeTag("carrySlot");
 				player.getEntityData().removeTag("overrideKey");
-			}
-			else
+			} else
 			{
-
-				player.getEntityData().setInteger("carrySlot", currentItem);
+				player.getEntityData().setInt("carrySlot", currentItem);
 				if (hash != 0)
 					ScriptChecker.setCarryOnOverride(player, hash);
 			}

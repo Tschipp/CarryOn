@@ -1,35 +1,41 @@
 package tschipp.carryon.network.server;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import java.util.function.Supplier;
 
-public class SyncKeybindPacket implements IMessage
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.fml.network.NetworkEvent;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
+
+public class SyncKeybindPacket
 {
-	
-	private int p;
 	public boolean pressed;
-	
-	public SyncKeybindPacket()
+
+	public SyncKeybindPacket(ByteBuf buf)
 	{
+		this.pressed = buf.readBoolean();
 	}
-	
+
 	public SyncKeybindPacket(boolean pressed)
 	{
-		this.p = pressed ? 1 : 0;
+		this.pressed = pressed;
 	}
 
-	@Override
-	public void fromBytes(ByteBuf buf)
-	{
-		this.p = ByteBufUtils.readVarInt(buf, 4);
-		this.pressed = p == 1 ? true : false;
-	}
-
-	@Override
 	public void toBytes(ByteBuf buf)
 	{
-		ByteBufUtils.writeVarInt(buf, p, 4);
+		buf.writeBoolean(pressed);
+	}
+
+	public void handle(Supplier<NetworkEvent.Context> ctx)
+	{
+		ctx.get().enqueueWork(() -> {
+			
+			EntityPlayerMP player = ctx.get().getSender();
+
+			CarryOnKeybinds.setKeyPressed(player, pressed);
+			
+			ctx.get().setPacketHandled(true);
+		});
 	}
 
 }

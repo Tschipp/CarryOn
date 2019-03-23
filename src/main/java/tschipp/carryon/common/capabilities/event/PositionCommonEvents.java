@@ -9,10 +9,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.capabilities.IPosition;
 import tschipp.carryon.common.capabilities.PositionProvider;
+import tschipp.carryon.common.capabilities.TEPosition;
 
 public class PositionCommonEvents
 {
@@ -46,9 +47,9 @@ public class PositionCommonEvents
 		TileEntity te = world.getTileEntity(pos);
 		if (te != null)
 		{
-			if (player.hasCapability(PositionProvider.POSITION_CAPABILITY, null))
+			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{
-				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY, null);
+				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
 				cap.setBlockActivated(true);
 				cap.setPos(pos);
 			}

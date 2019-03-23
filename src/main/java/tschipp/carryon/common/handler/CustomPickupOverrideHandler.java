@@ -1,13 +1,13 @@
 package tschipp.carryon.common.handler;
 
 import java.util.HashMap;
+import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraftforge.fml.common.Loader;
-import tschipp.carryon.common.config.CarryOnConfig;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.registries.ForgeRegistries;
+import tschipp.carryon.common.config.Configs.CustomPickupConditions;
 import tschipp.carryon.common.helper.InvalidConfigException;
 
 public class CustomPickupOverrideHandler
@@ -16,16 +16,17 @@ public class CustomPickupOverrideHandler
 	public static HashMap<String, String> PICKUP_CONDITIONS = new HashMap<String, String>();
 	public static HashMap<String, String> PICKUP_CONDITIONS_ENTITIES = new HashMap<String, String>();
 
+	@SuppressWarnings("unchecked")
 	public static void initPickupOverrides()
 	{
-		if (Loader.isModLoaded("gamestages"))
+		if (ModList.get().isLoaded("gamestages"))
 		{
 
-			String[] conditions = CarryOnConfig.customPickupConditions.customPickupConditionsBlocks;
+			List<String> conditions = (List<String>) CustomPickupConditions.customPickupConditionsBlocks.get();
 
-			for (int i = 0; i < conditions.length; i++)
+			for (int i = 0; i < conditions.size(); i++)
 			{
-				String line = conditions[i];
+				String line = conditions.get(i);
 
 				if (!line.contains("(") || !line.contains(")"))
 					new InvalidConfigException("Invalid Condition at line " + i + ": " + line).printException();
@@ -38,28 +39,26 @@ public class CustomPickupOverrideHandler
 				if (blockname.contains("*"))
 				{
 					String modid = blockname.replace("*", "");
-					for (int k = 0; k < Block.REGISTRY.getKeys().size(); k++)
+					for (int k = 0; k < ForgeRegistries.BLOCKS.getKeys().size(); k++)
 					{
-						if (Block.REGISTRY.getKeys().toArray()[k].toString().contains(modid))
+						if (ForgeRegistries.BLOCKS.getKeys().toArray()[k].toString().contains(modid))
 						{
-							PICKUP_CONDITIONS.put(Block.REGISTRY.getKeys().toArray()[k].toString() + ";any", condition);
+							PICKUP_CONDITIONS.put(ForgeRegistries.BLOCKS.getKeys().toArray()[k].toString(), condition);
 						}
 					}
 				}
 				else
 				{
-					if (!blockname.contains(";"))
-						blockname = blockname + ";any";
 
 					PICKUP_CONDITIONS.put(blockname, condition);
 				}
 			}
 
-			String[] entityConditions = CarryOnConfig.customPickupConditions.customPickupConditionsEntities;
+			List<String> entityConditions = (List<String>) CustomPickupConditions.customPickupConditionsEntities.get();
 
-			for (int i = 0; i < entityConditions.length; i++)
+			for (int i = 0; i < entityConditions.size(); i++)
 			{
-				String line = entityConditions[i];
+				String line = entityConditions.get(i);
 
 				if (!line.contains("(") || !line.contains(")"))
 					new InvalidConfigException("Invalid Condition at line " + i + ": " + line).printException();
@@ -77,47 +76,43 @@ public class CustomPickupOverrideHandler
 
 	public static boolean hasSpecialPickupConditions(IBlockState state)
 	{
-		if (!Loader.isModLoaded("gamestages"))
+		if (!ModList.get().isLoaded("gamestages"))
 			return false;
 
 		String block = state.getBlock().getRegistryName().toString();
-		String meta = "" + state.getBlock().getMetaFromState(state);
+		
+		boolean absolute = PICKUP_CONDITIONS.containsKey(block);
 
-		boolean absolute = PICKUP_CONDITIONS.containsKey(block + ";" + meta);
-		boolean any = PICKUP_CONDITIONS.containsKey(block + ";any");
-
-		return absolute || any;
+		return absolute;
 	}
 
 	public static String getPickupCondition(IBlockState state)
 	{
 		String block = state.getBlock().getRegistryName().toString();
-		String meta = "" + state.getBlock().getMetaFromState(state);
 
-		String absolute = PICKUP_CONDITIONS.get(block + ";" + meta);
-		String any = PICKUP_CONDITIONS.get(block + ";any");
+		String absolute = PICKUP_CONDITIONS.get(block);
 
 		if (absolute != null)
 			return absolute;
 		else
-			return any;
+			return null;
 	}
 
 	public static boolean hasSpecialPickupConditions(Entity entity)
 	{
-		if (!Loader.isModLoaded("gamestages"))
+		if (!ModList.get().isLoaded("gamestages"))
 			return false;
 
-		String entityname = EntityList.getKey(entity).toString();
-		boolean condition = PICKUP_CONDITIONS_ENTITIES.containsKey(entityname);
+		String name = entity.getType().getRegistryName().toString();
+		boolean condition = PICKUP_CONDITIONS_ENTITIES.containsKey(name);
 
 		return condition;
 	}
 
 	public static String getPickupCondition(Entity entity)
 	{
-		String entityname = EntityList.getKey(entity).toString();
-		String condition = PICKUP_CONDITIONS_ENTITIES.get(entityname);
+		String name = entity.getType().getRegistryName().toString();
+		String condition = PICKUP_CONDITIONS_ENTITIES.get(name);
 
 		return condition;
 	}

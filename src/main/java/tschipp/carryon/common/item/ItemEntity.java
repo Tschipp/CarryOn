@@ -2,15 +2,17 @@ package tschipp.carryon.common.item;
 
 import javax.annotation.Nonnull;
 
-import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumActionResult;
@@ -18,17 +20,15 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.ModList;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
-import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.event.ItemEvents;
-import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntity extends Item
 {
@@ -37,28 +37,26 @@ public class ItemEntity extends Item
 
 	public ItemEntity()
 	{
-		this.setUnlocalizedName("entity_item");
+		super(new Item.Properties().maxStackSize(1));
 		this.setRegistryName(CarryOn.MODID, "entity_item");
-		ForgeRegistries.ITEMS.register(this);
-		this.setMaxStackSize(1);
 	}
 
 	@Override
-	public String getItemStackDisplayName(ItemStack stack)
+	public ITextComponent getDisplayName(ItemStack stack)
 	{
-		if (hasEntityData(stack))
-		{	
-			return I18n.translateToLocal("entity."+EntityList.getTranslationName(new ResourceLocation(getEntityName(stack))) + ".name");
+		if (hasEntityData(stack)) {
+			
+			return new TextComponentTranslation(getEntityType(stack).getTranslationKey());
 		}
 
-		return "";
+		return new TextComponentString("");
 	}
 
 	public static boolean hasEntityData(ItemStack stack)
 	{
-		if (stack.hasTagCompound())
+		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTagCompound();
+			NBTTagCompound tag = stack.getTag();
 			return tag.hasKey(ENTITY_DATA_KEY) && tag.hasKey("entity");
 		}
 		return false;
@@ -73,27 +71,33 @@ public class ItemEntity extends Item
 			return false;
 
 		NBTTagCompound entityData = new NBTTagCompound();
-		entityData = entity.writeToNBT(entityData);
+		entityData = entity.serializeNBT();
 
-		String name = EntityList.getKey(entity).toString();
+		String name = EntityType.getId(entity.getType()).toString();
 
-		NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
+		NBTTagCompound tag = stack.hasTag() ? stack.getTag() : new NBTTagCompound();
 		if (tag.hasKey(ENTITY_DATA_KEY))
 			return false;
 
 		tag.setTag(ENTITY_DATA_KEY, entityData);
 		tag.setString("entity", name);
-		stack.setTagCompound(tag);
+		stack.setTag(tag);
 		return true;
 	}
 
 	@Override
-	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+	public EnumActionResult onItemUse(ItemUseContext context)
 	{
-		ItemStack stack = player.getHeldItem(hand);
-		Block block = world.getBlockState(pos).getBlock();
+		EntityPlayer player = context.getPlayer();
+		World world = context.getWorld();
+		BlockPos pos = context.getPos();
+		EnumFacing facing = context.getFace();
+		
+		ItemStack stack = context.getItem();
+		
+		IBlockState state = world.getBlockState(pos);
 
-		if(Loader.isModLoaded("betterplacement"))
+		if(ModList.get().isLoaded("betterplacement"))
 		{
 			if(CarryOnKeybinds.isKeyPressed(player))
 				return EnumActionResult.FAIL;
@@ -103,7 +107,7 @@ public class ItemEntity extends Item
 		{
 			BlockPos finalPos = pos;
 
-			if (!block.isReplaceable(world, pos))
+			if (!state.isReplaceable(new BlockItemUseContext(context)))
 			{
 				finalPos = pos.offset(facing);
 			}
@@ -117,10 +121,10 @@ public class ItemEntity extends Item
 					world.spawnEntity(entity);
 					if (entity instanceof EntityLiving)
 					{
-						((EntityLiving) entity).playLivingSound();
+						((EntityLiving) entity).playAmbientSound();
 					}
 					clearEntityData(stack);
-					player.setHeldItem(hand, ItemStack.EMPTY);
+					player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
 					ItemEvents.sendPacket(player, 9, 0);
 				
 				}
@@ -133,7 +137,7 @@ public class ItemEntity extends Item
 	}
 
 	@Override
-	public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected)
+	public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected)
 	{
 		if (hasEntityData(stack))
 		{
@@ -142,7 +146,7 @@ public class ItemEntity extends Item
 
 			if (entity instanceof EntityLivingBase)
 			{
-				if(entity instanceof EntityPlayer && CarryOnConfig.settings.slownessInCreative ? false : ((EntityPlayer)entity).isCreative())
+				if(entity instanceof EntityPlayer && Settings.slownessInCreative.get() ? false : ((EntityPlayer)entity).isCreative())
 					return;
 
 				((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 1, potionLevel(stack, world), false, false));
@@ -157,9 +161,9 @@ public class ItemEntity extends Item
 
 	public static void clearEntityData(ItemStack stack)
 	{
-		if (stack.hasTagCompound())
+		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTagCompound();
+			NBTTagCompound tag = stack.getTag();
 			tag.removeTag(ENTITY_DATA_KEY);
 			tag.removeTag("entity");
 		}
@@ -167,10 +171,10 @@ public class ItemEntity extends Item
 
 	public static NBTTagCompound getEntityData(ItemStack stack)
 	{
-		if (stack.hasTagCompound())
+		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTagCompound();
-			return tag.getCompoundTag(ENTITY_DATA_KEY);
+			NBTTagCompound tag = stack.getTag();
+			return tag.getCompound(ENTITY_DATA_KEY);
 		}
 		return null;
 	}
@@ -183,18 +187,18 @@ public class ItemEntity extends Item
 		String name = getEntityName(stack);
 
 		NBTTagCompound e = getEntityData(stack);
-		Entity entity = EntityList.createEntityByIDFromName(new ResourceLocation(name), world);
+		Entity entity = EntityType.create(world, new ResourceLocation(name));
 		if (entity != null)
-			entity.readFromNBT(e);
+			entity.deserializeNBT(e);
 
 		return entity;
 	}
 
 	public static String getEntityName(ItemStack stack)
 	{
-		if (stack.hasTagCompound())
+		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTagCompound();
+			NBTTagCompound tag = stack.getTag();
 			return tag.getString("entity");
 		}
 		return null;
@@ -202,9 +206,9 @@ public class ItemEntity extends Item
 
 	public static String getCustomName(ItemStack stack)
 	{
-		if (stack.hasTagCompound())
+		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTagCompound();
+			NBTTagCompound tag = stack.getTag();
 			if (tag.hasKey("CustomName") && !tag.getString("CustomName").isEmpty()) {
 				return tag.toString();
 			} else {
@@ -214,6 +218,16 @@ public class ItemEntity extends Item
 		return null;
 	}
 
+	public static EntityType<?> getEntityType(ItemStack stack) {
+		if (stack.hasTag()) {
+			NBTTagCompound tag = stack.getTag();
+			String name = tag.getString("entity");
+			EntityType<?> type = EntityType.getById(name);
+			return type;
+		}
+		return null;
+	}
+	
 	private int potionLevel(ItemStack stack, World world)
 	{
 		Entity e = getEntity(stack, world);
@@ -224,9 +238,11 @@ public class ItemEntity extends Item
 		if (i > 4)
 			i = 4;
 
-		if (!CarryOnConfig.settings.heavyEntities)
+		if (!Settings.heavyEntities.get())
 			i = 1;
 
-		return (int) (i * CarryOnConfig.settings.entitySlownessMultiplier);
+		double multiplier = Settings.entitySlownessMultiplier.get();
+		
+		return (int) (multiplier * i);
 	}
 }

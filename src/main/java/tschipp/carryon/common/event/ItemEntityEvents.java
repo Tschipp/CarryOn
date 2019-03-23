@@ -20,16 +20,17 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
-import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
@@ -56,8 +57,9 @@ public class ItemEntityEvents
 				if (override != null)
 				{
 					String command = override.getCommandPlace();
+					
 					if (command != null)
-						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+						player.getServer().getCommandManager().handleCommand(player.getServer().getCommandSource(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
 			}
 		}
@@ -113,14 +115,14 @@ public class ItemEntityEvents
 					{
 						if (ItemEntity.storeEntityData(entity, world, stack))
 						{
-							if (entity.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
-							{
-								IItemHandler handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-								for (int i = 0; i < handler.getSlots(); i++)
+							LazyOptional<IItemHandler> handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+
+							handler.ifPresent((hand) -> {
+								for (int i = 0; i < hand.getSlots(); i++)
 								{
-									handler.extractItem(i, 64, false);
+									hand.extractItem(i, 64, false);
 								}
-							}
+							});
 
 							CarryOnOverride override = ScriptChecker.inspectEntity(entity);
 							int overrideHash = 0;
@@ -132,7 +134,7 @@ public class ItemEntityEvents
 							if (entity instanceof EntityLiving)
 								((EntityLiving) entity).setHealth(0);
 
-							entity.setDead();
+							entity.remove();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);
 							event.setCancellationResult(EnumActionResult.FAIL);
@@ -140,29 +142,28 @@ public class ItemEntityEvents
 					}
 				}
 
-			}
-			else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && CarryOnConfig.settings.stackableEntities)
+			} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
 			{
 				Entity entityHeld = ItemEntity.getEntity(main, world);
 
 				if (entity.hurtResistantTime == 0 && entityHeld instanceof EntityLivingBase)
 				{
 
-					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.isDead && !entity.isDead)
+					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.removed && !entity.removed)
 					{
 
 						double sizeHeldEntity = entityHeld.height * entityHeld.width;
 						double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
 						Entity lowestEntity = entity.getLowestRidingEntity();
 						int numPassengers = getAllPassengers(lowestEntity);
-						if (numPassengers < CarryOnConfig.settings.maxEntityStackLimit - 1)
+						if (numPassengers < Settings.maxEntityStackLimit.get() - 1)
 						{
 							Entity topEntity = getTopPassenger(lowestEntity);
 
-							if (CarryOnConfig.settings.useWhitelistStacking ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
+							if (Settings.useWhitelistStacking.get() ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
 							{
 								double sizeEntity = topEntity.height * topEntity.width;
-								if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking)
+								if ((Settings.entitySizeMattersStacking.get() && sizeHeldEntity <= sizeEntity) || !Settings.entitySizeMattersStacking.get())
 								{
 									if (topEntity instanceof EntityHorse)
 									{
@@ -179,8 +180,7 @@ public class ItemEntityEvents
 										world.spawnEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
-									}
-									else
+									} else
 									{
 										entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
 										world.spawnEntity(entityHeld);
@@ -193,17 +193,15 @@ public class ItemEntityEvents
 									event.setCanceled(true);
 									event.setCancellationResult(EnumActionResult.FAIL);
 									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
-								}
-								else
+								} else
 								{
-									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 									return;
 								}
 							}
-						}
-						else
+						} else
 						{
-							world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 							return;
 						}
 					}

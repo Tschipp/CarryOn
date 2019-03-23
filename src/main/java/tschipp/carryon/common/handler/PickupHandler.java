@@ -5,9 +5,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EnumCreatureType;
@@ -18,13 +16,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import tschipp.carryon.CarryOn;
-import tschipp.carryon.common.config.CarryOnConfig;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
@@ -36,12 +32,10 @@ public class PickupHandler
 	{		
 		
 		IBlockState state = world.getBlockState(pos);
-		Block block = state.getBlock();
-
 		NBTTagCompound tag = new NBTTagCompound();
 		if (tile != null)
-			tile.writeToNBT(tag);
-
+			tile.write(tag);
+		
 		CarryOnOverride override = ScriptChecker.inspectBlock(world.getBlockState(pos), world, pos, tag);
 		if (override != null)
 		{
@@ -49,7 +43,7 @@ public class PickupHandler
 		}
 		else
 		{
-			if (CarryOnConfig.settings.useWhitelistBlocks)
+			if (Settings.useWhitelistBlocks.get())
 			{
 				if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
 				{
@@ -64,11 +58,11 @@ public class PickupHandler
 				}
 			}
 
-			if ((block.getBlockHardness(state, world, pos) != -1 || player.isCreative()))
+			if ((state.getBlockHardness(world, pos) != -1 || player.isCreative()))
 			{
 				double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
 
-				if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+				if (distance < Math.pow(Settings.maxDistance.get(), 2))
 				{
 
 					if (!ItemTile.isLocked(pos, world))
@@ -81,8 +75,8 @@ public class PickupHandler
 								Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
 								Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
 
-								Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
-								Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+								Method getPlayerData = ObfuscationReflectionHelper.findMethod(gameStageHelper, "getPlayerData", EntityPlayer.class);
+								Method hasStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasStage", String.class);
 
 								Object stageData = getPlayerData.invoke(null, player);
 								String condition = CustomPickupOverrideHandler.getPickupCondition(state);
@@ -98,8 +92,8 @@ public class PickupHandler
 									Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
 									Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
 
-									Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
-									Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+									Method getStageData = ObfuscationReflectionHelper.findMethod(playerDataHandler, "getStageData", EntityPlayer.class);
+									Method hasUnlockedStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasUnlockedStage", String.class);
 
 									Object stageData = getStageData.invoke(null, player);
 									String condition = CustomPickupOverrideHandler.getPickupCondition(state);
@@ -115,7 +109,7 @@ public class PickupHandler
 							}
 
 						}
-						else if (CarryOnConfig.settings.pickupAllBlocks ? true : tile != null)
+						else if (Settings.pickupAllBlocks.get() ? true : tile != null)
 						{
 							return handleProtections((EntityPlayerMP) player, world, pos, state);
 						}
@@ -142,19 +136,19 @@ public class PickupHandler
 		}
 		else
 		{
-			if (toPickUp instanceof EntityAgeable && CarryOnConfig.settings.allowBabies)
+			if (toPickUp instanceof EntityAgeable && Settings.allowBabies.get())
 			{
 				EntityAgeable living = (EntityAgeable) toPickUp;
 				if (living.getGrowingAge() < 0 || living.isChild())
 				{
 
 					double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
-					if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+					if (distance < Math.pow(Settings.maxDistance.get(), 2))
 					{
 						if (toPickUp instanceof EntityTameable)
 						{
 							EntityTameable tame = (EntityTameable) toPickUp;
-							if (tame.getOwnerId() != null && tame.getOwnerId() != player.getUUID(player.getGameProfile()))
+							if (tame.getOwnerId() != null && tame.getOwnerId() != EntityPlayer.getUUID(player.getGameProfile()))
 								return false;
 						}
 					}
@@ -166,8 +160,8 @@ public class PickupHandler
 							Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
 							Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
 
-							Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
-							Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+							Method getPlayerData = ObfuscationReflectionHelper.findMethod(gameStageHelper, "getPlayerData", EntityPlayer.class);
+							Method hasStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasStage", String.class);
 
 							Object stageData = getPlayerData.invoke(null, player);
 							String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
@@ -183,8 +177,8 @@ public class PickupHandler
 								Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
 								Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
 
-								Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
-								Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+								Method getStageData = ObfuscationReflectionHelper.findMethod(playerDataHandler, "getStageData", EntityPlayer.class);
+								Method hasUnlockedStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasUnlockedStage", String.class);
 
 								Object stageData = getStageData.invoke(null, player);
 								String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
@@ -204,7 +198,7 @@ public class PickupHandler
 				}
 			}
 
-			if (CarryOnConfig.settings.useWhitelistEntities)
+			if (Settings.useWhitelistEntities.get())
 			{
 				if (!ListHandler.isAllowed(toPickUp))
 				{
@@ -219,20 +213,20 @@ public class PickupHandler
 				}
 			}
 
-			if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
+			if ((Settings.pickupHostileMobs.get() ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 			{
-				if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
+				if ((Settings.pickupHostileMobs.get() ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
 				{
-					if ((toPickUp.height <= CarryOnConfig.settings.maxEntityHeight && toPickUp.width <= CarryOnConfig.settings.maxEntityWidth || player.isCreative()))
+					if ((toPickUp.height <= Settings.maxEntityHeight.get() && toPickUp.width <= Settings.maxEntityWidth.get() || player.isCreative()))
 					{
 						double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
-						if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+						if (distance < Math.pow(Settings.maxDistance.get(), 2))
 						{
 							if (toPickUp instanceof EntityTameable)
 							{
 								EntityTameable tame = (EntityTameable) toPickUp;
 								UUID owner = tame.getOwnerId();
-								UUID playerID = player.getUUID(player.getGameProfile());
+								UUID playerID = EntityPlayer.getUUID(player.getGameProfile());
 								if (owner != null && !owner.equals(playerID))
 									return false;
 							}
@@ -244,8 +238,8 @@ public class PickupHandler
 									Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
 									Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
 
-									Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
-									Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+									Method getPlayerData = ObfuscationReflectionHelper.findMethod(gameStageHelper, "getPlayerData", EntityPlayer.class);
+									Method hasStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasStage", String.class);
 
 									Object stageData = getPlayerData.invoke(null, player);
 									String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
@@ -261,8 +255,8 @@ public class PickupHandler
 										Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
 										Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
 
-										Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
-										Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+										Method getStageData = ObfuscationReflectionHelper.findMethod(playerDataHandler, "getStageData", EntityPlayer.class);
+										Method hasUnlockedStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasUnlockedStage", String.class);
 
 										Object stageData = getStageData.invoke(null, player);
 										String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);

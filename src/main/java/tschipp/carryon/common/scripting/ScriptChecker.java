@@ -10,7 +10,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -18,10 +17,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import tschipp.carryon.common.config.CarryOnConfig;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 
@@ -30,17 +28,17 @@ public class ScriptChecker
 	@Nullable
 	public static CarryOnOverride inspectBlock(IBlockState state, World world, BlockPos pos, @Nullable NBTTagCompound tag)
 	{
-		if (!CarryOnConfig.settings.useScripts)
+		if (!Settings.useScripts.get())
 			return null;
 
 		Block block = state.getBlock();
-		int meta = block.getMetaFromState(state);
 		Material material = state.getMaterial();
 		float hardness = state.getBlockHardness(world, pos);
-		float resistance = block.getExplosionResistance(null);
+		@SuppressWarnings("deprecation")
+		float resistance = block.getExplosionResistance();
 		NBTTagCompound nbt = tag;
 
-		boolean isAllowed = CarryOnConfig.settings.useWhitelistBlocks ? ListHandler.isAllowed(block) : !ListHandler.isForbidden(block);
+		boolean isAllowed = Settings.useWhitelistBlocks.get() ? ListHandler.isAllowed(block) : !ListHandler.isForbidden(block);
 
 		if (isAllowed)
 		{
@@ -48,7 +46,7 @@ public class ScriptChecker
 			{
 				if (override.isBlock())
 				{
-					if (matchesAll(override, block, meta, material, hardness, resistance, nbt))
+					if (matchesAll(override, block, material, hardness, resistance, nbt))
 						return override;
 				}
 			}
@@ -60,17 +58,17 @@ public class ScriptChecker
 	@Nullable
 	public static CarryOnOverride inspectEntity(Entity entity)
 	{
-		if (!CarryOnConfig.settings.useScripts)
+		if (!Settings.useScripts.get())
 			return null;
 
-		String name = EntityList.getKey(entity).toString();
+		String name = entity.getType().getRegistryName().toString();
 		float height = entity.height;
 		float width = entity.width;
 		float health = entity instanceof EntityLivingBase ? ((EntityLivingBase) entity).getHealth() : 0.0f;
 		NBTTagCompound tag = new NBTTagCompound();
-		entity.writeToNBT(tag);
+		entity.deserializeNBT(tag);
 
-		boolean isAllowed = CarryOnConfig.settings.useWhitelistEntities ? ListHandler.isAllowed(entity) : !ListHandler.isForbidden(entity);
+		boolean isAllowed = Settings.useWhitelistEntities.get() ? ListHandler.isAllowed(entity) : !ListHandler.isForbidden(entity);
 
 		if (isAllowed)
 		{
@@ -98,27 +96,26 @@ public class ScriptChecker
 		return (matchname && matchheight && matchwidth && matchhealth && matchnbt);
 	}
 
-	public static boolean matchesAll(CarryOnOverride override, Block block, int meta, Material material, float hardness, float resistance, NBTTagCompound nbt)
+	public static boolean matchesAll(CarryOnOverride override, Block block, Material material, float hardness, float resistance, NBTTagCompound nbt)
 	{
 		boolean matchnbt = ScriptParseHelper.matches(nbt, override.getTypeBlockTag());
 		boolean matchblock = ScriptParseHelper.matches(block, override.getTypeNameBlock());
-		boolean matchmeta = ScriptParseHelper.matches(meta, override.getTypeMeta());
 		boolean matchmaterial = ScriptParseHelper.matches(material, override.getTypeMaterial());
 		boolean matchhardness = ScriptParseHelper.matches(hardness, override.getTypeHardness());
 		boolean matchresistance = ScriptParseHelper.matches(resistance, override.getTypeResistance());
 
-		return (matchnbt && matchblock && matchmeta && matchmaterial && matchhardness && matchresistance);
+		return (matchnbt && matchblock && matchmaterial && matchhardness && matchresistance);
 	}
 
 	public static boolean fulfillsConditions(CarryOnOverride override, EntityPlayer player)
 	{
-		AdvancementManager manager = ((WorldServer) ((EntityPlayerMP) player).world).getAdvancementManager();
+		AdvancementManager manager = ((EntityPlayerMP) player).server.getAdvancementManager();
 		Advancement adv = manager.getAdvancement(new ResourceLocation((override.getConditionAchievement()) == null ? "" : override.getConditionAchievement()));
 
 		boolean achievement = adv == null ? true : ((EntityPlayerMP) player).getAdvancements().getProgress(adv).isDone();
 		boolean gamemode = ScriptParseHelper.matches(((EntityPlayerMP) player).interactionManager.getGameType().getID(), override.getConditionGamemode());
 		boolean gamestage = true;
-		if (Loader.isModLoaded("gamestages"))
+		if (ModList.get().isLoaded("gamestages"))
 		{
 			if (override.getConditionGamestage() != null)
 			{
@@ -127,8 +124,8 @@ public class ScriptChecker
 					Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
 					Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
 
-					Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
-					Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+					Method getPlayerData = ObfuscationReflectionHelper.findMethod(gameStageHelper, "getPlayerData", EntityPlayer.class);
+					Method hasStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasStage", String.class);
 
 					Object stageData = getPlayerData.invoke(null, player);
 					String condition = override.getConditionGamestage();
@@ -141,8 +138,8 @@ public class ScriptChecker
 						Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
 						Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
 
-						Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
-						Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+						Method getStageData = ObfuscationReflectionHelper.findMethod(playerDataHandler, "getStageData", EntityPlayer.class);
+						Method hasUnlockedStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasUnlockedStage",  String.class);
 
 						Object stageData = getStageData.invoke(null, player);
 						String condition = override.getConditionGamestage();
@@ -172,7 +169,7 @@ public class ScriptChecker
 
 		if (tag != null && tag.hasKey("overrideKey"))
 		{
-			int key = tag.getInteger("overrideKey");
+			int key = tag.getInt("overrideKey");
 
 			return ScriptReader.OVERRIDES.get(key);
 		}
@@ -185,7 +182,7 @@ public class ScriptChecker
 		NBTTagCompound tag = player.getEntityData();
 
 		if (tag != null)
-			tag.setInteger("overrideKey", i);
+			tag.setInt("overrideKey", i);
 	}
 
 }

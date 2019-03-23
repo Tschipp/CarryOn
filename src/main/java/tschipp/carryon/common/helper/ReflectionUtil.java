@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 
 import javax.annotation.Nullable;
 
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 /**
  * Utility methods for reflection.
@@ -31,14 +31,14 @@ public class ReflectionUtil
 	 */
 	public static MethodHandle findMethod(final Class<?> clazz, final String methodName, @Nullable final String methodObfName, final Class<?>... parameterTypes)
 	{
-		final Method method = ReflectionHelper.findMethod(clazz, methodName, methodObfName, parameterTypes);
+		final Method method = ObfuscationReflectionHelper.findMethod(clazz, methodName, parameterTypes);
 		try
 		{
 			return MethodHandles.lookup().unreflect(method);
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new ReflectionHelper.UnableToFindMethodException(e);
+			throw new ObfuscationReflectionHelper.UnableToFindMethodException(e);
 		}
 	}
 

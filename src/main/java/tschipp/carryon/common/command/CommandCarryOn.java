@@ -1,22 +1,21 @@
 package tschipp.carryon.common.command;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.network.PacketDistributor;
 import tschipp.carryon.CarryOn;
+import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
@@ -24,171 +23,136 @@ import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
+import tschipp.carryon.network.client.ScriptReloadPacket;
 
-public class CommandCarryOn extends CommandBase implements ICommand
+public class CommandCarryOn
 {
-
-	private final List names;
-
-	public CommandCarryOn()
+	public static void register(CommandDispatcher<CommandSource> dispatcher)
 	{
-		names = new ArrayList();
-		names.add("carryon");
+		LiteralArgumentBuilder<CommandSource> builder = Commands.literal("carryon")
+
+				.then(Commands.literal("debug").executes((cmd) -> {
+					return handleDebug(cmd.getSource());
+				}))
+
+				.then(Commands.literal("clear").executes((cmd) -> {
+					return handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().asPlayer()));
+				}))
+
+				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.multiplePlayers()).requires(src -> src.hasPermissionLevel(2)).executes((cmd) -> {
+					return handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target"));
+				})))
+
+				.then(Commands.literal("reload").requires(src -> src.hasPermissionLevel(2)).executes((cmd) -> {
+					return handleReload(cmd.getSource());
+				}));
+
+		dispatcher.register(builder);
+
 	}
 
-	@Override
-	public int compareTo(ICommand o)
+	private static int handleDebug(CommandSource source)
 	{
-		return this.getName().compareTo(o.getName());
-	}
-
-	@Override
-	public String getName()
-	{
-		return "carryon";
-	}
-
-	@Override
-	public String getUsage(ICommandSender sender)
-	{
-
-		return "/carryon <mode>";
-	}
-
-	@Override
-	public List<String> getAliases()
-	{
-		return this.names;
-	}
-
-	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-	{
-		if (args.length > 0)
+		try
 		{
-			// Handling clear
-			if (args[0].toLowerCase().equals("clear"))
+			if (source.assertIsEntity() != null)
 			{
-				if (sender instanceof EntityPlayer)
+				EntityPlayerMP player = source.asPlayer();
+
+				ItemStack main = player.getHeldItemMainhand();
+				if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemTile)
 				{
-					EntityPlayer player = (EntityPlayer) sender;
+					source.sendFeedback(new TextComponentString("Block: " + ItemTile.getBlock(main)), true);
+					source.sendFeedback(new TextComponentString("BlockState: " + ItemTile.getBlockState(main)), true);
+					source.sendFeedback(new TextComponentString("ItemStack: " + ItemTile.getItemStack(main)), true);
 
+					if (ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(main), ItemTile.getTileData(main)))
+						source.sendFeedback(new TextComponentString("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(main), ItemTile.getTileData(main))), true);
+
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemTile.getBlockState(main)))
+						source.sendFeedback(new TextComponentString("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemTile.getBlockState(main))), true);
+
+					CarryOn.LOGGER.info("Block: " + ItemTile.getBlock(main));
+					CarryOn.LOGGER.info("BlockState: " + ItemTile.getBlockState(main));
+					CarryOn.LOGGER.info("ItemStack: " + ItemTile.getItemStack(main));
+
+					if (ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(main), ItemTile.getTileData(main)))
+						CarryOn.LOGGER.info("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(main), ItemTile.getTileData(main)));
+
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemTile.getBlockState(main)))
+						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemTile.getBlockState(main)));
+
+					return 1;
+				} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity)
+				{
+					source.sendFeedback(new TextComponentString("Entity: " + ItemEntity.getEntity(main, player.world)), true);
+					source.sendFeedback(new TextComponentString("Entity Name: " + ItemEntity.getEntityName(main)), true);
+
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemEntity.getEntity(main, player.world)))
+						source.sendFeedback(new TextComponentString("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemEntity.getEntity(main, player.world))), true);
+
+					CarryOn.LOGGER.info("Entity: " + ItemEntity.getEntity(main, player.world));
+					CarryOn.LOGGER.info("Entity Name: " + ItemEntity.getEntityName(main));
+
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemEntity.getEntity(main, player.world)))
+						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemEntity.getEntity(main, player.world)));
+
+					return 1;
+				}
+			}
+
+		} catch (CommandSyntaxException e)
+		{
+			return 0;
+		}
+
+		return 0;
+	}
+
+	private static int handleClear(CommandSource source, Collection<EntityPlayerMP> players)
+	{
+		for (EntityPlayerMP player : players)
+		{
+			try
+			{
+				if (source.assertIsEntity() != null)
+				{
 					int cleared = 0;
-					cleared += player.inventory.clearMatchingItems(RegistrationHandler.itemTile, 0, 64, null);
-					cleared += player.inventory.clearMatchingItems(RegistrationHandler.itemEntity, 0, 64, null);
+					cleared += player.inventory.clearMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64);
+					cleared += player.inventory.clearMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64);
 
-					CarryOn.network.sendTo(new CarrySlotPacket(9, player.getEntityId()), (EntityPlayerMP) player);
+					CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (EntityPlayerMP) player), new CarrySlotPacket(9, player.getEntityId()));
 
 					if (cleared != 1)
-						player.sendMessage(new TextComponentString("Cleared " + cleared + " Items!"));
+						source.sendFeedback(new TextComponentString("Cleared " + cleared + " Items!"), true);
 					else
-						player.sendMessage(new TextComponentString("Cleared " + cleared + " Item!"));
-				}
+						source.sendFeedback(new TextComponentString("Cleared " + cleared + " Item!"), true);
 
-			}
-			// Handling debug
-			else if (args[0].toLowerCase().equals("debug"))
+					return 1;
+				} else
+					throw EntityArgument.ONLY_PLAYERS_ALLOWED.create();
+
+			} catch (CommandSyntaxException e)
 			{
-
-				if (sender instanceof EntityPlayer)
-				{
-					EntityPlayer player = (EntityPlayer) sender;
-					ItemStack main = player.getHeldItemMainhand();
-					if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemTile)
-					{
-						player.sendMessage(new TextComponentString("Block: " + ItemTile.getBlock(main)));
-						player.sendMessage(new TextComponentString("BlockState: " + ItemTile.getBlockState(main)));
-						player.sendMessage(new TextComponentString("Meta: " + ItemTile.getMeta(main)));
-						player.sendMessage(new TextComponentString("ItemStack: " + ItemTile.getItemStack(main)));
-						
-						if(ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(main), ItemTile.getTileData(main)))
-							player.sendMessage(new TextComponentString("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(main), ItemTile.getTileData(main))));
-						
-						if(CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemTile.getBlockState(main)))
-							player.sendMessage(new TextComponentString("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemTile.getBlockState(main))));
-						
-						
-						CarryOn.LOGGER.info("Block: " + ItemTile.getBlock(main));
-						CarryOn.LOGGER.info("BlockState: " + ItemTile.getBlockState(main));
-						CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(main));
-						CarryOn.LOGGER.info("ItemStack: " + ItemTile.getItemStack(main));
-						
-						if(ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(main), ItemTile.getTileData(main)))
-							CarryOn.LOGGER.info("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(main), ItemTile.getTileData(main)));
-						
-						if(CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemTile.getBlockState(main)))
-							CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemTile.getBlockState(main)));
-
-					}
-					else if(!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity)
-					{
-						player.sendMessage(new TextComponentString("Entity: " + ItemEntity.getEntity(main, server.getEntityWorld())));
-						player.sendMessage(new TextComponentString("Entity Name: " + ItemEntity.getEntityName(main)));
-
-						if(CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemEntity.getEntity(main, server.getEntityWorld())))
-							player.sendMessage(new TextComponentString("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemEntity.getEntity(main, server.getEntityWorld()))));
-
-						CarryOn.LOGGER.info("Entity: " + ItemEntity.getEntity(main, server.getEntityWorld()));
-						CarryOn.LOGGER.info("Entity Name: " + ItemEntity.getEntityName(main));
-
-						if(CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemEntity.getEntity(main, server.getEntityWorld())))
-							CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemEntity.getEntity(main, server.getEntityWorld())));
-
-					}
-				}
+				return 0;
 			}
-			else
-			{
-				throw new WrongUsageException(this.getUsage(sender));
-			}
-
 		}
-		else
+
+		return 0;
+	}
+
+	private static int handleReload(CommandSource source)
+	{
+		if (Settings.useScripts.get())
 		{
-			throw new WrongUsageException(this.getUsage(sender));
-		}
+			ScriptReader.reloadScripts();
+			CarryOn.network.send(PacketDistributor.ALL.noArg(), new ScriptReloadPacket());
 
+			source.sendFeedback(new TextComponentString("Successfully reloaded scripts!"), true);
+		} else
+			source.sendErrorMessage(new TextComponentString("To use custom Carry On scripts, enable them in the config!"));
+
+		return 1;
 	}
-
-	@Override
-	public boolean checkPermission(MinecraftServer server, ICommandSender sender)
-	{
-		return true;
-	}
-
-	@Override
-	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos)
-	{
-
-		if (args.length > 0)
-		{
-			if (args.length == 1)
-			{
-				return CommandBase.getListOfStringsMatchingLastWord(args, "debug", "clear");
-			}
-
-			else
-			{
-				return Collections.<String>emptyList();
-			}
-
-		}
-
-		return Collections.<String>emptyList();
-
-	}
-
-	@Override
-	public boolean isUsernameIndex(String[] args, int index)
-	{
-
-		return false;
-	}
-
-	@Override
-	public int getRequiredPermissionLevel()
-	{
-		return 2;
-	}
-
 }
+

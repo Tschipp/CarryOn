@@ -5,9 +5,10 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import tschipp.carryon.common.config.CarryOnConfig;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
+import tschipp.carryon.common.config.Configs.Blacklist;
+import tschipp.carryon.common.config.Configs.WhiteList;
 
 public class ListHandler
 {
@@ -17,7 +18,7 @@ public class ListHandler
 	public static List<String> ALLOWED_TILES;
 	public static List<String> FORBIDDEN_STACKING;
 	public static List<String> ALLOWED_STACKING;
-	
+
 	public static boolean isForbidden(Block block)
 	{
 		String name = block.getRegistryName().toString();
@@ -30,61 +31,44 @@ public class ListHandler
 			{
 				if (s.contains("*"))
 				{
-					if(name.contains(s.replace("*", "")))
+					String[] filter = s.replace("*", ",").split(",");
+					if (containsAll(name, filter))
 						contains = true;
 				}
 			}
-			
+
 			return contains;
 		}
 	}
 
 	public static boolean isForbidden(Entity entity)
 	{
-		if (EntityList.getKey(entity) != null)
-		{
-			String name = EntityList.getKey(entity).toString();
-			boolean contains = FORBIDDEN_ENTITIES.contains(name);
-			return contains;
-		}
-		
-		return true;
+		String name = entity.getType().getRegistryName().toString();
+		boolean contains = FORBIDDEN_ENTITIES.contains(name);
+		return contains;
 	}
 
 	public static boolean isAllowed(Entity entity)
 	{
-		if (EntityList.getKey(entity) != null)
-		{
-			String name = EntityList.getKey(entity).toString();
-			boolean contains = ALLOWED_ENTITIES.contains(name);
-			return contains;
-		}
-		return true;
+		String name = entity.getType().getRegistryName().toString();
+		boolean contains = ALLOWED_ENTITIES.contains(name);
+		return contains;
 	}
 
 	public static boolean isStackingForbidden(Entity entity)
 	{
-		if (EntityList.getKey(entity) != null)
-		{
-			String name = EntityList.getKey(entity).toString();
-			boolean contains = FORBIDDEN_STACKING.contains(name);
-			return contains;
-		}
-		
-		return true;
+		String name = entity.getType().getRegistryName().toString();
+		boolean contains = FORBIDDEN_STACKING.contains(name);
+		return contains;
 	}
 
 	public static boolean isStackingAllowed(Entity entity)
 	{
-		if (EntityList.getKey(entity) != null)
-		{
-			String name = EntityList.getKey(entity).toString();
-			boolean contains = ALLOWED_STACKING.contains(name);
-			return contains;
-		}
-		return true;
+		String name = entity.getType().getRegistryName().toString();
+		boolean contains = ALLOWED_STACKING.contains(name);
+		return contains;
 	}
-	
+
 	public static boolean isAllowed(Block block)
 	{
 		String name = block.getRegistryName().toString();
@@ -97,105 +81,129 @@ public class ListHandler
 			{
 				if (s.contains("*"))
 				{
-					if(name.contains(s.replace("*", "")))
+					String[] filter = s.replace("*", ",").split(",");
+					if (containsAll(name, filter))
 						contains = true;
 				}
 			}
+
 			return contains;
 		}
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void initLists()
 	{
-		String[] forbidden = CarryOnConfig.blacklist.forbiddenTiles;
+		List<String> forbidden = (List<String>) Blacklist.forbiddenTiles.get();
 		FORBIDDEN_TILES = new ArrayList<String>();
 
-		for (int i = 0; i < forbidden.length; i++)
+		for (int i = 0; i < forbidden.size(); i++)
 		{
-			FORBIDDEN_TILES.add(forbidden[i]);
+			FORBIDDEN_TILES.add(forbidden.get(i));
 		}
 
-		String[] forbiddenEntity = CarryOnConfig.blacklist.forbiddenEntities;
+		List<String> forbiddenEntity = (List<String>) Blacklist.forbiddenEntities.get();
 		FORBIDDEN_ENTITIES = new ArrayList<String>();
 
-		for (int i = 0; i < forbiddenEntity.length; i++)
+		for (int i = 0; i < forbiddenEntity.size(); i++)
 		{
-			if (forbiddenEntity[i].contains("*"))
+			if (forbiddenEntity.get(i).contains("*"))
 			{
-				String modid = forbiddenEntity[i].replace("*", "");
-				for (int k = 0; k < ForgeRegistries.ENTITIES.getKeys().size(); k++)
+				String[] filter = forbiddenEntity.get(i).replace("*", ",").split(",");
+
+				ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+				for (ResourceLocation key : keys)
 				{
-					if (ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid))
+					if (containsAll(key.toString(), filter))
 					{
-						FORBIDDEN_ENTITIES.add(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString());
+						FORBIDDEN_ENTITIES.add(key.toString());
 					}
 				}
 			}
-			FORBIDDEN_ENTITIES.add(forbiddenEntity[i]);
+			FORBIDDEN_ENTITIES.add(forbiddenEntity.get(i));
 		}
 
-		String[] allowedEntities = CarryOnConfig.whitelist.allowedEntities;
+		List<String> allowedEntities = (List<String>) WhiteList.allowedEntities.get();
 		ALLOWED_ENTITIES = new ArrayList<String>();
-		for (int i = 0; i < allowedEntities.length; i++)
+		for (int i = 0; i < allowedEntities.size(); i++)
 		{
-			if (allowedEntities[i].contains("*"))
+			if (allowedEntities.get(i).contains("*"))
 			{
-				String modid = allowedEntities[i].replace("*", "");
-				for (int k = 0; k < ForgeRegistries.ENTITIES.getKeys().size(); k++)
+				String[] filter = allowedEntities.get(i).replace("*", ",").split(",");
+
+				ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+				for (ResourceLocation key : keys)
 				{
-					if (ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid))
+					if (containsAll(key.toString(), filter))
 					{
-						ALLOWED_ENTITIES.add(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString());
+						ALLOWED_ENTITIES.add(key.toString());
 					}
 				}
 			}
-			ALLOWED_ENTITIES.add(allowedEntities[i]);
+			ALLOWED_ENTITIES.add(allowedEntities.get(i));
 		}
 
-		String[] allowedBlocks = CarryOnConfig.whitelist.allowedBlocks;
+		List<String> allowedBlocks = (List<String>) WhiteList.allowedBlocks.get();
 		ALLOWED_TILES = new ArrayList<String>();
-		for (int i = 0; i < allowedBlocks.length; i++)
+		for (int i = 0; i < allowedBlocks.size(); i++)
 		{
-			ALLOWED_TILES.add(allowedBlocks[i]);
+			ALLOWED_TILES.add(allowedBlocks.get(i));
 		}
-		
-		String[] forbiddenStacking = CarryOnConfig.blacklist.forbiddenStacking;
+
+		List<String> forbiddenStacking = (List<String>) Blacklist.forbiddenStacking.get();
 		FORBIDDEN_STACKING = new ArrayList<String>();
 
-		for (int i = 0; i < forbiddenStacking.length; i++)
+		for (int i = 0; i < forbiddenStacking.size(); i++)
 		{
-			if (forbiddenStacking[i].contains("*"))
+			if (forbiddenStacking.get(i).contains("*"))
 			{
-				String modid = forbiddenStacking[i].replace("*", "");
-				for (int k = 0; k < ForgeRegistries.ENTITIES.getKeys().size(); k++)
+				String[] filter = forbiddenStacking.get(i).replace("*", ",").split(",");
+
+				ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+				for (ResourceLocation key : keys)
 				{
-					if (ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid))
+					if (containsAll(key.toString(), filter))
 					{
-						FORBIDDEN_STACKING.add(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString());
+						FORBIDDEN_STACKING.add(key.toString());
 					}
 				}
 			}
-			FORBIDDEN_STACKING.add(forbiddenStacking[i]);
+			FORBIDDEN_STACKING.add(forbiddenStacking.get(i));
 		}
 
-		String[] allowedStacking = CarryOnConfig.whitelist.allowedStacking;
+		List<String> allowedStacking = (List<String>) WhiteList.allowedStacking.get();
 		ALLOWED_STACKING = new ArrayList<String>();
-		for (int i = 0; i < allowedStacking.length; i++)
+		for (int i = 0; i < allowedStacking.size(); i++)
 		{
-			if (allowedStacking[i].contains("*"))
+			if (allowedStacking.get(i).contains("*"))
 			{
-				String modid = allowedStacking[i].replace("*", "");
-				for (int k = 0; k < ForgeRegistries.ENTITIES.getKeys().size(); k++)
+				String[] filter = allowedStacking.get(i).replace("*", ",").split(",");
+
+				ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+				for (ResourceLocation key : keys)
 				{
-					if (ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString().contains(modid))
+					if (containsAll(key.toString(), filter))
 					{
-						ALLOWED_STACKING.add(ForgeRegistries.ENTITIES.getKeys().toArray()[k].toString());
+						ALLOWED_STACKING.add(key.toString());
 					}
 				}
 			}
-			ALLOWED_STACKING.add(allowedStacking[i]);
+			ALLOWED_STACKING.add(allowedStacking.get(i));
 		}
+	}
+	
+	public static boolean containsAll(String str, String... strings)
+	{
+		boolean containsAll = true;
+		
+		for(String s : strings)
+		{
+			if(!str.contains(s))
+				containsAll = false;
+		}
+		
+		return containsAll;
 	}
 
 }

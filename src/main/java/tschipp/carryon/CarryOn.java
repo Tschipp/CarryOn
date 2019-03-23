@@ -5,70 +5,101 @@ import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import tschipp.carryon.common.CommonProxy;
-import tschipp.carryon.common.command.CommandCarryOn;
-import tschipp.carryon.common.command.CommandCarryOnReload;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLFingerprintViolationEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
+import tschipp.carryon.common.config.Configs;
+import tschipp.carryon.common.handler.RegistrationHandler;
+import tschipp.carryon.common.scripting.ScriptReader;
+import tschipp.carryon.network.client.CarrySlotPacket;
+import tschipp.carryon.network.client.ScriptReloadPacket;
+import tschipp.carryon.network.server.SyncKeybindPacket;
+import tschipp.carryon.proxy.ClientProxy;
+import tschipp.carryon.proxy.IProxy;
+import tschipp.carryon.proxy.ServerProxy;
 
-@EventBusSubscriber
-@Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = CarryOn.DEPENDENCIES, updateJSON = CarryOn.UPDATE_JSON, acceptedMinecraftVersions = CarryOn.ACCEPTED_VERSIONS, certificateFingerprint = CarryOn.CERTIFICATE_FINGERPRINT)
-public class CarryOn {
+@Mod(CarryOn.MODID)
+@EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public class CarryOn
+{
 
-	@SidedProxy(clientSide = "tschipp.carryon.client.ClientProxy", serverSide = "tschipp.carryon.common.CommonProxy")
-	public static CommonProxy proxy;
-
-	// Instance
-	@Instance(CarryOn.MODID)
-	public static CarryOn instance;
+	public static IProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new ServerProxy());
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.12";
-	public static final String NAME = "Carry On";
-	public static final String ACCEPTED_VERSIONS = "[1.12.2,1.13)";
-	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
+	public static final String VERSION = "1.12.2";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
 	public static final String DEPENDENCIES = "required-after:forge@[13.20.1.2386,);after:gamestages;";
 	public static final String CERTIFICATE_FINGERPRINT = "55e88f24d04398481ae6f1ce76f65fd776f14227";
 	public static File CONFIGURATION_FILE;
- 
-	public static SimpleNetworkWrapper network;
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event){
-		CarryOn.proxy.preInit(event);
-	}
+	public static boolean FINGERPRINT_VIOLATED = false;
 
-	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		CarryOn.proxy.init(event);		
-	}
+	public static SimpleChannel network;
 
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		CarryOn.proxy.postInit(event);
-	}
-	
-	@EventHandler
-	public void serverLoad(FMLServerStartingEvent event)
+	public CarryOn()
 	{
-		event.registerServerCommand(new CommandCarryOn());
-		event.registerServerCommand(new CommandCarryOnReload());
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Configs.CLIENT_CONFIG);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Configs.SERVER_CONFIG);
+
+		Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-client.toml"));
+		Configs.loadConfig(Configs.SERVER_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));
+
 	}
-	
-	@EventHandler
-    public void onFingerprintViolation(FMLFingerprintViolationEvent event) {
-        
+
+	private void setup(final FMLCommonSetupEvent event)
+	{
+		// PreInitevent.
+		ScriptReader.preInit();
+		CarryOn.network = NetworkRegistry.newSimpleChannel(new ResourceLocation(CarryOn.MODID, "carryonpackets"), () -> CarryOn.VERSION, s -> true, s -> true);
+
+		// CLIENT PACKETS
+		CarryOn.network.registerMessage(0, CarrySlotPacket.class, CarrySlotPacket::toBytes, CarrySlotPacket::new, CarrySlotPacket::handle);
+		CarryOn.network.registerMessage(1, ScriptReloadPacket.class, ScriptReloadPacket::toBytes, ScriptReloadPacket::new, ScriptReloadPacket::handle);
+
+		// SERVER PACKETS
+		CarryOn.network.registerMessage(2, SyncKeybindPacket.class, SyncKeybindPacket::toBytes, SyncKeybindPacket::new, SyncKeybindPacket::handle);
+
+		
+		RegistrationHandler.regCommonEvents();
+
+		// Init
+		ScriptReader.parseScripts();
+		RegistrationHandler.regOverrideList();
+		RegistrationHandler.regCaps();
+		
+
+		proxy.setup(event);
+	}
+
+	@SubscribeEvent
+	public static void onRegistry(RegistryEvent.Register<Item> event)
+	{
+		RegistrationHandler.regItems();
+
+		event.getRegistry().register(RegistrationHandler.itemEntity);
+		event.getRegistry().register(RegistrationHandler.itemTile);
+	}
+
+	@SubscribeEvent
+	public void onFingerprintViolation(FMLFingerprintViolationEvent event)
+	{
+
 		LOGGER.error("WARNING! Invalid fingerprint detected! The file " + event.getSource().getName() + " may have been tampered with! If you didn't download the file from https://minecraft.curseforge.com/projects/carry-on or through any kind of mod launcher, immediately delete the file and re-download it from https://minecraft.curseforge.com/projects/carry-on");
-    }
+		FINGERPRINT_VIOLATED = true;
+	}
 
 }

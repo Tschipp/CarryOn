@@ -1,13 +1,11 @@
 package tschipp.carryon.client.keybinds;
 
-import org.lwjgl.input.Keyboard;
-
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class CarryOnKeybinds
 {
@@ -15,10 +13,10 @@ public class CarryOnKeybinds
 	public static final String KEYBIND_KEY = "carryOnKeyPressed";
 	public static KeyBinding carryKey;
 	
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public static void init()
 	{
-		carryKey = new KeyBinding("key.carry.desc", Keyboard.KEY_LSHIFT, "key.carry.category");
+		carryKey = new KeyBinding("key.carry.desc", 340, "key.carry.category");
 		
 		ClientRegistry.registerKeyBinding(carryKey);
 	}

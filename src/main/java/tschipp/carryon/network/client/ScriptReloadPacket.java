@@ -1,26 +1,39 @@
 package tschipp.carryon.network.client;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import java.util.function.Supplier;
 
-public class ScriptReloadPacket implements IMessage
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.fml.network.NetworkEvent;
+import tschipp.carryon.CarryOn;
+import tschipp.carryon.common.scripting.ScriptReader;
+
+public class ScriptReloadPacket
 {
 
 	public ScriptReloadPacket()
 	{
-
 	}
 	
-	@Override
-	public void fromBytes(ByteBuf buf)
+	public ScriptReloadPacket(ByteBuf buf)
 	{
-		
 	}
 
-	@Override
 	public void toBytes(ByteBuf buf)
 	{
-		
 	}
 
+	public void handle(Supplier<NetworkEvent.Context> ctx)
+	{
+		ctx.get().enqueueWork(() -> {
+
+			EntityPlayer player = CarryOn.proxy.getPlayer();
+
+			if (player != null)
+				ScriptReader.reloadScripts();
+			
+			ctx.get().setPacketHandled(true);
+		});
+
+	}
 }

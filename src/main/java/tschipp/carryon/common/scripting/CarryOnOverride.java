@@ -6,7 +6,6 @@ public class CarryOnOverride
 {
 	// BLOCKS
 	private NBTTagCompound typeBlockTag;
-	private String typeMeta;
 	private String typeNameBlock;
 	private String typeMaterial;
 	private String typeHardness;
@@ -31,11 +30,10 @@ public class CarryOnOverride
 	// RENDER
 	private String renderNameBlock;
 	private String renderNameEntity;
-	private int renderMeta;
 	private NBTTagCompound renderNBT;
 	private String renderTranslation;
 	private String renderRotation;
-	private String renderScale;
+	private String renderscaled;
 	private String renderRotationLeftArm;
 	private String renderRotationRightArm;
 	private boolean renderLeftArm = true;
@@ -236,8 +234,6 @@ public class CarryOnOverride
 			return false;
 		if (renderLeftArm != other.renderLeftArm)
 			return false;
-		if (renderMeta != other.renderMeta)
-			return false;
 		if (renderNBT == null)
 		{
 			if (other.renderNBT != null)
@@ -282,12 +278,12 @@ public class CarryOnOverride
 		}
 		else if (!renderRotationRightArm.equals(other.renderRotationRightArm))
 			return false;
-		if (renderScale == null)
+		if (renderscaled == null)
 		{
-			if (other.renderScale != null)
+			if (other.renderscaled != null)
 				return false;
 		}
-		else if (!renderScale.equals(other.renderScale))
+		else if (!renderscaled.equals(other.renderscaled))
 			return false;
 		if (renderTranslation == null)
 		{
@@ -337,13 +333,6 @@ public class CarryOnOverride
 				return false;
 		}
 		else if (!typeMaterial.equals(other.typeMaterial))
-			return false;
-		if (typeMeta == null)
-		{
-			if (other.typeMeta != null)
-				return false;
-		}
-		else if (!typeMeta.equals(other.typeMeta))
 			return false;
 		if (typeNameBlock == null)
 		{
@@ -401,11 +390,6 @@ public class CarryOnOverride
 	public NBTTagCompound getTypeBlockTag()
 	{
 		return typeBlockTag;
-	}
-
-	public String getTypeMeta()
-	{
-		return typeMeta;
 	}
 
 	public String getTypeNameBlock()
@@ -493,11 +477,6 @@ public class CarryOnOverride
 		return renderNameEntity;
 	}
 
-	public int getRenderMeta()
-	{
-		return renderMeta;
-	}
-
 	public NBTTagCompound getRenderNBT()
 	{
 		return renderNBT;
@@ -513,9 +492,9 @@ public class CarryOnOverride
 		return renderRotation;
 	}
 
-	public String getRenderScale()
+	public String getRenderscaled()
 	{
-		return renderScale;
+		return renderscaled;
 	}
 
 	public void setTypeBlockTag(NBTTagCompound typeBlockTag)
@@ -523,10 +502,6 @@ public class CarryOnOverride
 		this.typeBlockTag = typeBlockTag;
 	}
 
-	public void setTypeMeta(String typeMeta)
-	{
-		this.typeMeta = typeMeta;
-	}
 
 	public void setTypeNameBlock(String typeNameBlock)
 	{
@@ -613,11 +588,6 @@ public class CarryOnOverride
 		this.renderNameEntity = renderNameEntity;
 	}
 
-	public void setRenderMeta(int renderMeta)
-	{
-		this.renderMeta = renderMeta;
-	}
-
 	public void setRenderNBT(NBTTagCompound renderNBT)
 	{
 		this.renderNBT = renderNBT;
@@ -633,9 +603,9 @@ public class CarryOnOverride
 		this.renderRotation = renderRotation;
 	}
 
-	public void setRenderScale(String renderScale)
+	public void setRenderscaled(String renderscaled)
 	{
-		this.renderScale = renderScale;
+		this.renderscaled = renderscaled;
 	}
 
 

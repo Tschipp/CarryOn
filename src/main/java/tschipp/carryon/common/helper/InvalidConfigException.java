@@ -5,6 +5,8 @@ import tschipp.carryon.CarryOn;
 public class InvalidConfigException extends Exception
 {
 
+	private static final long serialVersionUID = -7161004674405185407L;
+
 	public InvalidConfigException(String cause)
 	{
 		super(cause);

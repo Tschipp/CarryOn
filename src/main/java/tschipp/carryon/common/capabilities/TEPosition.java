@@ -28,7 +28,5 @@ public class TEPosition implements IPosition {
 		this.blockActivated = b;
 	}
 	
-		
-
 
 }

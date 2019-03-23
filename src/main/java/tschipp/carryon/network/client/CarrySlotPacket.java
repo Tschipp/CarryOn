@@ -1,28 +1,34 @@
 package tschipp.carryon.network.client;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import java.util.function.Supplier;
 
-public class CarrySlotPacket implements IMessage
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.network.NetworkEvent;
+import tschipp.carryon.CarryOn;
+import tschipp.carryon.common.scripting.ScriptChecker;
+
+public class CarrySlotPacket
 {
 	public int slot;
 	public int carryOverride = 0;
 	public int entityid;
-	
-	public CarrySlotPacket()
+
+	public CarrySlotPacket(ByteBuf buf)
 	{
-		this.slot = 9;
-		this.entityid = 0;
+		this.slot = buf.readInt();
+		this.carryOverride = buf.readInt();
+		this.entityid = buf.readInt();
 	}
-	
+
 	public CarrySlotPacket(int slot, int entityid)
 	{
 		this.slot = slot;
 		this.entityid = entityid;
 	}
-	
+
 	public CarrySlotPacket(int slot, int entityid, int carryOverride)
 	{
 		this.slot = slot;
@@ -30,25 +36,44 @@ public class CarrySlotPacket implements IMessage
 		this.entityid = entityid;
 	}
 
-	@Override
-	public void fromBytes(ByteBuf buf)
-	{
-		NBTTagCompound tag =  ByteBufUtils.readTag(buf);
-		
-		this.slot = tag.getInteger("slot");
-		this.carryOverride = tag.getInteger("override");
-		this.entityid = tag.getInteger("entityid");
-	}
-
-	@Override
 	public void toBytes(ByteBuf buf)
 	{
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("slot", slot);
-		tag.setInteger("override", carryOverride);
-		tag.setInteger("entityid", entityid);
-		ByteBufUtils.writeTag(buf, tag);
+		buf.writeInt(slot);
+		buf.writeInt(carryOverride);
+		buf.writeInt(entityid);
+	}
 
+	public void handle(Supplier<NetworkEvent.Context> ctx)
+	{
+		ctx.get().enqueueWork(() -> {
+
+			World world = CarryOn.proxy.getWorld();
+
+			if (world != null)
+			{
+				Entity e = world.getEntityByID(entityid);
+
+				if (e != null && e instanceof EntityPlayer)
+				{
+					EntityPlayer player = (EntityPlayer) e;
+
+					ctx.get().setPacketHandled(true);
+					
+					if (slot >= 9)
+					{
+						player.getEntityData().removeTag("carrySlot");
+						player.getEntityData().removeTag("overrideKey");
+					} else
+					{
+
+						player.getEntityData().setInt("carrySlot", slot);
+						if (carryOverride != 0)
+							ScriptChecker.setCarryOnOverride(player, carryOverride);
+					}
+				}
+
+			}
+		});
 	}
 
 }

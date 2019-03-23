@@ -2,16 +2,16 @@ package tschipp.carryon.common.helper;
 
 import javax.annotation.Nullable;
 
-import org.apache.logging.log4j.Level;
+import com.mojang.brigadier.StringReader;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.arguments.BlockStateParser;
+import net.minecraft.command.arguments.ItemParser;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
-import tschipp.carryon.CarryOn;
 
 public class StringParser
 {
@@ -19,69 +19,26 @@ public class StringParser
 	@Nullable
 	public static Block getBlock(String string)
 	{
-		if(string == null)
-			return null;
-		
-		NBTTagCompound tag = getTagCompound(string);
-		if (tag != null)
-			string = string.replace(tag.toString(), "");
-
-		if (string.contains(";"))
-			string = string.replace(string.substring(string.indexOf(";")), "");
-
-		Block block = Block.getBlockFromName(string);
-		if (block == null)
-			new InvalidConfigException("Block Parsing Error. Invalid Name: " + string).printException();
-
-		return block;
+		IBlockState state = getBlockState(string);
+		if(state != null)
+			return state.getBlock();
+				
+		return null;
 	}
 
-	public static int getMeta(String string)
-	{
-		if(string == null)
-			return 0;
-		
-		NBTTagCompound tag = getTagCompound(string);
-		if (tag != null)
-			string = string.replace(tag.toString(), "");
-
-		if (string.contains(";"))
-		{
-			int meta = 0;
-			try
-			{
-				meta = Integer.parseInt(string.substring(string.indexOf(";")).replace(";", ""));
-			}
-			catch (Exception e)
-			{
-				new InvalidConfigException("Meta Parsing Error at: " + string + " : " + e.getMessage()).printException();
-			}
-
-			return meta;
-		}
-		return 0;
-	}
 
 	@Nullable
 	public static IBlockState getBlockState(String string)
 	{
 		if(string == null)
 			return null;
-		
-		NBTTagCompound tag = getTagCompound(string);
-		if (tag != null)
-			string = string.replace(tag.toString(), "");
+				
+		BlockStateParser parser = new BlockStateParser(new StringReader(string), false);
 
-		int meta = getMeta(string);
-		if (meta == 0)
-		{
-			Block block = getBlock(string);
-			if(block != null)
-				return block.getDefaultState();
-		}
 		try
 		{
-			return getBlock(string).getStateFromMeta(meta);
+			parser.parse(false);
+			return parser.getState();
 		}
 		catch (Exception e)
 		{
@@ -95,15 +52,19 @@ public class StringParser
 	{
 		if(string == null)
 			return null;
-		
-		NBTTagCompound tag = getTagCompound(string);
-		if (tag != null)
-			string = string.replace(tag.toString(), "");
-
-		if (string.contains(";"))
-			string = string.replace(string.substring(string.indexOf(";")), "");
-
-		return Item.getByNameOrId(string);
+	
+		ItemParser parser = new ItemParser(new StringReader(string), false);
+	
+		try
+		{
+			parser.parse();
+			return parser.getItem();
+		}
+		catch (Exception e)
+		{
+			new InvalidConfigException("Item parsing Exception at: " + string + " : " + e.getMessage()).printException();
+			return null;
+		}
 	}
 
 	public static ItemStack getItemStack(String string)
@@ -111,17 +72,30 @@ public class StringParser
 		if(string == null)
 			return null;
 		
-		Item item = getItem(string);
+		ItemParser parser = new ItemParser(new StringReader(string), false);
 		
-		if(item == null)
+		try
+		{
+			parser.parse();
+			Item item =  parser.getItem();
+			NBTTagCompound nbt = parser.getNbt();
+			
+			ItemStack stack = new ItemStack(item, 1);
+			
+			if(nbt != null)
+			{
+				stack.setTag(nbt);
+			}
+			
+			return stack;
+		}
+		catch (Exception e)
+		{
+			new InvalidConfigException("Item parsing Exception at: " + string + " : " + e.getMessage()).printException();
 			return ItemStack.EMPTY;
-		
-		ItemStack stack = new ItemStack(item, 1, getMeta(string));
-		NBTTagCompound tag = getTagCompound(string);
-		if (tag != null)
-			stack.setTagCompound(tag);
+			
+		}		
 
-		return stack;
 	}
 
 	@Nullable
@@ -142,7 +116,7 @@ public class StringParser
 			{
 				tag = JsonToNBT.getTagFromJson(nbt);
 			}
-			catch (NBTException e)
+			catch (Exception e)
 			{
 				new InvalidConfigException("Error while parsing NBT: " + e.getMessage()).printException();
 				return null;

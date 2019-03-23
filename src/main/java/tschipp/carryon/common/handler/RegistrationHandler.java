@@ -1,11 +1,11 @@
 package tschipp.carryon.common.handler;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.registries.ObjectHolder;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.event.RenderEntityEvents;
 import tschipp.carryon.client.event.RenderEvents;
@@ -14,15 +14,20 @@ import tschipp.carryon.common.capabilities.PositionStorage;
 import tschipp.carryon.common.capabilities.TEPosition;
 import tschipp.carryon.common.capabilities.event.PositionClientEvents;
 import tschipp.carryon.common.capabilities.event.PositionCommonEvents;
+import tschipp.carryon.common.event.IMCEvents;
 import tschipp.carryon.common.event.ItemEntityEvents;
 import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.compat.obfuscate.ObfuscateEvents;
 
+@EventBusSubscriber(modid = CarryOn.MODID)
 public class RegistrationHandler
-{
+{	
+	@ObjectHolder("carryon:tile_item")
 	public static Item itemTile;
+	
+	@ObjectHolder("carryon:entity_item")
 	public static Item itemEntity;
 
 	public static void regItems()
@@ -31,17 +36,12 @@ public class RegistrationHandler
 		itemEntity = new ItemEntity();
 	}
 	
-	public static void regItemRenders()
-	{
-		ModelLoader.setCustomModelResourceLocation(itemTile, 0, new ModelResourceLocation(CarryOn.MODID + ":" + "tile", "inventory"));
-		ModelLoader.setCustomModelResourceLocation(itemEntity, 0, new ModelResourceLocation(CarryOn.MODID + ":" + "tile", "inventory"));
-	}
-	
 	public static void regCommonEvents()
 	{
 		MinecraftForge.EVENT_BUS.register(new ItemEvents());
 		MinecraftForge.EVENT_BUS.register(new ItemEntityEvents());
 		MinecraftForge.EVENT_BUS.register(new PositionCommonEvents());
+		MinecraftForge.EVENT_BUS.register(new IMCEvents());
 	}
 	
 	public static void regClientEvents()
@@ -50,7 +50,8 @@ public class RegistrationHandler
 		MinecraftForge.EVENT_BUS.register(new RenderEntityEvents());
 		MinecraftForge.EVENT_BUS.register(new PositionClientEvents());
 		
-		if(Loader.isModLoaded("obfuscate"))
+		
+		if(ModList.get().isLoaded("obfuscate"))
 			MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
 
 	}
@@ -66,5 +67,8 @@ public class RegistrationHandler
 	{
 		CapabilityManager.INSTANCE.register(IPosition.class, new PositionStorage(), TEPosition::new);
 	}
+	
+	
 
+	
 }

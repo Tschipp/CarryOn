@@ -8,7 +8,7 @@ import java.util.Map;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Score;
@@ -76,11 +76,11 @@ public class ScriptParseHelper
 			return true;
 
 		boolean matching = true;
-		for (String key : toMatch.getKeySet())
+		for (String key : toMatch.keySet())
 		{
-			NBTBase tag = toMatch.getTag(key);
+			INBTBase tag = toMatch.getTag(key);
 			key = key.replace("\"", "");
-			NBTBase tagToCheck = toCheck.getTag(key);
+			INBTBase tagToCheck = toCheck.getTag(key);
 			if (!tag.equals(tagToCheck))
 				matching = false;
 		}
@@ -99,17 +99,17 @@ public class ScriptParseHelper
 	}
 	
 
-	public static double[] getScale(String s)
+	public static double[] getscaled(String s)
 	{
 		double[] d = new double[3];
-		d[0] = getScaleValueFromString(s, "x");
-		d[1] = getScaleValueFromString(s, "y");
-		d[2] = getScaleValueFromString(s, "z");
+		d[0] = getscaledValueFromString(s, "x");
+		d[1] = getscaledValueFromString(s, "y");
+		d[2] = getscaledValueFromString(s, "z");
 
 		return d;
 	}
 
-	public static double getScaleValueFromString(String toGetFrom, String key)
+	public static double getscaledValueFromString(String toGetFrom, String key)
 	{
 		if(toGetFrom == null)
 			return 1;
