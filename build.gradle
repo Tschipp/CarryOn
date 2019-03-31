@@ -33,7 +33,7 @@ minecraft {
 
 repositories {
 
-    maven { url 'http://maven.epoxide.org' }
+    // maven { url 'http://maven.epoxide.org' }
 	
     maven { url = "https://mrcrayfish.com/maven" }
 

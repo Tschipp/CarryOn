@@ -49,7 +49,14 @@ public class PickupHandler
 		}
 		else
 		{
-			if (CarryOnConfig.settings.useWhitelistBlocks)
+			if (CarryOnConfig.settings.useWhitelistForNormalBlocks && world.getTileEntity(pos) == null)
+			{
+				if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
+				{
+					return false;
+				}
+			}
+			else if (CarryOnConfig.settings.useWhitelistBlocks)
 			{
 				if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
 				{
@@ -115,7 +122,7 @@ public class PickupHandler
 							}
 
 						}
-						else if (CarryOnConfig.settings.pickupAllBlocks ? true : tile != null)
+						else if (CarryOnConfig.settings.pickupAllBlocks || CarryOnConfig.settings.useWhitelistForNormalBlocks || tile != null)
 						{
 							return handleProtections((EntityPlayerMP) player, world, pos, state);
 						}

@@ -57,6 +57,9 @@ public class Configs {
 		
 		@Comment("Use Whitelist instead of Blacklist for Stacking")
 		public boolean useWhitelistStacking=false;
+
+		@Comment("All blocks that aren't a Tile Entities can be picked up as long as they're allowed to in the whitelist, even if other settings disable whitelist or picking of normal blocks.")
+		public boolean useWhitelistForNormalBlocks=false;
 		
 		@Comment("Whether the player can hit blocks and entities while carrying or not")
 		public boolean hitWhileCarrying=false;
