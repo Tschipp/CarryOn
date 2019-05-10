@@ -58,6 +58,8 @@ import tschipp.carryon.network.server.SyncKeybindPacket;
 
 public class RenderEvents
 {
+	private boolean obfuscatePresent = Loader.isModLoaded("obfuscate");
+
 	private static boolean initModels;
 
 	/*
@@ -450,7 +452,7 @@ public class RenderEvents
 		if(!CarryOnConfig.settings.renderArms)
 			return;
 		
-		if (handleMobends() && !Loader.isModLoaded("obfuscate"))
+		if (handleMobends() && !obfuscatePresent)
 		{
 			EntityPlayer player = event.getEntityPlayer();
 			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
@@ -547,7 +549,7 @@ public class RenderEvents
 		if(!CarryOnConfig.settings.renderArms)
 			return;
 		
-		if (handleMobends() && !Loader.isModLoaded("obfuscate"))
+		if (handleMobends() && !obfuscatePresent)
 		{
 			EntityPlayer player = event.getEntityPlayer();
 			ItemStack stack = player.getHeldItemMainhand();
@@ -619,16 +621,23 @@ public class RenderEvents
 		arm.isHidden = true;
 	}
 
+	private boolean mobendsPresent = Loader.isModLoaded("mobends");
+
+	private boolean mobendsConfigLoaded = false;
+
+	private boolean mobendsPlayersAnimated = false;
+
 	public boolean handleMobends()
 	{
-		if (Loader.isModLoaded("mobends"))
+		if (mobendsPresent && !mobendsConfigLoaded)
 		{
 			Configuration config = new Configuration(new File(CarryOn.CONFIGURATION_FILE.getPath().substring(0, CarryOn.CONFIGURATION_FILE.getPath().length() - 16), "mobends.cfg"));
 
-			boolean renderPlayer = config.get("animated", "player", true).getBoolean();
-			return !renderPlayer;
+			mobendsPlayersAnimated = config.get("animated", "player", true).getBoolean();
+			mobendsConfigLoaded = true;
 		}
-		return true;
+
+		return !mobendsPlayersAnimated;
 	}
 
 	public static boolean isChest(Block block)
