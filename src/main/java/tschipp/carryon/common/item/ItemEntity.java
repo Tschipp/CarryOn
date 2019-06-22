@@ -70,6 +70,9 @@ public class ItemEntity extends Item
 
 		NBTTagCompound entityData = new NBTTagCompound();
 		entityData = entity.writeToNBT(entityData);
+		
+		if (entityData == null)
+			return false;
 
 		String name = EntityList.getKey(entity).toString();
 
