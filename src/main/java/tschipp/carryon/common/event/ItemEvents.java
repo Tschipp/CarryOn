@@ -1,8 +1,10 @@
 package tschipp.carryon.common.event;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -265,7 +267,9 @@ public class ItemEvents
 	@SubscribeEvent
 	public void onWorldTick(TickEvent.WorldTickEvent event)
 	{
-		for (Entry<BlockPos, Integer> entry : positions.entrySet())
+		Set<Entry<BlockPos, Integer>> set = new HashSet<Entry<BlockPos, Integer>>(positions.entrySet());
+		
+		for (Entry<BlockPos, Integer> entry : set)
 		{
 			entry.setValue(entry.getValue() + 1);
 
@@ -463,7 +467,7 @@ public class ItemEvents
 
 				if (hasCarried)
 				{
-					if (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)
+					if ((inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity) && player.getPortalCooldown() == 0)
 					{
 						int slotBlock = getSlot(player, RegistrationHandler.itemTile);
 						int slotEntity = getSlot(player, RegistrationHandler.itemEntity);

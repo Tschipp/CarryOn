@@ -13,6 +13,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -22,11 +23,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -35,7 +35,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 import tschipp.carryon.common.item.ItemEntity;
-import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 
@@ -160,7 +159,7 @@ public class RenderEntityEvents
 				entity.rotationYaw = 0.0f;
 				entity.prevRotationYaw = 0.0f;
 				entity.setRotationYawHead(0.0f);
-
+				
 				float height = entity.height;
 				float width = entity.width;
 				GlStateManager.pushMatrix();
@@ -205,6 +204,9 @@ public class RenderEntityEvents
 
 					}
 
+					if(entity instanceof EntityLiving)
+						((EntityLiving) entity).hurtTime = 0;
+					
 					this.renderEntityStatic(entity);
 					Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);
 				}
@@ -384,6 +386,9 @@ public class RenderEntityEvents
 					GlStateManager.scale(scale[0], scale[1], scale[2]);
 
 				}
+				
+				if(entity instanceof EntityLiving)
+					((EntityLiving) entity).hurtTime = 0;
 				
 				Minecraft.getMinecraft().getRenderManager().renderEntityStatic(entity, 0.0f, false);
 				Minecraft.getMinecraft().getRenderManager().setRenderShadow(true);

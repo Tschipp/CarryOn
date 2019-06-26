@@ -29,6 +29,10 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -116,7 +120,16 @@ public class RenderEvents
 			{
 				CarryOnKeybinds.setKeyPressed(player, false);
 				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
+				
+				if(CarryOn.FINGERPRINT_VIOLATED)
+				{
+					TextComponentString cf = new TextComponentString(TextFormatting.AQUA + "Curseforge" + TextFormatting.RED);
+					cf.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
+					
+					player.sendMessage(new TextComponentString(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").appendSibling(cf).appendText(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").appendSibling(cf));
+				}
 			}
+			
 		}
 	}
 
@@ -450,7 +463,7 @@ public class RenderEvents
 		if(!CarryOnConfig.settings.renderArms)
 			return;
 		
-		if (handleMobends() && !Loader.isModLoaded("obfuscate"))
+		if (handleMobends() && !Loader.isModLoaded("obfuscate") && !Loader.isModLoaded("llibrary"))
 		{
 			EntityPlayer player = event.getEntityPlayer();
 			EntityPlayerSP clientPlayer = Minecraft.getMinecraft().player;
@@ -547,7 +560,7 @@ public class RenderEvents
 		if(!CarryOnConfig.settings.renderArms)
 			return;
 		
-		if (handleMobends() && !Loader.isModLoaded("obfuscate"))
+		if (handleMobends() && !Loader.isModLoaded("obfuscate") && !Loader.isModLoaded("llibrary"))
 		{
 			EntityPlayer player = event.getEntityPlayer();
 			ItemStack stack = player.getHeldItemMainhand();

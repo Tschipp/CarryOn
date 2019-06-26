@@ -171,11 +171,21 @@ public class Configs {
     					"magneticraft:hydraulic_press",
     					"magneticraft:multiblock_gap",
     					"refinedstorage:*",
-    					"practicallogistics2:*",
     					"mcmultipart:*",
     					"enderstorage:*",
     					"betterstorage:*",
-    					"practicallogistics2:*"
+    					"practicallogistics2:*",
+    					"wearablebackpacks:*",
+    					"torcherino:*",
+    					"rftools:screenBlock",
+    					"opencomputers:*",
+    					"translocators:*",
+    					"cfm:bath_*",
+    					"cfm:shower_*",
+    					"cfm:modern_bed_*",
+    					"cfm:grand_chair_*",
+    					"cfm:fridge",
+    					"cfm:freezer"
 
     			};
 		
@@ -191,7 +201,6 @@ public class Configs {
 						"minecraft:item_frame",
 						"minecraft:painting",
 						"minecraft:shulker_bullet",
-						"animania:textures/entity/pigs/hamster_tarou.png",
 						"animania:hamster",
 						"animania:ferret*",
 						"animania:hedgehog*",

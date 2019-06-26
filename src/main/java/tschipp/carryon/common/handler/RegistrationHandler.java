@@ -18,6 +18,7 @@ import tschipp.carryon.common.event.ItemEntityEvents;
 import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.compat.llibrary.LLibraryEvents;
 import tschipp.carryon.compat.obfuscate.ObfuscateEvents;
 
 public class RegistrationHandler
@@ -52,6 +53,9 @@ public class RegistrationHandler
 		
 		if(Loader.isModLoaded("obfuscate"))
 			MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
+		
+		if(Loader.isModLoaded("llibrary"))
+			MinecraftForge.EVENT_BUS.register(new LLibraryEvents());
 
 	}
 	

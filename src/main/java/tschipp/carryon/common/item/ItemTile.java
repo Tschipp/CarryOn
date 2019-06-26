@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.CharMatcher;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.properties.IProperty;
@@ -32,6 +34,9 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import tschipp.carryon.CarryOn;
@@ -45,7 +50,7 @@ public class ItemTile extends Item
 {
 
 	public static final String TILE_DATA_KEY = "tileData";
-	public static final String[] FACING_KEYS = new String[] { "rotation", "rot", "facing", "face", "direction", "dir", "front" };
+	public static final String[] FACING_KEYS = new String[] { "rotation", "rot", "facing", "face", "direction", "dir", "front", "forward" };
 
 	public ItemTile()
 	{
@@ -127,14 +132,29 @@ public class ItemTile extends Item
 
 								if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.HORIZONTALS))
 								{
-									world.setBlockState(pos2, containedstate.withProperty(prop, containedblock instanceof BlockStairs ? facing2 : facing2.getOpposite()));
-									set = true;
+									BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
+									PlaceEvent event = new PlaceEvent(snapshot, world.getBlockState(pos), player, hand);
+									MinecraftForge.EVENT_BUS.post(event);
+
+									if (!event.isCanceled())
+									{
+										world.setBlockState(pos2, containedstate.withProperty(prop, containedblock instanceof BlockStairs ? facing2 : facing2.getOpposite()));
+										set = true;
+									}
 								}
 								else if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
 								{
 									facing2 = EnumFacing.getFacingFromVector((float) vec.x, (float) vec.y, (float) vec.z);
-									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
-									set = true;
+
+									BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
+									PlaceEvent event = new PlaceEvent(snapshot, world.getBlockState(pos), player, hand);
+									MinecraftForge.EVENT_BUS.post(event);
+
+									if (!event.isCanceled())
+									{
+										world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
+										set = true;
+									}
 								}
 							}
 
@@ -144,8 +164,7 @@ public class ItemTile extends Item
 							{
 								NBTTagCompound tag = getTileData(stack);
 								Set<String> keys = tag.getKeySet();
-								keytester:
-								for (String key : keys)
+								keytester: for (String key : keys)
 								{
 									for (String facingKey : FACING_KEYS)
 									{
@@ -155,7 +174,7 @@ public class ItemTile extends Item
 											switch (type)
 											{
 											case "TAG_String":
-												tag.setString(key, facing2.getOpposite().getName());
+												tag.setString(key, CharMatcher.JAVA_UPPER_CASE.matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
 												break;
 											case "TAG_Int":
 												tag.setInteger(key, facing2.getOpposite().getIndex());
@@ -166,7 +185,7 @@ public class ItemTile extends Item
 											default:
 												break;
 											}
-											
+
 											break keytester;
 										}
 									}
@@ -174,20 +193,33 @@ public class ItemTile extends Item
 							}
 
 							if (!set)
-								world.setBlockState(pos2, containedstate);
-
-							TileEntity tile = world.getTileEntity(pos2);
-							if (tile != null)
 							{
-								tile.readFromNBT(getTileData(stack));
-								tile.setPos(pos2);
+								BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
+								PlaceEvent event = new PlaceEvent(snapshot, world.getBlockState(pos), player, hand);
+								MinecraftForge.EVENT_BUS.post(event);
+
+								if (!event.isCanceled())
+								{
+									world.setBlockState(pos2, containedstate);
+									set = true;
+								}
 							}
-							clearTileData(stack);
-							player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
-							player.setHeldItem(hand, ItemStack.EMPTY);
-							player.getEntityData().removeTag("overrideKey");
-							ItemEvents.sendPacket(player, 9, 0);
-							return EnumActionResult.SUCCESS;
+
+							if (set)
+							{
+								TileEntity tile = world.getTileEntity(pos2);
+								if (tile != null)
+								{
+									tile.readFromNBT(getTileData(stack));
+									tile.setPos(pos2);
+								}
+								clearTileData(stack);
+								player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
+								player.setHeldItem(hand, ItemStack.EMPTY);
+								player.getEntityData().removeTag("overrideKey");
+								ItemEvents.sendPacket(player, 9, 0);
+								return EnumActionResult.SUCCESS;
+							}
 						}
 
 					}

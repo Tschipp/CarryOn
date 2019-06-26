@@ -37,122 +37,128 @@ public class ModelOverridesHandler
 
 		for (int i = 0; i < overrides.length; i++)
 		{
-			boolean errored = false;
+			parseOverride(overrides[i], i);
+		}
+	}
+	
+	public static void parseOverride(String overrideStr, int i)
+	{
+		boolean errored = false;
 
-			Object toOverrideObject;
-			Object overrideObject;
-			NBTTagCompound tag = new NBTTagCompound();
+		Object toOverrideObject;
+		Object overrideObject;
+		NBTTagCompound tag = new NBTTagCompound();
 
-			String currentline = overrides[i];
-			if (StringUtils.isEmpty(currentline) || !StringUtils.contains(currentline, "->"))
-				new InvalidConfigException("Missing Override Model at line " + i + " : " + currentline).printException();
+		String currentline = overrideStr;
+		if (StringUtils.isEmpty(currentline) || !StringUtils.contains(currentline, "->"))
+			new InvalidConfigException("Missing Override Model at line " + i + " : " + currentline).printException();
 
-			String[] sa = currentline.split("->");
-			String toOverride = "";
-			String override = "";
+		String[] sa = currentline.split("->");
+		String toOverride = "";
+		String override = "";
+		try
+		{
+			toOverride = sa[0];
+			override = sa[1];
+		}
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			errored = true;
+			new InvalidConfigException("Missing Override Model at line " + i + " : " + currentline).printException();
+		}
+
+		if (toOverride.contains("{"))
+		{
+			if (!toOverride.contains("}"))
+			{
+				errored = true;
+				new InvalidConfigException("Missing } at line " + i + " : " + currentline).printException();
+			}
+
+			String nbt = toOverride.substring(toOverride.indexOf("{"));
+			toOverride = toOverride.replace(nbt, "");
 			try
 			{
-				toOverride = sa[0];
-				override = sa[1];
+				tag = JsonToNBT.getTagFromJson(nbt);
 			}
-			catch (ArrayIndexOutOfBoundsException e)
+			catch (NBTException e)
 			{
 				errored = true;
-				new InvalidConfigException("Missing Override Model at line " + i + " : " + currentline).printException();
+				new InvalidConfigException("Error while parsing NBT at line " + i + " : " + e.getMessage()).printException();
 			}
 
-			if (toOverride.contains("{"))
-			{
-				if (!toOverride.contains("}"))
-				{
-					errored = true;
-					new InvalidConfigException("Missing } at line " + i + " : " + currentline).printException();
-				}
+		}
+		else if (toOverride.contains("}"))
+		{
+			errored = true;
+			new InvalidConfigException("Missing { at line " + i + " : " + currentline).printException();
+		}
 
-				String nbt = toOverride.substring(toOverride.indexOf("{"));
-				toOverride = toOverride.replace(nbt, "");
-				try
-				{
-					tag = JsonToNBT.getTagFromJson(nbt);
-				}
-				catch (NBTException e)
-				{
-					errored = true;
-					new InvalidConfigException("Error while parsing NBT at line " + i + " : " + e.getMessage()).printException();
-				}
-
-			}
-			else if (toOverride.contains("}"))
+		String overridetype = "item";
+		if (override.contains("("))
+		{
+			if (!override.contains(")"))
 			{
 				errored = true;
-				new InvalidConfigException("Missing { at line " + i + " : " + currentline).printException();
+				new InvalidConfigException("Missing ) at line " + i + " : " + currentline).printException();
 			}
 
-			String overridetype = "item";
-			if (override.contains("("))
+			overridetype = override.substring(0, override.indexOf(")") + 1);
+			override =override.replace(overridetype, "");
+			overridetype = overridetype.replace("(", "");
+			overridetype = overridetype.replace(")", "");
+
+		}
+		else if (override.contains(")"))
+		{
+			errored = true;
+			new InvalidConfigException("Missing ( at line " + i + " : " + currentline).printException();
+		}
+
+		String modidToOverride = "minecraft";
+		String modidOverride = "minecraft";
+
+		if (toOverride.contains(":"))
+			modidToOverride = toOverride.replace(toOverride.substring(toOverride.indexOf(":")), "");
+
+		if (override.contains(":"))
+			modidOverride = override.replace(override.substring(override.indexOf(":")), "");
+
+		if (Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride) && !errored)
+		{
+
+			int meta = StringParser.getMeta(toOverride);
+			if (meta == 0)
+				toOverrideObject = StringParser.getBlock(toOverride);
+			else
+				toOverrideObject = StringParser.getBlockState(toOverride);
+
+			if (toOverrideObject != null)
 			{
-				if (!override.contains(")"))
-				{
-					errored = true;
-					new InvalidConfigException("Missing ) at line " + i + " : " + currentline).printException();
-				}
-
-				overridetype = override.substring(0, override.indexOf(")") + 1);
-				override =override.replace(overridetype, "");
-				overridetype = overridetype.replace("(", "");
-				overridetype = overridetype.replace(")", "");
-
-			}
-			else if (override.contains(")"))
-			{
-				errored = true;
-				new InvalidConfigException("Missing ( at line " + i + " : " + currentline).printException();
-			}
-
-			String modidToOverride = "minecraft";
-			String modidOverride = "minecraft";
-
-			if (toOverride.contains(":"))
-				modidToOverride = toOverride.replace(toOverride.substring(toOverride.indexOf(":")), "");
-
-			if (override.contains(":"))
-				modidOverride = override.replace(override.substring(override.indexOf(":")), "");
-
-			if (Loader.isModLoaded(modidOverride) && Loader.isModLoaded(modidToOverride) && !errored)
-			{
-
-				int meta = StringParser.getMeta(toOverride);
-				if (meta == 0)
-					toOverrideObject = StringParser.getBlock(toOverride);
+				if (overridetype.equals("block"))
+					overrideObject = StringParser.getBlockState(override);
 				else
-					toOverrideObject = StringParser.getBlockState(toOverride);
+					overrideObject = StringParser.getItemStack(override);
 
-				if (toOverrideObject != null)
+				if (overrideObject != null)
 				{
-					if (overridetype.equals("block"))
-						overrideObject = StringParser.getBlockState(override);
-					else
-						overrideObject = StringParser.getItemStack(override);
-
-					if (overrideObject != null)
+					NBTTagCompound keyComp = new NBTTagCompound();
+					keyComp.setTag("nbttag", tag);
+					if (toOverrideObject instanceof Block)
 					{
-						NBTTagCompound keyComp = new NBTTagCompound();
-						keyComp.setTag("nbttag", tag);
-						if (toOverrideObject instanceof Block)
-						{
-							keyComp.setString("block", ((Block) toOverrideObject).getRegistryName().toString());
-						}
-						else
-						{
-							keyComp.setInteger("stateid", Block.getStateId((IBlockState) toOverrideObject));
-							keyComp.setString("block", ((IBlockState) toOverrideObject).getBlock().getRegistryName().toString());
-						}
-						OVERRIDE_OBJECTS.put(keyComp, overrideObject);
+						keyComp.setString("block", ((Block) toOverrideObject).getRegistryName().toString());
 					}
+					else
+					{
+						keyComp.setInteger("stateid", Block.getStateId((IBlockState) toOverrideObject));
+						keyComp.setString("block", ((IBlockState) toOverrideObject).getBlock().getRegistryName().toString());
+					}
+					OVERRIDE_OBJECTS.put(keyComp, overrideObject);
 				}
 			}
 		}
 	}
+	
 
 	public static boolean hasCustomOverrideModel(IBlockState state, NBTTagCompound tag)
 	{

@@ -200,7 +200,7 @@ public class PickupHandler
 						}
 					}
 					else
-						return true && handleProtections((EntityPlayerMP) player, toPickUp);
+						return handleProtections((EntityPlayerMP) player, toPickUp);
 				}
 			}
 
@@ -278,7 +278,7 @@ public class PickupHandler
 								}
 							}
 							else
-								return true && handleProtections((EntityPlayerMP) player, toPickUp);
+								return handleProtections((EntityPlayerMP) player, toPickUp);
 						}
 						
 

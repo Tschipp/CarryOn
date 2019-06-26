@@ -7,6 +7,7 @@ import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -25,6 +26,9 @@ public class ObfuscateEvents
 	public void preModelPlayerEvent(ModelPlayerEvent.SetupAngles.Post event)
 	{
 		if(!CarryOnConfig.settings.renderArms)
+			return;
+		
+		if(Loader.isModLoaded("llibrary"))
 			return;
 		
 		EntityPlayer player = event.getEntityPlayer();

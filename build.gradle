@@ -24,7 +24,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.2-14.23.4.2765"
+    version = "1.12.2-14.23.5.2816"
     runDir = "run"
  
     mappings = "snapshot_20171003"
@@ -37,6 +37,9 @@ repositories {
 	
     maven { url = "https://mrcrayfish.com/maven" }
 
+	maven {
+        url "https://maven.mcmoddev.com/"
+    }
 }
 
 
@@ -46,6 +49,7 @@ dependencies {
    //   deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
 	 
 	    compile "com.mrcrayfish:obfuscate:0.2.6-1.12.2"
+		compile "net.ilexiconn:llibrary:1.7.9-1.12.2:dev"
 
 }
 
