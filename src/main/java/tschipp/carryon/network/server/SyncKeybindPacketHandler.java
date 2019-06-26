@@ -14,11 +14,11 @@ public class SyncKeybindPacketHandler implements IMessageHandler<SyncKeybindPack
 	@Override
 	public IMessage onMessage(final SyncKeybindPacket message, final MessageContext ctx)
 	{
-		IThreadListener mainThread = (WorldServer) ctx.getServerHandler().playerEntity.world;
+		IThreadListener mainThread = (WorldServer) ctx.getServerHandler().player.world;
 
 		mainThread.addScheduledTask(new Runnable()
 		{
-			EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+			EntityPlayerMP player = ctx.getServerHandler().player;
 
 			@Override
 			public void run()

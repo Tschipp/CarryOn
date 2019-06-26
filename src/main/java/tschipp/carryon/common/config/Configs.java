@@ -55,6 +55,12 @@ public class Configs {
 		@Comment("Use Whitelist instead of Blacklist for Entities")
 		public boolean useWhitelistEntities=false;
 		
+		@Comment("Use Whitelist instead of Blacklist for Stacking")
+		public boolean useWhitelistStacking=false;
+
+		@Comment("All blocks that aren't a Tile Entities can be picked up as long as they're allowed to in the whitelist, even if other settings disable whitelist or picking of normal blocks.")
+		public boolean useWhitelistForNormalBlocks=false;
+		
 		@Comment("Whether the player can hit blocks and entities while carrying or not")
 		public boolean hitWhileCarrying=false;
 		
@@ -78,22 +84,24 @@ public class Configs {
 	
 	public static class WhiteList
 	{
-		@Config.RequiresMcRestart()
 		@Comment("Entities that CAN be picked up")
 		public String[] allowedEntities=new String[]
 				{
 				};
 		
-		@Config.RequiresMcRestart()
 		@Comment("Blocks that CAN be picked up")
 		public String[] allowedBlocks=new String[]
 				{
+				};
+		
+		@Comment("Entities that CAN have other entities stacked on top of them")
+		public String[] allowedStacking = new String[]
+				{	
 				};
 	}
 	
 	public static class Blacklist
 	{
-		@Config.RequiresMcRestart()
 		@Comment("Tile Entities that cannot be picked up")
     	public String[] forbiddenTiles = new String[]
     			{
@@ -144,9 +152,36 @@ public class Configs {
     					"malisisdoors:*",
     					"industrialforegoing:*",
     					"minecolonies:*",
+    					"thaumcraft:pillar*",
+    					"thaumcraft:infernal_furnace",
+    					"thaumcraft:placeholder*",
+    					"thaumcraft:infusion_matrix",
+    					"thaumcraft:golem_builder",
+    					"thaumcraft:thaumatorium*",
+    					"magneticraft:oil_heater",
+    					"magneticraft:solar_panel",
+    					"magneticraft:steam_engine",
+    					"magneticraft:shelving_unit",
+    					"magneticraft:grinder",
+    					"magneticraft:sieve",
+    					"magneticraft:solar_tower",
+    					"magneticraft:solar_mirror",
+    					"magneticraft:container",
+    					"magneticraft:pumpjack",
+    					"magneticraft:solar_panel",
+    					"magneticraft:refinery",
+    					"magneticraft:oil_heater",
+    					"magneticraft:hydraulic_press",
+    					"magneticraft:multiblock_gap",
+    					"refinedstorage:*",
+    					"practicallogistics2:*",
+    					"mcmultipart:*",
+    					"enderstorage:*",
+    					"betterstorage:*",
+    					"practicallogistics2:*"
+
     			};
 		
-		@Config.RequiresMcRestart()
 		@Comment("Entities that cannot be picked up")
 		public String[] forbiddenEntities = new String[]
 				{
@@ -167,11 +202,18 @@ public class Configs {
 						"animania:wagon",
 						"mynko:*"
 				};
+		
+		
+		@Comment("Entities that cannot have other entities stacked on top of them")
+		public String[] forbiddenStacking = new String[]
+				{
+						"minecraft:horse"
+				};
+		
 	}
 	
 	public static class ModelOverrides
 	{
-		@Config.RequiresMcRestart()
 		@Comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
     	public String[] modelOverrides = new String[]
     			{
@@ -189,6 +231,9 @@ public class Configs {
     				"minecraft:leaves2->(item)minecraft:leaves2",
     				"minecraft:reeds->(block)minecraft:reeds",
     				"minecraft:daylight_detector_inverted->minecraft:daylight_detector",
+    	            "minecraft:standing_sign->(item)minecraft:sign",
+    				"minecraft:wall_sign->(item)minecraft:sign",
+    	            "minecraft:redstone_wire->(item)minecraft:redstone",
     	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
     	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
     	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
@@ -236,7 +281,6 @@ public class Configs {
     	            "animania:cheese_mold;8->(block)animania:cheese_mold;8",
     	            "animania:cheese_mold;9->(block)animania:cheese_mold;9",
     	            "animania:cheese_mold;10->(block)animania:cheese_mold;10",
-
     			};
 	}
 	

@@ -14,8 +14,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.stats.Achievement;
-import net.minecraft.stats.AchievementList;
 import net.minecraft.util.math.BlockPos;
 
 public class ScriptParseHelper
@@ -137,20 +135,6 @@ public class ScriptParseHelper
 		}
 
 		return 1;
-	}
-	
-	public static Achievement getAchievementFromString(String s)
-	{
-		if (s == null)
-			return null;
-
-		for (Achievement a : AchievementList.ACHIEVEMENTS)
-		{
-			if (a.statId.equals(s))
-				return a;
-		}
-
-		return null;
 	}
 
 	public static boolean matchesScore(EntityPlayer player, String cond)

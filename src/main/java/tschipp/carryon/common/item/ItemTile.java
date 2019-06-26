@@ -3,6 +3,7 @@ package tschipp.carryon.common.item;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -31,24 +32,26 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import tschipp.carryon.CarryOn;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
-import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemTile extends Item
 {
 
 	public static final String TILE_DATA_KEY = "tileData";
+	public static final String[] FACING_KEYS = new String[] { "rotation", "rot", "facing", "face", "direction", "dir", "front" };
 
 	public ItemTile()
 	{
 		this.setUnlocalizedName("tile_item");
 		this.setRegistryName(CarryOn.MODID, "tile_item");
-		GameRegistry.register(this);
+		ForgeRegistries.ITEMS.register(this);
 		this.setMaxStackSize(1);
 	}
 
@@ -82,6 +85,12 @@ public class ItemTile extends Item
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
 	{
+		if (Loader.isModLoaded("betterplacement"))
+		{
+			if (CarryOnKeybinds.isKeyPressed(player))
+				return EnumActionResult.FAIL;
+		}
+
 		Block block = world.getBlockState(pos).getBlock();
 		ItemStack stack = player.getHeldItem(hand);
 		if (hasTileData(stack))
@@ -89,7 +98,7 @@ public class ItemTile extends Item
 			try
 			{
 				Vec3d vec = player.getLookVec();
-				EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, 0f, (float) vec.zCoord);
+				EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
 				BlockPos pos2 = pos;
 				Block containedblock = getBlock(stack);
 				int meta = getMeta(stack);
@@ -109,6 +118,7 @@ public class ItemTile extends Item
 						{
 							boolean set = false;
 
+							// Handles Blockstate rotation
 							Iterator<IProperty<?>> iterator = containedblock.getDefaultState().getPropertyKeys().iterator();
 							while (iterator.hasNext())
 							{
@@ -122,11 +132,45 @@ public class ItemTile extends Item
 								}
 								else if (prop instanceof PropertyDirection && this.equal(allowedValues, EnumFacing.VALUES))
 								{
-									facing2 = EnumFacing.getFacingFromVector((float) vec.xCoord, (float) vec.yCoord, (float) vec.zCoord);
+									facing2 = EnumFacing.getFacingFromVector((float) vec.x, (float) vec.y, (float) vec.z);
 									world.setBlockState(pos2, containedstate.withProperty(prop, facing2.getOpposite()));
 									set = true;
 								}
+							}
 
+							// If the blockstate doesn't handle rotation, try to
+							// change rotation via NBT
+							if (!set && !getTileData(stack).hasNoTags())
+							{
+								NBTTagCompound tag = getTileData(stack);
+								Set<String> keys = tag.getKeySet();
+								keytester:
+								for (String key : keys)
+								{
+									for (String facingKey : FACING_KEYS)
+									{
+										if (key.toLowerCase().equals(facingKey))
+										{
+											String type = tag.getTagTypeName(tag.getTagId(key));
+											switch (type)
+											{
+											case "TAG_String":
+												tag.setString(key, facing2.getOpposite().getName());
+												break;
+											case "TAG_Int":
+												tag.setInteger(key, facing2.getOpposite().getIndex());
+												break;
+											case "TAG_Byte":
+												tag.setByte(key, (byte) facing2.getOpposite().getIndex());
+												break;
+											default:
+												break;
+											}
+											
+											break keytester;
+										}
+									}
+								}
 							}
 
 							if (!set)
@@ -142,7 +186,7 @@ public class ItemTile extends Item
 							player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
 							player.setHeldItem(hand, ItemStack.EMPTY);
 							player.getEntityData().removeTag("overrideKey");
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							ItemEvents.sendPacket(player, 9, 0);
 							return EnumActionResult.SUCCESS;
 						}
 

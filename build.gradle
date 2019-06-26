@@ -5,7 +5,7 @@ buildscript {
 
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
@@ -24,33 +24,29 @@ compileJava {
 }
 
 minecraft {
-    version = "1.11.2-13.20.1.2386"
+    version = "1.12.2-14.23.4.2765"
     runDir = "run"
  
-    mappings = "snapshot_20161220"
+    mappings = "snapshot_20171003"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
 repositories {
 
-    maven { url 'http://maven.epoxide.org' }
+    // maven { url 'http://maven.epoxide.org' }
 	
-	ivy {
-        name "LatMod"
-        artifactPattern "http://mods.latmod.com/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"
-    }
+    maven { url = "https://mrcrayfish.com/maven" }
+
 }
 
 
 
 dependencies {
   
-      deobfCompile "net.darkhax.gamestages:GameStages-1.11.2:1.0.11"
-	  
-	  deobfCompile "LatMod:FTBUtilities:1.1x-3.6.5"
-	  deobfCompile "LatMod:FTBLib:1.1x-3.6.5"
+   //   deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
+	 
+	    compile "com.mrcrayfish:obfuscate:0.2.6-1.12.2"
 
-		
 }
 
 processResources {
@@ -68,3 +64,25 @@ processResources {
         exclude 'mcmod.info'
     }
 }
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+
+    // Skips if the keyStore property is missing.
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+
+    // findProperty allows us to reference the property without it existing. 
+    // Using project.propName would cause the script to fail validation if 
+    // the property did not exist. 
+    keyStore = project.findProperty('keyStore')
+    alias = project.findProperty('keyStoreAlias')
+    storePass = project.findProperty('keyStorePass')
+    keyPass = project.findProperty('keyStoreKeyPass')
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+
+// Runs this task automatically when build is ran. 
+build.dependsOn signJar
+

@@ -2,20 +2,19 @@ package tschipp.carryon.common.event;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
@@ -27,18 +26,16 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
-import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntityEvents
 {
@@ -52,6 +49,17 @@ public class ItemEntityEvents
 		{
 			player.getEntityData().removeTag("carrySlot");
 			event.setUseBlock(Result.DENY);
+
+			if (!player.world.isRemote)
+			{
+				CarryOnOverride override = ScriptChecker.getOverride(player);
+				if (override != null)
+				{
+					String command = override.getCommandPlace();
+					if (command != null)
+						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+				}
+			}
 		}
 
 	}
@@ -64,7 +72,7 @@ public class ItemEntityEvents
 		if (e instanceof EntityItem)
 		{
 			EntityItem eitem = (EntityItem) e;
-			ItemStack stack = eitem.getEntityItem();
+			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
 			if (item == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
 			{
@@ -74,7 +82,7 @@ public class ItemEntityEvents
 				world.spawnEntity(entity);
 
 				ItemEntity.clearEntityData(stack);
-				eitem.setEntityItemStack(ItemStack.EMPTY);
+				eitem.setItem(ItemStack.EMPTY);
 			}
 		}
 	}
@@ -119,10 +127,15 @@ public class ItemEntityEvents
 							if (override != null)
 								overrideHash = override.hashCode();
 
-							CarryOn.network.sendToAllAround(new CarrySlotPacket(player.inventory.currentItem, player.getEntityId(), overrideHash), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+							ItemEvents.sendPacket(player, player.inventory.currentItem, overrideHash);
+
+							if (entity instanceof EntityLiving)
+								((EntityLiving) entity).setHealth(0);
+
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);
+							event.setCancellationResult(EnumActionResult.FAIL);
 						}
 					}
 				}
@@ -146,43 +159,46 @@ public class ItemEntityEvents
 						{
 							Entity topEntity = getTopPassenger(lowestEntity);
 
-							double sizeEntity = topEntity.height * topEntity.width;
-							if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking)
+							if (CarryOnConfig.settings.useWhitelistStacking ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
 							{
-								if (topEntity instanceof EntityHorse)
+								double sizeEntity = topEntity.height * topEntity.width;
+								if ((CarryOnConfig.settings.entitySizeMattersStacking && sizeHeldEntity <= sizeEntity) || !CarryOnConfig.settings.entitySizeMattersStacking)
 								{
-									EntityHorse horse = (EntityHorse) topEntity;
-									horse.setHorseTamed(true);
-								}
-								
-								if (distance < 6)
-								{
-									double tempX = entity.posX;
-									double tempY = entity.posY;
-									double tempZ = entity.posZ;
-									entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
-									world.spawnEntity(entityHeld);
-									entityHeld.startRiding(topEntity, false);
-									entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+									if (topEntity instanceof EntityHorse)
+									{
+										EntityHorse horse = (EntityHorse) topEntity;
+										horse.setHorseTamed(true);
+									}
+
+									if (distance < 6)
+									{
+										double tempX = entity.posX;
+										double tempY = entity.posY;
+										double tempZ = entity.posZ;
+										entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
+										world.spawnEntity(entityHeld);
+										entityHeld.startRiding(topEntity, false);
+										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+									}
+									else
+									{
+										entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
+										world.spawnEntity(entityHeld);
+										entityHeld.startRiding(topEntity, false);
+									}
+
+									ItemEntity.clearEntityData(main);
+									player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+									ItemEvents.sendPacket(player, 9, 0);
+									event.setCanceled(true);
+									event.setCancellationResult(EnumActionResult.FAIL);
+									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 								}
 								else
 								{
-									entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
-									world.spawnEntity(entityHeld);
-									entityHeld.startRiding(topEntity, false);
+									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									return;
 								}
-								
-
-								ItemEntity.clearEntityData(main);
-								player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-								CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
-								event.setCanceled(true);
-								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
-							}
-							else
-							{
-								world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
-								return;
 							}
 						}
 						else

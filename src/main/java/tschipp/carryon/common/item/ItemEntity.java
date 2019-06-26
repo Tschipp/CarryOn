@@ -20,10 +20,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import tschipp.carryon.CarryOn;
+import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.CarryOnConfig;
+import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 public class ItemEntity extends Item
@@ -35,7 +39,7 @@ public class ItemEntity extends Item
 	{
 		this.setUnlocalizedName("entity_item");
 		this.setRegistryName(CarryOn.MODID, "entity_item");
-		GameRegistry.register(this);
+		ForgeRegistries.ITEMS.register(this);
 		this.setMaxStackSize(1);
 	}
 
@@ -92,6 +96,12 @@ public class ItemEntity extends Item
 		ItemStack stack = player.getHeldItem(hand);
 		Block block = world.getBlockState(pos).getBlock();
 
+		if(Loader.isModLoaded("betterplacement"))
+		{
+			if(CarryOnKeybinds.isKeyPressed(player))
+				return EnumActionResult.FAIL;
+		}
+		
 		if (hasEntityData(stack))
 		{
 			BlockPos finalPos = pos;
@@ -114,7 +124,8 @@ public class ItemEntity extends Item
 					}
 					clearEntityData(stack);
 					player.setHeldItem(hand, ItemStack.EMPTY);
-					CarryOn.network.sendToAllAround(new CarrySlotPacket(9, player.getEntityId()), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 256));
+					ItemEvents.sendPacket(player, 9, 0);
+				
 				}
 				player.getEntityData().removeTag("overrideKey");
 				return EnumActionResult.SUCCESS;
