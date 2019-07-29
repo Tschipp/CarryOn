@@ -7,33 +7,33 @@ import javax.annotation.Nullable;
 import com.google.common.base.CharMatcher;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.MobEffects;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.PotionEffect;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
+import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;
 import net.minecraftforge.fml.ModList;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
@@ -42,13 +42,13 @@ import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 
-public class ItemTile extends Item
+public class ItemCarryonBlock extends Item
 {
 
 	public static final String TILE_DATA_KEY = "tileData";
 	public static final String[] FACING_KEYS = new String[] { "rotation", "rot", "facing", "face", "direction", "dir", "front", "forward" };
 
-	public ItemTile()
+	public ItemCarryonBlock()
 	{
 		super(new Item.Properties().maxStackSize(1));
 		this.setRegistryName(CarryOn.MODID, "tile_item");
@@ -59,8 +59,8 @@ public class ItemTile extends Item
 	{
 		if (hasTileData(stack))
 		{
-			IBlockState state = getBlockState(stack);
-			NBTTagCompound nbt = getTileData(stack);
+			BlockState state = getBlockState(stack);
+			CompoundNBT nbt = getTileData(stack);
 
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, nbt))
 			{
@@ -69,7 +69,7 @@ public class ItemTile extends Item
 					return ((ItemStack) override).getDisplayName();
 				else
 				{
-					IBlockState ostate = (IBlockState) override;
+					BlockState ostate = (BlockState) override;
 					return ostate.getBlock().getNameTextComponent();
 				}
 			}
@@ -77,14 +77,15 @@ public class ItemTile extends Item
 			return getItemStack(stack).getDisplayName();
 		}
 
-		return new TextComponentString("");
+		return new StringTextComponent("");
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	public EnumActionResult onItemUse(ItemUseContext context)
+	public ActionResultType onItemUse(ItemUseContext context)
 	{
-		EnumFacing facing = context.getFace();
-		EntityPlayer player = context.getPlayer();
+		Direction facing = context.getFace();
+		PlayerEntity player = context.getPlayer();
 		World world = context.getWorld();
 		BlockPos pos = context.getPos();
 		ItemStack stack = context.getItem();
@@ -92,7 +93,7 @@ public class ItemTile extends Item
 		if (ModList.get().isLoaded("betterplacement"))
 		{
 			if (CarryOnKeybinds.isKeyPressed(player))
-				return EnumActionResult.FAIL;
+				return ActionResultType.FAIL;
 		}
 
 		if (hasTileData(stack))
@@ -100,10 +101,10 @@ public class ItemTile extends Item
 			try
 			{
 				Vec3d vec = player.getLookVec();
-				EnumFacing facing2 = EnumFacing.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
+				Direction facing2 = Direction.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
 				BlockPos pos2 = pos;
 				Block containedblock = getBlock(stack);
-				IBlockState containedstate = getBlockState(stack);
+				BlockState containedstate = getBlockState(stack);
 				if (!world.getBlockState(pos2).isReplaceable(new BlockItemUseContext(context)))
 				{
 					pos2 = pos.offset(facing);
@@ -118,9 +119,9 @@ public class ItemTile extends Item
 						if (player.canPlayerEdit(pos, facing, stack) && world.isBlockModifiable(player, pos2))
 						{
 							
-							IBlockState actualState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
+							BlockState actualState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
 							BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
-							PlaceEvent event = new PlaceEvent(snapshot, world.getBlockState(pos), player, EnumHand.MAIN_HAND);
+							EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
 							MinecraftForge.EVENT_BUS.post(event);
 
 							if (!event.isCanceled())
@@ -132,7 +133,7 @@ public class ItemTile extends Item
 								// change rotation via NBT
 								if (!getTileData(stack).isEmpty())
 								{
-									NBTTagCompound tag = getTileData(stack);
+									CompoundNBT tag = getTileData(stack);
 									Set<String> keys = tag.keySet();
 									keytester: for (String key : keys)
 									{
@@ -144,13 +145,13 @@ public class ItemTile extends Item
 												switch (type)
 												{
 												case 8:
-													tag.setString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
+													tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
 													break;
 												case 3:
-													tag.setInt(key, facing2.getOpposite().getIndex());
+													tag.putInt(key, facing2.getOpposite().getIndex());
 													break;
 												case 1:
-													tag.setByte(key, (byte) facing2.getOpposite().getIndex());
+													tag.putByte(key, (byte) facing2.getOpposite().getIndex());
 													break;
 												default:
 													break;
@@ -170,10 +171,10 @@ public class ItemTile extends Item
 								}
 								clearTileData(stack);
 								player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
-								player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-								player.getEntityData().removeTag("overrideKey");
+								player.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+								player.getEntityData().remove("overrideKey");
 								ItemEvents.sendPacket(player, 9, 0);
-								return EnumActionResult.SUCCESS;
+								return ActionResultType.SUCCESS;
 
 							}
 						}
@@ -186,28 +187,28 @@ public class ItemTile extends Item
 
 				if (world != null && world.isRemote)
 				{
-					CarryOn.LOGGER.info("Block: " + ItemTile.getBlock(stack));
-					CarryOn.LOGGER.info("BlockState: " + ItemTile.getBlockState(stack));
+					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(stack));
+					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(stack));
 //					CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
-					CarryOn.LOGGER.info("ItemStack: " + ItemTile.getItemStack(stack));
+					CarryOn.LOGGER.info("ItemStack: " + ItemCarryonBlock.getItemStack(stack));
 
-					if (ModelOverridesHandler.hasCustomOverrideModel(ItemTile.getBlockState(stack), ItemTile.getTileData(stack)))
-						CarryOn.LOGGER.info("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemTile.getBlockState(stack), ItemTile.getTileData(stack)));
+					if (ModelOverridesHandler.hasCustomOverrideModel(ItemCarryonBlock.getBlockState(stack), ItemCarryonBlock.getTileData(stack)))
+						CarryOn.LOGGER.info("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemCarryonBlock.getBlockState(stack), ItemCarryonBlock.getTileData(stack)));
 
-					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemTile.getBlockState(stack)))
-						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemTile.getBlockState(stack)));
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(stack)))
+						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(stack)));
 
-					player.sendMessage(new TextComponentString(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"));
-					TextComponentString s = new TextComponentString(TextFormatting.GOLD + "here");
+					player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"));
+					StringTextComponent s = new StringTextComponent(TextFormatting.GOLD + "here");
 					s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-					player.sendMessage(new TextComponentString(TextFormatting.RED + "Please report this error ").appendSibling(s));
+					player.sendMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").appendSibling(s));
 
 				}
 			}
 
 		}
 
-		return EnumActionResult.FAIL;
+		return ActionResultType.FAIL;
 	}
 
 	@Override
@@ -215,12 +216,12 @@ public class ItemTile extends Item
 	{
 		if (hasTileData(stack))
 		{
-			if (entity instanceof EntityLivingBase)
+			if (entity instanceof LivingEntity)
 			{
-				if (entity instanceof EntityPlayer && Settings.slownessInCreative.get() ? false : ((EntityPlayer) entity).isCreative())
+				if (entity instanceof PlayerEntity && Settings.slownessInCreative.get() ? false : ((PlayerEntity) entity).isCreative())
 					return;
 
-				((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 1, potionLevel(stack), false, false));
+				((LivingEntity) entity).addPotionEffect(new EffectInstance(Effects.SLOWNESS, 1, potionLevel(stack), false, false));
 			}
 		} else
 		{
@@ -232,33 +233,33 @@ public class ItemTile extends Item
 	{
 		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTag();
-			return tag.hasKey(TILE_DATA_KEY) && tag.hasKey("block") && tag.hasKey("stateid");
+			CompoundNBT tag = stack.getTag();
+			return tag.contains(TILE_DATA_KEY) && tag.contains("block") && tag.contains("stateid");
 		}
 		return false;
 	}
 
-	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, IBlockState state, ItemStack stack)
+	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, BlockState state, ItemStack stack)
 	{
 		if (stack.isEmpty())
 			return false;
 
-		NBTTagCompound chest = new NBTTagCompound();
+		CompoundNBT chest = new CompoundNBT();
 		if (tile != null)
 			chest = tile.write(chest);
 
-		NBTTagCompound tag = stack.hasTag() ? stack.getTag() : new NBTTagCompound();
-		if (tag.hasKey(TILE_DATA_KEY))
+		CompoundNBT tag = stack.hasTag() ? stack.getTag() : new CompoundNBT();
+		if (tag.contains(TILE_DATA_KEY))
 			return false;
 
-		tag.setTag(TILE_DATA_KEY, chest);
+		tag.put(TILE_DATA_KEY, chest);
 
 //		ItemStack drop = new ItemStack(state.getBlock().getItemDropped(state, itemRand, 0), 1, state.getBlock().damageDropped(state));
 
-		tag.setString("block", state.getBlock().getRegistryName().toString());
+		tag.putString("block", state.getBlock().getRegistryName().toString());
 //		Item item = Item.getItemFromBlock(state.getBlock());
 //		tag.setInt("meta", drop.getItemDamage());
-		tag.setInt("stateid", Block.getStateId(state));
+		tag.putInt("stateid", Block.getStateId(state));
 		stack.setTag(tag);
 		return true;
 	}
@@ -267,18 +268,18 @@ public class ItemTile extends Item
 	{
 		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTag();
-			tag.removeTag(TILE_DATA_KEY);
-			tag.removeTag("block");
-			tag.removeTag("stateid");
+			CompoundNBT tag = stack.getTag();
+			tag.remove(TILE_DATA_KEY);
+			tag.remove("block");
+			tag.remove("stateid");
 		}
 	}
 
-	public static NBTTagCompound getTileData(ItemStack stack)
+	public static CompoundNBT getTileData(ItemStack stack)
 	{
 		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTag();
+			CompoundNBT tag = stack.getTag();
 			return tag.getCompound(TILE_DATA_KEY);
 		}
 		return null;
@@ -288,7 +289,7 @@ public class ItemTile extends Item
 	{
 		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTag();
+			CompoundNBT tag = stack.getTag();
 			int id = tag.getInt("stateid");
 			return Block.getStateById(id).getBlock();
 		}
@@ -299,7 +300,7 @@ public class ItemTile extends Item
 //	{
 //		if (stack.hasTag())
 //		{
-//			NBTTagCompound tag = stack.getTag();
+//			CompoundNBT tag = stack.getTag();
 //			int meta = tag.getInt("meta");
 //			return meta;
 //		}
@@ -311,11 +312,11 @@ public class ItemTile extends Item
 		return new ItemStack(getBlock(stack), 1);
 	}
 
-	public static IBlockState getBlockState(ItemStack stack)
+	public static BlockState getBlockState(ItemStack stack)
 	{
 		if (stack.hasTag())
 		{
-			NBTTagCompound tag = stack.getTag();
+			CompoundNBT tag = stack.getTag();
 			int id = tag.getInt("stateid");
 			return Block.getStateById(id);
 		}
@@ -327,9 +328,9 @@ public class ItemTile extends Item
 		TileEntity te = world.getTileEntity(pos);
 		if (te != null)
 		{
-			NBTTagCompound tag = new NBTTagCompound();
+			CompoundNBT tag = new CompoundNBT();
 			te.write(tag);
-			return tag.hasKey("Lock") ? !tag.getString("Lock").equals("") : false;
+			return tag.contains("Lock") ? !tag.getString("Lock").equals("") : false;
 		}
 
 		return false;

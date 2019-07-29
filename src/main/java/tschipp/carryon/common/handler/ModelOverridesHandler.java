@@ -7,13 +7,13 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,7 +25,7 @@ import tschipp.carryon.common.helper.StringParser;
 
 public class ModelOverridesHandler
 {
-	public static HashMap<NBTTagCompound, Object> OVERRIDE_OBJECTS = new HashMap<NBTTagCompound, Object>();
+	public static HashMap<CompoundNBT, Object> OVERRIDE_OBJECTS = new HashMap<CompoundNBT, Object>();
 
 	/*
 	 * This class is really ugly, will probably be replaced by something else -
@@ -37,7 +37,7 @@ public class ModelOverridesHandler
 
 		Object toOverrideObject;
 		Object overrideObject;
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		String currentline = overrideString;
 		if (StringUtils.isEmpty(currentline) || !StringUtils.contains(currentline, "->"))
@@ -127,16 +127,16 @@ public class ModelOverridesHandler
 
 				if (overrideObject != null)
 				{
-					NBTTagCompound keyComp = new NBTTagCompound();
-					keyComp.setTag("nbttag", tag);
+					CompoundNBT keyComp = new CompoundNBT();
+					keyComp.put("nbttag", tag);
 					if (toOverrideObject instanceof Block)
 					{
-						keyComp.setString("block", ((Block) toOverrideObject).getRegistryName().toString());
+						keyComp.putString("block", ((Block) toOverrideObject).getRegistryName().toString());
 					}
 					else
 					{
-						keyComp.setInt("stateid", Block.getStateId((IBlockState) toOverrideObject));
-						keyComp.setString("block", ((IBlockState) toOverrideObject).getBlock().getRegistryName().toString());
+						keyComp.putInt("stateid", Block.getStateId((BlockState) toOverrideObject));
+						keyComp.putString("block", ((BlockState) toOverrideObject).getBlock().getRegistryName().toString());
 					}
 					OVERRIDE_OBJECTS.put(keyComp, overrideObject);
 				}
@@ -156,21 +156,21 @@ public class ModelOverridesHandler
 		}
 	}
 
-	public static boolean hasCustomOverrideModel(IBlockState state, NBTTagCompound tag)
+	public static boolean hasCustomOverrideModel(BlockState state, CompoundNBT tag)
 	{
 		if (OVERRIDE_OBJECTS.isEmpty())
 			return false;
 
 		int stateid = Block.getStateId(state);
-		NBTTagCompound[] keys = new NBTTagCompound[OVERRIDE_OBJECTS.size()];
+		CompoundNBT[] keys = new CompoundNBT[OVERRIDE_OBJECTS.size()];
 		OVERRIDE_OBJECTS.keySet().toArray(keys);
-		for (NBTTagCompound key : keys)
+		for (CompoundNBT key : keys)
 		{
 			int id = key.getInt("stateid");
 			Block block = StringParser.getBlock(key.getString("block"));
 			if (id == 0 ? block == state.getBlock() : id == stateid)
 			{
-				NBTTagCompound toCheckForCompound = key.getCompound("nbttag");
+				CompoundNBT toCheckForCompound = key.getCompound("nbttag");
 				Set<String> kSetToCheck = toCheckForCompound.keySet();
 				Set<String> kSetTile = tag.keySet();
 
@@ -179,7 +179,7 @@ public class ModelOverridesHandler
 				{
 					for (String skey : kSetToCheck)
 					{
-						if (!NBTUtil.areNBTEquals(tag.getTag(skey), toCheckForCompound.getTag(skey), true))
+						if (!NBTUtil.areNBTEquals(tag.get(skey), toCheckForCompound.get(skey), true))
 							flag = false;
 					}
 					if (flag)
@@ -192,18 +192,18 @@ public class ModelOverridesHandler
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	public static IBakedModel getCustomOverrideModel(IBlockState state, NBTTagCompound tag, World world, EntityPlayer player)
+	public static IBakedModel getCustomOverrideModel(BlockState state, CompoundNBT tag, World world, PlayerEntity player)
 	{
 		int stateid = Block.getStateId(state);
-		NBTTagCompound[] keys = new NBTTagCompound[OVERRIDE_OBJECTS.size()];
+		CompoundNBT[] keys = new CompoundNBT[OVERRIDE_OBJECTS.size()];
 		OVERRIDE_OBJECTS.keySet().toArray(keys);
-		for (NBTTagCompound key : keys)
+		for (CompoundNBT key : keys)
 		{
 			int id = key.getInt("stateid");
 			Block block = StringParser.getBlock(key.getString("block"));
 			if (id == 0 ? block == state.getBlock() : id == stateid)
 			{
-				NBTTagCompound toCheckForCompound = key.getCompound("nbttag");
+				CompoundNBT toCheckForCompound = key.getCompound("nbttag");
 				Set<String> kSetToCheck = toCheckForCompound.keySet();
 				Set<String> kSetTile = tag.keySet();
 
@@ -212,7 +212,7 @@ public class ModelOverridesHandler
 				{
 					for (String skey : kSetToCheck)
 					{
-						if (!NBTUtil.areNBTEquals(tag.getTag(skey), toCheckForCompound.getTag(skey), true))
+						if (!NBTUtil.areNBTEquals(tag.get(skey), toCheckForCompound.get(skey), true))
 							flag = false;
 					}
 					if (flag)
@@ -222,8 +222,8 @@ public class ModelOverridesHandler
 						if (override == null)
 							return null;
 
-						if (override instanceof IBlockState)
-							return Minecraft.getInstance().getBlockRendererDispatcher().getModelForState((IBlockState) override);
+						if (override instanceof BlockState)
+							return Minecraft.getInstance().getBlockRendererDispatcher().getModelForState((BlockState) override);
 						else
 							return Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides((ItemStack) override, world, player);
 					}
@@ -234,18 +234,18 @@ public class ModelOverridesHandler
 
 	}
 	
-	public static Object getOverrideObject(IBlockState state, NBTTagCompound tag)
+	public static Object getOverrideObject(BlockState state, CompoundNBT tag)
 	{
 		int stateid = Block.getStateId(state);
-		NBTTagCompound[] keys = new NBTTagCompound[OVERRIDE_OBJECTS.size()];
+		CompoundNBT[] keys = new CompoundNBT[OVERRIDE_OBJECTS.size()];
 		OVERRIDE_OBJECTS.keySet().toArray(keys);
-		for (NBTTagCompound key : keys)
+		for (CompoundNBT key : keys)
 		{
 			int id = key.getInt("stateid");
 			Block block = StringParser.getBlock(key.getString("block"));
 			if (id == 0 ? block == state.getBlock() : id == stateid)
 			{
-				NBTTagCompound toCheckForCompound = key.getCompound("nbttag");
+				CompoundNBT toCheckForCompound = key.getCompound("nbttag");
 				Set<String> kSetToCheck = toCheckForCompound.keySet();
 				Set<String> kSetTile = tag.keySet();
 
@@ -254,7 +254,7 @@ public class ModelOverridesHandler
 				{
 					for (String skey : kSetToCheck)
 					{
-						if (!NBTUtil.areNBTEquals(tag.getTag(skey), toCheckForCompound.getTag(skey), true))
+						if (!NBTUtil.areNBTEquals(tag.get(skey), toCheckForCompound.get(skey), true))
 							flag = false;
 					}
 					if (flag)

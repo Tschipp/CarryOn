@@ -3,7 +3,7 @@ package tschipp.carryon.network.client;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.fml.network.NetworkEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.scripting.ScriptReader;
@@ -27,7 +27,7 @@ public class ScriptReloadPacket
 	{
 		ctx.get().enqueueWork(() -> {
 
-			EntityPlayer player = CarryOn.proxy.getPlayer();
+			PlayerEntity player = CarryOn.proxy.getPlayer();
 
 			if (player != null)
 				ScriptReader.reloadScripts();

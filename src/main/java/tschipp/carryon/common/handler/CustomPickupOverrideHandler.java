@@ -3,7 +3,7 @@ package tschipp.carryon.common.handler;
 import java.util.HashMap;
 import java.util.List;
 
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -74,7 +74,7 @@ public class CustomPickupOverrideHandler
 		}
 	}
 
-	public static boolean hasSpecialPickupConditions(IBlockState state)
+	public static boolean hasSpecialPickupConditions(BlockState state)
 	{
 		if (!ModList.get().isLoaded("gamestages"))
 			return false;
@@ -86,7 +86,7 @@ public class CustomPickupOverrideHandler
 		return absolute;
 	}
 
-	public static String getPickupCondition(IBlockState state)
+	public static String getPickupCondition(BlockState state)
 	{
 		String block = state.getBlock().getRegistryName().toString();
 

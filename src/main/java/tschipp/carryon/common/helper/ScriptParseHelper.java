@@ -1,4 +1,4 @@
-package tschipp.carryon.common.helper;
+	package tschipp.carryon.common.helper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,10 +7,10 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.INBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.PotionEffect;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
@@ -70,7 +70,7 @@ public class ScriptParseHelper
 		return false;
 	}
 
-	public static boolean matches(NBTTagCompound toCheck, NBTTagCompound toMatch)
+	public static boolean matches(CompoundNBT toCheck, CompoundNBT toMatch)
 	{
 		if (toCheck == null || toMatch == null)
 			return true;
@@ -78,9 +78,9 @@ public class ScriptParseHelper
 		boolean matching = true;
 		for (String key : toMatch.keySet())
 		{
-			INBTBase tag = toMatch.getTag(key);
+			INBT tag = toMatch.get(key);
 			key = key.replace("\"", "");
-			INBTBase tagToCheck = toCheck.getTag(key);
+			INBT tagToCheck = toCheck.get(key);
 			if (!tag.equals(tagToCheck))
 				matching = false;
 		}
@@ -137,7 +137,7 @@ public class ScriptParseHelper
 		return 1;
 	}
 
-	public static boolean matchesScore(EntityPlayer player, String cond)
+	public static boolean matchesScore(PlayerEntity player, String cond)
 	{
 		if (cond == null)
 			return true;
@@ -216,12 +216,12 @@ public class ScriptParseHelper
 		return 0;
 	}
 	
-	public static boolean hasEffects(EntityPlayer player, String cond)
+	public static boolean hasEffects(PlayerEntity player, String cond)
 	{
 		if(cond == null)
 			return true;
 		
-		Collection<PotionEffect> effects = player.getActivePotionEffects();
+		Collection<EffectInstance> effects = player.getActivePotionEffects();
 		String[] potions = cond.split(",");
 		
 		List<String> names = new ArrayList<String>();
@@ -254,7 +254,7 @@ public class ScriptParseHelper
 		}
 		
 		int matches = 0;
-		for(PotionEffect effect : effects)
+		for(EffectInstance effect : effects)
 		{
 			int amp = effect.getAmplifier();
 			String name = effect.getPotion().getRegistryName().toString();
@@ -291,12 +291,10 @@ public class ScriptParseHelper
 			return material == Material.CAKE;
 		case "carpet":
 			return material == Material.CARPET;
-		case "circuits":
-			return material == Material.CIRCUITS;
 		case "clay":
 			return material == Material.CLAY;
 		case "cloth":
-			return material == Material.CLOTH;
+			return material == Material.WOOL;
 		case "coral":
 			return material == Material.CORAL;
 		case "dragon_egg":
@@ -308,9 +306,9 @@ public class ScriptParseHelper
 		case "gourd":
 			return material == Material.GOURD;
 		case "grass":
-			return material == Material.GRASS;
+			return material == Material.ORGANIC;
 		case "ground":
-			return material == Material.GROUND;
+			return material == Material.ORGANIC;
 		case "ice":
 			return material == Material.ICE;
 		case "iron":
@@ -342,7 +340,7 @@ public class ScriptParseHelper
 		case "tnt":
 			return material == Material.TNT;
 		case "vine":
-			return material == Material.VINE;
+			return material == Material.PLANTS;
 		case "water":
 			return material == Material.WATER;
 		case "web":

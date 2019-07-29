@@ -1,8 +1,8 @@
 package tschipp.carryon.common.capabilities.event;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -26,8 +26,8 @@ public class PositionClientEvents
 	{
 		if (event.getGui() != null)
 		{
-			EntityPlayer player = Minecraft.getInstance().player;
-			boolean inventory = event.getGui() instanceof GuiContainer;
+			PlayerEntity player = Minecraft.getInstance().player;
+			boolean inventory = event.getGui() instanceof ContainerScreen;
 			
 			if (player != null && inventory)
 			{
@@ -60,7 +60,7 @@ public class PositionClientEvents
 	@SubscribeEvent
 	public void onGuiClose(PlayerContainerEvent.Close event)
 	{
-		EntityPlayer player = event.getEntityPlayer();
+		PlayerEntity player = event.getEntityPlayer();
 		if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
 			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
@@ -76,7 +76,7 @@ public class PositionClientEvents
 	{
 		if (event.side == LogicalSide.CLIENT)
 		{
-			EntityPlayer player = event.player;
+			PlayerEntity player = event.player;
 			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{
 				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());

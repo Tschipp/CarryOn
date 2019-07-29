@@ -5,13 +5,13 @@ import javax.annotation.Nullable;
 import com.mojang.brigadier.StringReader;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.command.arguments.ItemParser;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class StringParser
 {
@@ -19,7 +19,7 @@ public class StringParser
 	@Nullable
 	public static Block getBlock(String string)
 	{
-		IBlockState state = getBlockState(string);
+		BlockState state = getBlockState(string);
 		if(state != null)
 			return state.getBlock();
 				
@@ -28,7 +28,7 @@ public class StringParser
 
 
 	@Nullable
-	public static IBlockState getBlockState(String string)
+	public static BlockState getBlockState(String string)
 	{
 		if(string == null)
 			return null;
@@ -78,7 +78,7 @@ public class StringParser
 		{
 			parser.parse();
 			Item item =  parser.getItem();
-			NBTTagCompound nbt = parser.getNbt();
+			CompoundNBT nbt = parser.getNbt();
 			
 			ItemStack stack = new ItemStack(item, 1);
 			
@@ -99,9 +99,9 @@ public class StringParser
 	}
 
 	@Nullable
-	public static NBTTagCompound getTagCompound(String string)
+	public static CompoundNBT getTagCompound(String string)
 	{
-		NBTTagCompound tag = null;
+		CompoundNBT tag = null;
 		if(string == null)
 			return null;
 		

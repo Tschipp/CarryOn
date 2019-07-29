@@ -1,18 +1,18 @@
 package tschipp.carryon.common.scripting;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class CarryOnOverride
 {
 	// BLOCKS
-	private NBTTagCompound typeBlockTag;
+	private CompoundNBT typeBlockTag;
 	private String typeNameBlock;
 	private String typeMaterial;
 	private String typeHardness;
 	private String typeResistance;
 
 	// ENTITIES
-	private NBTTagCompound typeEntityTag;
+	private CompoundNBT typeEntityTag;
 	private String typeNameEntity;
 	private String typeHeight;
 	private String typeWidth;
@@ -30,7 +30,7 @@ public class CarryOnOverride
 	// RENDER
 	private String renderNameBlock;
 	private String renderNameEntity;
-	private NBTTagCompound renderNBT;
+	private CompoundNBT renderNBT;
 	private String renderTranslation;
 	private String renderRotation;
 	private String renderscaled;
@@ -387,7 +387,7 @@ public class CarryOnOverride
 		this.isEntity = isEntity;
 	}
 
-	public NBTTagCompound getTypeBlockTag()
+	public CompoundNBT getTypeBlockTag()
 	{
 		return typeBlockTag;
 	}
@@ -412,7 +412,7 @@ public class CarryOnOverride
 		return typeResistance;
 	}
 
-	public NBTTagCompound getTypeEntityTag()
+	public CompoundNBT getTypeEntityTag()
 	{
 		return typeEntityTag;
 	}
@@ -477,7 +477,7 @@ public class CarryOnOverride
 		return renderNameEntity;
 	}
 
-	public NBTTagCompound getRenderNBT()
+	public CompoundNBT getRenderNBT()
 	{
 		return renderNBT;
 	}
@@ -497,7 +497,7 @@ public class CarryOnOverride
 		return renderscaled;
 	}
 
-	public void setTypeBlockTag(NBTTagCompound typeBlockTag)
+	public void setTypeBlockTag(CompoundNBT typeBlockTag)
 	{
 		this.typeBlockTag = typeBlockTag;
 	}
@@ -523,7 +523,7 @@ public class CarryOnOverride
 		this.typeResistance = typeResistance;
 	}
 
-	public void setTypeEntityTag(NBTTagCompound typeEntityTag)
+	public void setTypeEntityTag(CompoundNBT typeEntityTag)
 	{
 		this.typeEntityTag = typeEntityTag;
 	}
@@ -588,7 +588,7 @@ public class CarryOnOverride
 		this.renderNameEntity = renderNameEntity;
 	}
 
-	public void setRenderNBT(NBTTagCompound renderNBT)
+	public void setRenderNBT(CompoundNBT renderNBT)
 	{
 		this.renderNBT = renderNBT;
 	}

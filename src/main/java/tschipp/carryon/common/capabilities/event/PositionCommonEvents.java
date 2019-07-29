@@ -1,7 +1,7 @@
 package tschipp.carryon.common.capabilities.event;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +21,7 @@ public class PositionCommonEvents
 	@SubscribeEvent
 	public void onAttachCaps(AttachCapabilitiesEvent<Entity> event)
 	{
-		if (event.getObject() instanceof EntityPlayer)
+		if (event.getObject() instanceof PlayerEntity)
 		{
 			event.addCapability(new ResourceLocation(CarryOn.MODID, "position"), new PositionProvider());
 		}
@@ -33,7 +33,7 @@ public class PositionCommonEvents
 	{
 		BlockPos pos = event.getPos();
 		World world = event.getWorld();
-		EntityPlayer player = event.getEntityPlayer();
+		PlayerEntity player = event.getEntityPlayer();
 
 		if (event.isCanceled())
 			return;

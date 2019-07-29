@@ -1,20 +1,22 @@
 package tschipp.carryon.client.event;
 
+import java.util.Optional;
+
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -24,7 +26,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
-import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 
@@ -39,18 +41,18 @@ public class RenderEntityEvents
 	public void renderHand(RenderHandEvent event)
 	{
 		World world = Minecraft.getInstance().world;
-		EntityPlayer player = Minecraft.getInstance().player;
+		PlayerEntity player = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
 		float partialticks = event.getPartialTicks();
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
 			if(ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
 				return;
 			
 			
-			Entity entity = ItemEntity.getEntity(stack, world);
+			Entity entity = ItemCarryonEntity.getEntity(stack, world);
 
 			if (entity != null)
 			{
@@ -63,8 +65,8 @@ public class RenderEntityEvents
 				entity.prevRotationYaw = 0.0f;
 				entity.setRotationYawHead(0.0f);
 				
-				float height = entity.height;
-				float width = entity.width;
+				float height = entity.getHeight();
+				float width = entity.getWidth();
 				GlStateManager.pushMatrix();
 				GlStateManager.scaled(.8, .8, .8);
 				GlStateManager.rotatef(180, 0, 1, 0);
@@ -85,10 +87,15 @@ public class RenderEntityEvents
 						String entityname = carryOverride.getRenderNameEntity();
 						if (entityname != null)
 						{
-							Entity newEntity = EntityType.create(world, new ResourceLocation(entityname));
+							Entity newEntity = null;
+
+							Optional<EntityType<?>> type = EntityType.byKey(entityname);
+							if(type.isPresent())
+								newEntity = type.get().create(world);
+							
 							if (newEntity != null)
 							{
-								NBTTagCompound nbttag = carryOverride.getRenderNBT();
+								CompoundNBT nbttag = carryOverride.getRenderNBT();
 								if (nbttag != null)
 									newEntity.deserializeNBT(nbttag);
 								entity = newEntity;
@@ -107,8 +114,8 @@ public class RenderEntityEvents
 
 					}
 
-					if(entity instanceof EntityLiving)
-						((EntityLiving) entity).hurtTime = 0;
+					if(entity instanceof LivingEntity)
+						((LivingEntity) entity).hurtTime = 0;
 					
 					this.renderEntityStatic(entity);
 					Minecraft.getInstance().getRenderManager().setRenderShadow(true);
@@ -120,9 +127,9 @@ public class RenderEntityEvents
 
 				RenderHelper.disableStandardItemLighting();
 				GlStateManager.disableRescaleNormal();
-				GlStateManager.activeTexture(OpenGlHelper.GL_TEXTURE1);
-				GlStateManager.disableTexture2D();
-				GlStateManager.activeTexture(OpenGlHelper.GL_TEXTURE0);
+				GlStateManager.activeTexture(GLX.GL_TEXTURE1);
+				GlStateManager.disableTexture();
+				GlStateManager.activeTexture(GLX.GL_TEXTURE0);
 
 				if (perspective == 0)
 				{
@@ -152,7 +159,7 @@ public class RenderEntityEvents
 
 		int j = i % 65536;
 		int k = i / 65536;
-		OpenGlHelper.glMultiTexCoord2f(OpenGlHelper.GL_TEXTURE1, j, k);
+		GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, j, k);
 		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
 		
@@ -164,8 +171,9 @@ public class RenderEntityEvents
 		this.setLightmapDisabled(true);
 	}
 
+	@SuppressWarnings("deprecation")
 	@OnlyIn(Dist.CLIENT)
-	private int getBrightnessForRender(Entity entity, EntityPlayer player)
+	private int getBrightnessForRender(Entity entity, PlayerEntity player)
 	{
 		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(player.posX), 0, MathHelper.floor(player.posZ));
 
@@ -183,18 +191,18 @@ public class RenderEntityEvents
 	@OnlyIn(Dist.CLIENT)
 	private void setLightmapDisabled(boolean disabled)
 	{
-		GlStateManager.activeTexture(OpenGlHelper.GL_TEXTURE1);
+		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
 
 		if (disabled)
 		{
-			GlStateManager.disableTexture2D();
+			GlStateManager.disableTexture();
 		}
 		else
 		{
-			GlStateManager.enableTexture2D();
+			GlStateManager.enableTexture();
 		}
 
-		GlStateManager.activeTexture(OpenGlHelper.GL_TEXTURE0);
+		GlStateManager.activeTexture(GLX.GL_TEXTURE0);
 	}
 
 	/*
@@ -205,18 +213,17 @@ public class RenderEntityEvents
 	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
 	{
 		World world = Minecraft.getInstance().world;
-		EntityPlayer player = event.getEntityPlayer();
-		event.getRenderer().getMainModel();
-		EntityPlayerSP clientPlayer = Minecraft.getInstance().player;
+		PlayerEntity player = event.getEntityPlayer();
+		ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		float partialticks = event.getPartialRenderTick();
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
-			Entity entity = ItemEntity.getEntity(stack, world);
+			Entity entity = ItemCarryonEntity.getEntity(stack, world);
 			float rotation = 0;
 
-			if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityLivingBase)
+			if (player.getRidingEntity() != null && player.getRidingEntity() instanceof LivingEntity)
 				rotation = -(player.prevRotationYawHead + (player.rotationYawHead - player.prevRotationYawHead) * partialticks);
 			else
 				rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
@@ -231,19 +238,21 @@ public class RenderEntityEvents
 				double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * partialticks;
 				double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * partialticks;
 
-				double xOffset = d0 - c0;
-				double yOffset = d1 - c1;
-				double zOffset = d2 - c2;
+				Vec3d cameraPos =  Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+				
+				double xOffset = d0 - cameraPos.getX();
+				double yOffset = d1 - cameraPos.getY();
+				double zOffset = d2 - cameraPos.getZ();
 
-				float height = entity.height;
-				float width = entity.width;
+				float height = entity.getHeight();
+				float width = entity.getWidth();
 				float multiplier = height * width;
 
 				entity.setPosition(c0, c1, c2);
 				entity.rotationYaw = 0.0f;
 				entity.prevRotationYaw = 0.0f;
 				entity.setRotationYawHead(0.0f);
-
+				
 				GlStateManager.pushMatrix();
 				GlStateManager.translated(xOffset, yOffset, zOffset);
 				GlStateManager.scaled((10 - multiplier) * 0.08, (10 - multiplier) * 0.08, (10 - multiplier) * 0.08);
@@ -269,10 +278,15 @@ public class RenderEntityEvents
 					String entityname = carryOverride.getRenderNameEntity();
 					if (entityname != null)
 					{
-						Entity newEntity = EntityType.create(world, new ResourceLocation(entityname));
+						Entity newEntity = null;
+
+						Optional<EntityType<?>> type = EntityType.byKey(entityname);
+						if(type.isPresent())
+							newEntity = type.get().create(world);
+						
 						if (newEntity != null)
 						{
-							NBTTagCompound nbttag = carryOverride.getRenderNBT();
+							CompoundNBT nbttag = carryOverride.getRenderNBT();
 							if (nbttag != null)
 								newEntity.deserializeNBT(nbttag);
 							entity = newEntity;
@@ -291,10 +305,10 @@ public class RenderEntityEvents
 
 				}
 				
-				if(entity instanceof EntityLiving)
-					((EntityLiving) entity).hurtTime = 0;
+				if(entity instanceof LivingEntity)
+					((LivingEntity) entity).hurtTime = 0;
 				
-				Minecraft.getInstance().getRenderManager().renderEntityStatic(entity, 0.0f, false);
+				renderEntityStatic(entity);
 				Minecraft.getInstance().getRenderManager().setRenderShadow(true);
 
 				GlStateManager.scaled(1, 1, 1);

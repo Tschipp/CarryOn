@@ -1,13 +1,13 @@
 package tschipp.carryon.common.capabilities;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
-public class PositionProvider implements ICapabilitySerializable<NBTTagCompound> {
+public class PositionProvider implements ICapabilitySerializable<CompoundNBT> {
 
 	@CapabilityInject(IPosition.class)
 	public static final Capability<IPosition> POSITION_CAPABILITY = null;
@@ -16,19 +16,19 @@ public class PositionProvider implements ICapabilitySerializable<NBTTagCompound>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, EnumFacing side)
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side)
 	{
 		return (LazyOptional<T>) LazyOptional.of(() -> {return new TEPosition();});
 	}
 
 	@Override
-	public NBTTagCompound serializeNBT()
+	public CompoundNBT serializeNBT()
 	{
-		return (NBTTagCompound) POSITION_CAPABILITY.getStorage().writeNBT(POSITION_CAPABILITY, instance, null);
+		return (CompoundNBT) POSITION_CAPABILITY.getStorage().writeNBT(POSITION_CAPABILITY, instance, null);
 	}
 
 	@Override
-	public void deserializeNBT(NBTTagCompound nbt)
+	public void deserializeNBT(CompoundNBT nbt)
 	{
 		POSITION_CAPABILITY.getStorage().readNBT(POSITION_CAPABILITY, instance, null, nbt);		
 	}

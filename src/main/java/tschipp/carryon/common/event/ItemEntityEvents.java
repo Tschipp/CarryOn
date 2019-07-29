@@ -4,20 +4,18 @@ import java.util.List;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.horse.HorseEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
@@ -34,7 +32,7 @@ import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
-import tschipp.carryon.common.item.ItemEntity;
+import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 
@@ -44,11 +42,11 @@ public class ItemEntityEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		EntityPlayer player = event.getEntityPlayer();
+		PlayerEntity player = event.getEntityPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
-			player.getEntityData().removeTag("carrySlot");
+			player.getEntityData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
 
 			if (!player.world.isRemote)
@@ -71,19 +69,19 @@ public class ItemEntityEvents
 	{
 		Entity e = event.getEntity();
 		World world = event.getWorld();
-		if (e instanceof EntityItem)
+		if (e instanceof net.minecraft.entity.item.ItemEntity)
 		{
-			EntityItem eitem = (EntityItem) e;
+			net.minecraft.entity.item.ItemEntity eitem = (net.minecraft.entity.item.ItemEntity) e;
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
-			if (item == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+			if (item == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
 				BlockPos pos = eitem.getPosition();
-				Entity entity = ItemEntity.getEntity(stack, world);
+				Entity entity = ItemCarryonEntity.getEntity(stack, world);
 				entity.setPosition(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-				world.spawnEntity(entity);
+				world.addEntity(entity);
 
-				ItemEntity.clearEntityData(stack);
+				ItemCarryonEntity.clearEntityData(stack);
 				eitem.setItem(ItemStack.EMPTY);
 			}
 		}
@@ -92,9 +90,9 @@ public class ItemEntityEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onEntityRightClick(PlayerInteractEvent.EntityInteract event)
 	{
-		EntityPlayer player = event.getEntityPlayer();
+		PlayerEntity player = event.getEntityPlayer();
 
-		if (player instanceof EntityPlayerMP)
+		if (player instanceof ServerPlayerEntity)
 		{
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
@@ -108,12 +106,12 @@ public class ItemEntityEvents
 
 				if (entity.hurtResistantTime == 0)
 				{
-					if (entity instanceof EntityAnimal)
-						((EntityAnimal) entity).clearLeashed(true, true);
+					if (entity instanceof AnimalEntity)
+						((AnimalEntity) entity).clearLeashed(true, true);
 
 					if (PickupHandler.canPlayerPickUpEntity(player, entity))
 					{
-						if (ItemEntity.storeEntityData(entity, world, stack))
+						if (ItemCarryonEntity.storeEntityData(entity, world, stack))
 						{
 							LazyOptional<IItemHandler> handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
 
@@ -131,29 +129,30 @@ public class ItemEntityEvents
 
 							ItemEvents.sendPacket(player, player.inventory.currentItem, overrideHash);
 
-							if (entity instanceof EntityLiving)
-								((EntityLiving) entity).setHealth(0);
+							if (entity instanceof LivingEntity)
+								((LivingEntity) entity).setHealth(0);
 
+							entity.posY=0;
 							entity.remove();
-							player.setHeldItem(EnumHand.MAIN_HAND, stack);
+							player.setHeldItem(Hand.MAIN_HAND, stack);
 							event.setCanceled(true);
-							event.setCancellationResult(EnumActionResult.FAIL);
+							event.setCancellationResult(ActionResultType.FAIL);
 						}
 					}
 				}
 
-			} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
+			} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
 			{
-				Entity entityHeld = ItemEntity.getEntity(main, world);
+				Entity entityHeld = ItemCarryonEntity.getEntity(main, world);
 
-				if (entity.hurtResistantTime == 0 && entityHeld instanceof EntityLivingBase)
+				if (entity.hurtResistantTime == 0 && entityHeld instanceof LivingEntity)
 				{
 
-					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.removed && !entity.removed)
+					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.isAlive() && !entity.isAlive())
 					{
 
-						double sizeHeldEntity = entityHeld.height * entityHeld.width;
-						double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+						double sizeHeldEntity = entityHeld.getHeight() * entityHeld.getWidth();
+						double distance = pos.distanceSq(player.getPosition());
 						Entity lowestEntity = entity.getLowestRidingEntity();
 						int numPassengers = getAllPassengers(lowestEntity);
 						if (numPassengers < Settings.maxEntityStackLimit.get() - 1)
@@ -162,12 +161,12 @@ public class ItemEntityEvents
 
 							if (Settings.useWhitelistStacking.get() ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
 							{
-								double sizeEntity = topEntity.height * topEntity.width;
+								double sizeEntity = topEntity.getHeight() * topEntity.getWidth();
 								if ((Settings.entitySizeMattersStacking.get() && sizeHeldEntity <= sizeEntity) || !Settings.entitySizeMattersStacking.get())
 								{
-									if (topEntity instanceof EntityHorse)
+									if (topEntity instanceof HorseEntity)
 									{
-										EntityHorse horse = (EntityHorse) topEntity;
+										HorseEntity horse = (HorseEntity) topEntity;
 										horse.setHorseTamed(true);
 									}
 
@@ -177,21 +176,21 @@ public class ItemEntityEvents
 										double tempY = entity.posY;
 										double tempZ = entity.posZ;
 										entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
-										world.spawnEntity(entityHeld);
+										world.addEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
 									} else
 									{
 										entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
-										world.spawnEntity(entityHeld);
+										world.addEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 									}
 
-									ItemEntity.clearEntityData(main);
-									player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+									ItemCarryonEntity.clearEntityData(main);
+									player.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
 									ItemEvents.sendPacket(player, 9, 0);
 									event.setCanceled(true);
-									event.setCancellationResult(EnumActionResult.FAIL);
+									event.setCancellationResult(ActionResultType.FAIL);
 									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 								} else
 								{
@@ -248,21 +247,21 @@ public class ItemEntityEvents
 	@SubscribeEvent
 	public void onLivingUpdate(LivingUpdateEvent event)
 	{
-		EntityLivingBase entity = event.getEntityLiving();
+		LivingEntity entity = event.getEntityLiving();
 		World world = entity.world;
 		ItemStack main = entity.getHeldItemMainhand();
-		if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(main))
+		if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main))
 		{
 			BlockPos pos = entity.getPosition();
-			BlockPos below = pos.offset(EnumFacing.DOWN);
+			BlockPos below = pos.offset(Direction.DOWN);
 
 			if (world.getBlockState(pos).getMaterial() == Material.WATER || world.getBlockState(below).getMaterial() == Material.WATER)
 			{
-				Entity contained = ItemEntity.getEntity(main, world);
+				Entity contained = ItemCarryonEntity.getEntity(main, world);
 				if (contained != null)
 				{
-					float height = contained.height;
-					float width = contained.width;
+					float height = contained.getWidth();
+					float width = contained.getWidth();
 
 					entity.addVelocity(0, -0.01 * height * width, 0);
 				}

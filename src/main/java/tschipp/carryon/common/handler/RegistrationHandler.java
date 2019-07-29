@@ -17,8 +17,8 @@ import tschipp.carryon.common.capabilities.event.PositionCommonEvents;
 import tschipp.carryon.common.event.IMCEvents;
 import tschipp.carryon.common.event.ItemEntityEvents;
 import tschipp.carryon.common.event.ItemEvents;
-import tschipp.carryon.common.item.ItemEntity;
-import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.common.item.ItemCarryonEntity;
+import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.compat.obfuscate.ObfuscateEvents;
 
 @EventBusSubscriber(modid = CarryOn.MODID)
@@ -32,8 +32,8 @@ public class RegistrationHandler
 
 	public static void regItems()
 	{
-		itemTile = new ItemTile();
-		itemEntity = new ItemEntity();
+		itemTile = new ItemCarryonBlock();
+		itemEntity = new ItemCarryonEntity();
 	}
 	
 	public static void regCommonEvents()

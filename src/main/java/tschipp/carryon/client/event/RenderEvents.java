@@ -2,32 +2,34 @@ package tschipp.carryon.client.event;
 
 import java.lang.reflect.InvocationTargetException;
 
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.renderer.entity.model.ModelPlayer;
-import net.minecraft.client.renderer.entity.model.ModelRenderer;
+import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.entity.PlayerRenderer;
+import net.minecraft.client.renderer.entity.model.PlayerModel;
+import net.minecraft.client.renderer.entity.model.RendererModel;
 import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumHand;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
@@ -53,8 +55,8 @@ import tschipp.carryon.common.helper.KeyboardCallbackWrapper.KeyPressedEvent;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 import tschipp.carryon.common.helper.ScrollCallbackWrapper.MouseScrolledEvent;
 import tschipp.carryon.common.helper.StringParser;
-import tschipp.carryon.common.item.ItemEntity;
-import tschipp.carryon.common.item.ItemTile;
+import tschipp.carryon.common.item.ItemCarryonBlock;
+import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.server.SyncKeybindPacket;
@@ -68,7 +70,7 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onScroll(MouseScrolledEvent event)
 	{
-		EntityPlayer player = Minecraft.getInstance().player;
+		PlayerEntity player = Minecraft.getInstance().player;
 
 		if (player != null)
 		{
@@ -76,7 +78,7 @@ public class RenderEvents
 
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 			{
-				if (ItemTile.hasTileData(stack) || ItemEntity.hasEntityData(stack))
+				if (ItemCarryonBlock.hasTileData(stack) || ItemCarryonEntity.hasEntityData(stack))
 				{
 					event.setCanceled(true);
 				}
@@ -89,7 +91,7 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	public void onPlayerTick(PlayerTickEvent event) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
-		EntityPlayer player = event.player;
+		PlayerEntity player = event.player;
 
 		if (player != null && event.side == LogicalSide.CLIENT)
 		{
@@ -112,9 +114,9 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	public void onJoinWorld(EntityJoinWorldEvent event)
 	{
-		if (event.getEntity() instanceof EntityPlayer)
+		if (event.getEntity() instanceof PlayerEntity)
 		{
-			EntityPlayer player = (EntityPlayer) event.getEntity();
+			PlayerEntity player = (PlayerEntity) event.getEntity();
 			if (player.world.isRemote)
 			{
 				CarryOnKeybinds.setKeyPressed(player, false);
@@ -122,10 +124,10 @@ public class RenderEvents
 
 				if (CarryOn.FINGERPRINT_VIOLATED)
 				{
-					TextComponentString cf = new TextComponentString(TextFormatting.AQUA + "Curseforge" + TextFormatting.RED);
+					StringTextComponent cf = new StringTextComponent(TextFormatting.AQUA + "Curseforge" + TextFormatting.RED);
 					cf.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
 
-					player.sendMessage(new TextComponentString(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").appendSibling(cf).appendText(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").appendSibling(cf));
+					player.sendMessage(new StringTextComponent(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").appendSibling(cf).appendText(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").appendSibling(cf));
 				}
 			}
 
@@ -141,14 +143,14 @@ public class RenderEvents
 	{
 		if (event.getGui() != null)
 		{
-			boolean inventory = event.getGui() instanceof GuiContainer;
-			EntityPlayer player = Minecraft.getInstance().player;
+			boolean inventory = event.getGui() instanceof ContainerScreen;
+			PlayerEntity player = Minecraft.getInstance().player;
 
 			if (player != null && inventory)
 			{
-				ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
+				ItemStack stack = player.getHeldItem(Hand.MAIN_HAND);
 
-				if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))))
+				if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
 				{
 					Minecraft.getInstance().player.closeScreen();
 					Minecraft.getInstance().currentScreen = null;
@@ -170,13 +172,13 @@ public class RenderEvents
 		GameSettings settings = Minecraft.getInstance().gameSettings;
 		int key = event.key;
 		int scancode = event.scancode;
-		EntityPlayer player = Minecraft.getInstance().player;
+		PlayerEntity player = Minecraft.getInstance().player;
 
 		if (player != null)
 		{
 			ItemStack stack = Minecraft.getInstance().player.getHeldItemMainhand();
 
-			if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))))
+			if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
 			{
 				if (settings.keyBindDrop.matchesKey(key, scancode))
 				{
@@ -201,7 +203,7 @@ public class RenderEvents
 
 			int current = player.inventory.currentItem;
 
-			if (player.getEntityData().hasKey("carrySlot") ? player.getEntityData().getInt("carrySlot") != current : false)
+			if (player.getEntityData().contains("carrySlot") ? player.getEntityData().getInt("carrySlot") != current : false)
 			{
 				player.inventory.currentItem = player.getEntityData().getInt("carrySlot");
 			}
@@ -216,20 +218,20 @@ public class RenderEvents
 	public void renderHand(RenderHandEvent event)
 	{
 		World world = Minecraft.getInstance().world;
-		EntityPlayer player = Minecraft.getInstance().player;
+		PlayerEntity player = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
 		boolean f1 = Minecraft.getInstance().gameSettings.hideGUI;
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) && perspective == 0 && !f1)
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) && perspective == 0 && !f1)
 		{
 			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
 				return;
 
-			Block block = ItemTile.getBlock(stack);
-			NBTTagCompound tag = ItemTile.getTileData(stack);
-			IBlockState state = ItemTile.getBlockState(stack);
-			ItemStack tileStack = ItemTile.getItemStack(stack);
+			Block block = ItemCarryonBlock.getBlock(stack);
+			CompoundNBT tag = ItemCarryonBlock.getTileData(stack);
+			BlockState state = ItemCarryonBlock.getBlockState(stack);
+			ItemStack tileStack = ItemCarryonBlock.getItemStack(stack);
 
 			GlStateManager.pushMatrix();
 			GlStateManager.scaled(2.5, 2.5, 2.5);
@@ -272,11 +274,11 @@ public class RenderEvents
 			int i = this.getBrightnessForRender(Minecraft.getInstance().player);
 			int j = i % 65536;
 			int k = i / 65536;
-			OpenGlHelper.glMultiTexCoord2f(OpenGlHelper.GL_TEXTURE1, j, k);
+			GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, j, k);
 			GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 			this.setLightmapDisabled(false);
 
-			Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+			Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 			{
@@ -309,8 +311,9 @@ public class RenderEvents
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@OnlyIn(Dist.CLIENT)
-	private int getBrightnessForRender(EntityPlayer player)
+	private int getBrightnessForRender(PlayerEntity player)
 	{
 		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(player.posX), 0, MathHelper.floor(player.posZ));
 
@@ -327,17 +330,17 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	private void setLightmapDisabled(boolean disabled)
 	{
-		GlStateManager.activeTexture(OpenGlHelper.GL_TEXTURE1);
+		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
 
 		if (disabled)
 		{
-			GlStateManager.disableTexture2D();
+			GlStateManager.disableTexture();;
 		} else
 		{
-			GlStateManager.enableTexture2D();
+			GlStateManager.enableTexture();
 		}
 
-		GlStateManager.activeTexture(OpenGlHelper.GL_TEXTURE0);
+		GlStateManager.activeTexture(GLX.GL_TEXTURE0);
 	}
 
 	/*
@@ -348,21 +351,21 @@ public class RenderEvents
 	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
 	{
 		World world = Minecraft.getInstance().world;
-		EntityPlayer player = event.getEntityPlayer();
-		EntityPlayerSP clientPlayer = Minecraft.getInstance().player;
+		PlayerEntity player = event.getEntityPlayer();
+		ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		float partialticks = event.getPartialRenderTick();
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
 		{
-			Block block = ItemTile.getBlock(stack);
-			IBlockState state = ItemTile.getBlockState(stack);
-			NBTTagCompound tag = ItemTile.getTileData(stack);
-			ItemStack tileItem = ItemTile.getItemStack(stack);
+			Block block = ItemCarryonBlock.getBlock(stack);
+			BlockState state = ItemCarryonBlock.getBlockState(stack);
+			CompoundNBT tag = ItemCarryonBlock.getTileData(stack);
+			ItemStack tileItem = ItemCarryonBlock.getItemStack(stack);
 
 			float rotation = 0f;
 
-			if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityLivingBase)
+			if (player.getRidingEntity() != null && player.getRidingEntity() instanceof LivingEntity)
 				rotation = -(player.prevRotationYawHead + (player.rotationYawHead - player.prevRotationYawHead) * partialticks);
 			else
 				rotation = -(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
@@ -427,7 +430,7 @@ public class RenderEvents
 
 			}
 
-			Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+			Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 			{
@@ -463,22 +466,22 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			EntityPlayer player = event.getEntityPlayer();
-			EntityPlayerSP clientPlayer = Minecraft.getInstance().player;
+			PlayerEntity player = event.getEntityPlayer();
+			ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
 			float partialticks = event.getPartialRenderTick();
 
 			ItemStack stack = player.getHeldItemMainhand();
-			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
-				ModelPlayer model = event.getRenderer().getMainModel();
+				PlayerModel<AbstractClientPlayerEntity> model = event.getRenderer().getEntityModel();
 				float rotation = 0;
 
-				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityLivingBase)
+				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof LivingEntity)
 					rotation = (player.prevRotationYawHead + (player.rotationYawHead - player.prevRotationYawHead) * partialticks);
 				else
 					rotation = (player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialticks);
 
-				AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
+				AbstractClientPlayerEntity aplayer = (AbstractClientPlayerEntity) player;
 				ResourceLocation skinLoc = aplayer.getLocationSkin();
 
 				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;
@@ -489,9 +492,11 @@ public class RenderEvents
 				double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * partialticks;
 				double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * partialticks;
 
-				double xOffset = d0 - c0;
-				double yOffset = d1 - c1;
-				double zOffset = d2 - c2;
+				Vec3d cameraPos =  Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+				
+				double xOffset = d0 - cameraPos.getX();
+				double yOffset = d1 - cameraPos.getY();
+				double zOffset = d2 - cameraPos.getZ();
 
 				GlStateManager.pushMatrix();
 				GlStateManager.translated(xOffset, yOffset, zOffset);
@@ -555,11 +560,11 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			EntityPlayer player = event.getEntityPlayer();
+			PlayerEntity player = event.getEntityPlayer();
 			ItemStack stack = player.getHeldItemMainhand();
-			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemTile.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemEntity.hasEntityData(stack))
+			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
-				ModelPlayer model = event.getRenderer().getMainModel();
+				PlayerModel<AbstractClientPlayerEntity> model = event.getRenderer().getEntityModel();
 
 				CarryOnOverride overrider = ScriptChecker.getOverride(player);
 				if (overrider != null)
@@ -591,7 +596,7 @@ public class RenderEvents
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	public void renderArmPost(ModelRenderer arm, float x, float z, float rotation, boolean right, boolean sneaking)
+	public void renderArmPost(RendererModel arm, float x, float z, float rotation, boolean right, boolean sneaking)
 	{
 		arm.isHidden = false;
 		if (right)
@@ -617,7 +622,7 @@ public class RenderEvents
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	public void renderArmPre(ModelRenderer arm)
+	public void renderArmPre(RendererModel arm)
 	{
 		arm.isHidden = true;
 	}
@@ -644,17 +649,17 @@ public class RenderEvents
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private static RenderPlayer getRenderPlayer(AbstractClientPlayer player)
+	private static PlayerRenderer getRenderPlayer(AbstractClientPlayerEntity player)
 	{
 		Minecraft mc = Minecraft.getInstance();
-		RenderManager manager = mc.getRenderManager();
+		EntityRendererManager manager = mc.getRenderManager();
 		return manager.getSkinMap().get(player.getSkinType());
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private static ModelPlayer getPlayerModel(AbstractClientPlayer player)
+	private static PlayerModel<AbstractClientPlayerEntity> getPlayerModel(AbstractClientPlayerEntity player)
 	{
-		return getRenderPlayer(player).getMainModel();
+		return getRenderPlayer(player).getEntityModel();
 	}
 
 	@SubscribeEvent

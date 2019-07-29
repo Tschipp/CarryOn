@@ -9,7 +9,7 @@ public class ObfuscateEvents
 //		if(!CarryOnConfig.settings.renderArms.get())
 //			return;
 //		
-//		EntityPlayer player = event.getEntityPlayer();
+//		PlayerEntity player = event.getPlayerEntity();
 //
 //		ModelPlayer model = event.getModelPlayer();
 //		ItemStack stack = player.getHeldItemMainhand();
