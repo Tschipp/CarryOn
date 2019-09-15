@@ -213,7 +213,7 @@ public class RenderEntityEvents
 	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
 	{
 		World world = Minecraft.getInstance().world;
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		float partialticks = event.getPartialRenderTick();
@@ -262,7 +262,7 @@ public class RenderEntityEvents
 				if((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && Minecraft.getInstance().gameSettings.thirdPersonView == 0)
 					GlStateManager.translated(0, 0, -0.3);
 				
-				if (player.isSneaking())
+				if (RenderEvents.doSneakCheck(player))
 				{
 					GlStateManager.translated(0, -0.3, 0);
 				}

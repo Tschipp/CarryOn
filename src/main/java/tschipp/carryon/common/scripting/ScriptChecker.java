@@ -165,7 +165,7 @@ public class ScriptChecker
 	@Nullable
 	public static CarryOnOverride getOverride(PlayerEntity player)
 	{
-		CompoundNBT tag = player.getEntityData();
+		CompoundNBT tag = player.getPersistentData();
 
 		if (tag != null && tag.contains("overrideKey"))
 		{
@@ -179,7 +179,7 @@ public class ScriptChecker
 
 	public static void setCarryOnOverride(PlayerEntity player, int i)
 	{
-		CompoundNBT tag = player.getEntityData();
+		CompoundNBT tag = player.getPersistentData();
 
 		if (tag != null)
 			tag.putInt("overrideKey", i);

@@ -33,7 +33,7 @@ public class PositionCommonEvents
 	{
 		BlockPos pos = event.getPos();
 		World world = event.getWorld();
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 
 		if (event.isCanceled())
 			return;

@@ -118,7 +118,7 @@ public class ItemCarryonEntity extends Item {
 					ItemEvents.sendPacket(player, 9, 0);
 
 				}
-				player.getEntityData().remove("overrideKey");
+				player.getPersistentData().remove("overrideKey");
 				return ActionResultType.SUCCESS;
 			}
 		}
@@ -154,7 +154,7 @@ public class ItemCarryonEntity extends Item {
 		}
 	}
 
-	public static CompoundNBT getEntityData(ItemStack stack) {
+	public static CompoundNBT getPersistentData(ItemStack stack) {
 		if (stack.hasTag()) {
 			CompoundNBT tag = stack.getTag();
 			return tag.getCompound(ENTITY_DATA_KEY);
@@ -168,7 +168,7 @@ public class ItemCarryonEntity extends Item {
 
 		String name = getEntityName(stack);
 
-		CompoundNBT e = getEntityData(stack);
+		CompoundNBT e = getPersistentData(stack);
 		Optional<EntityType<?>> type = EntityType.byKey(name);
 		Entity entity = null;
 

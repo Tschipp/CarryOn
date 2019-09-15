@@ -29,12 +29,14 @@ import net.minecraft.world.GameRules.BooleanValue;
 import net.minecraft.world.GameRules.RuleKey;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
@@ -42,8 +44,7 @@ import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -67,6 +68,7 @@ import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
+@EventBusSubscriber(modid = CarryOn.MODID)
 public class ItemEvents
 {
 
@@ -78,13 +80,13 @@ public class ItemEvents
 		if (event.isCanceled())
 			return;
 
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
 		{
-			player.getEntityData().remove("carrySlot");
+			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
-
+			
 			if (!player.world.isRemote)
 			{
 				CarryOnOverride override = ScriptChecker.getOverride(player);
@@ -195,7 +197,7 @@ public class ItemEvents
 	public void onEntityStartTracking(StartTracking event)
 	{
 		Entity e = event.getTarget();
-		PlayerEntity tracker = event.getEntityPlayer();
+		PlayerEntity tracker = event.getPlayer();
 
 		if (e instanceof PlayerEntity && tracker instanceof ServerPlayerEntity)
 		{
@@ -228,7 +230,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void harvestSpeed(BreakSpeed event)
 	{
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getHeldItemMainhand();
@@ -240,7 +242,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void attackEntity(AttackEntityEvent event)
 	{
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && !Settings.hitWhileCarrying.get() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 		{
@@ -304,11 +306,11 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
+	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 
-		if (player instanceof ServerPlayerEntity)
+		if (!player.world.isRemote)
 		{
 
 			ItemStack main = player.getHeldItemMainhand();
@@ -447,7 +449,7 @@ public class ItemEvents
 	public void onRespawn(PlayerEvent.Clone event)
 	{
 		PlayerEntity original = event.getOriginal();
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		boolean wasDead = event.isWasDeath();
 		GameRules rules = player.world.getGameRules();
 		boolean keepInv = rules.getBoolean(new RuleKey<BooleanValue>("keepInventory"));
@@ -558,11 +560,11 @@ public class ItemEvents
 
 			if (currentItem >= 9)
 			{
-				player.getEntityData().remove("carrySlot");
-				player.getEntityData().remove("overrideKey");
+				player.getPersistentData().remove("carrySlot");
+				player.getPersistentData().remove("overrideKey");
 			} else
 			{
-				player.getEntityData().putInt("carrySlot", currentItem);
+				player.getPersistentData().putInt("carrySlot", currentItem);
 				if (hash != 0)
 					ScriptChecker.setCarryOnOverride(player, hash);
 			}

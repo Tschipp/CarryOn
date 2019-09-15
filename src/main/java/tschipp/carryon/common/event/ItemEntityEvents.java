@@ -42,11 +42,11 @@ public class ItemEntityEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		ItemStack stack = player.getHeldItemMainhand();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
-			player.getEntityData().remove("carrySlot");
+			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
 
 			if (!player.world.isRemote)
@@ -90,7 +90,7 @@ public class ItemEntityEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onEntityRightClick(PlayerInteractEvent.EntityInteract event)
 	{
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 
 		if (player instanceof ServerPlayerEntity)
 		{

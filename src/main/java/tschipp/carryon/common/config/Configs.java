@@ -46,11 +46,13 @@ public class Configs {
 				.autosave()
 				.autoreload()
 				.writingMode(WritingMode.REPLACE)
+				.preserveInsertionOrder()
 				.build();
 		
 		CarryOn.LOGGER.debug("Loading CarryOn Config");
 		configData.load();
 		spec.setConfig(configData);
+		
 	}
 	
 	
@@ -271,7 +273,7 @@ public class Configs {
 			    					"minecraft:lilac",
 			    					"minecraft:sunflower",
 			    					"minecraft:*_bed",
-			    					"minecraft:wooden_door",
+			    					"minecraft:oak_door",
 			    					"minecraft:iron_door",
 			    					"minecraft:spruce_door",
 			    					"minecraft:birch_door",
@@ -280,7 +282,7 @@ public class Configs {
 			    					"minecraft:dark_oak_door",
 			    					"minecraft:waterlily",
 			    					"minecraft:cake",
-			    					"minecraft:portal",
+			    					"minecraft:nether_portal",
 			    					"minecraft:tall_seagrass",
 			    					"animania:block_trough",
 			    					"animania:block_invisiblock",
@@ -350,7 +352,7 @@ public class Configs {
 					.comment("Entities that cannot be picked up")
 					.defineList("blacklist.forbiddenEntities", Arrays.asList(new String[]
 							{
-									"minecraft:ender_crystal",
+									"minecraft:end_crystal",
 									"minecraft:ender_dragon",
 									"minecraft:ghast",
 									"minecraft:shulker",

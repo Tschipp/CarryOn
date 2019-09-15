@@ -11,7 +11,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.PlayerRenderer;
@@ -40,12 +39,12 @@ import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderSpecificHandEvent;
+import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
@@ -203,9 +202,9 @@ public class RenderEvents
 
 			int current = player.inventory.currentItem;
 
-			if (player.getEntityData().contains("carrySlot") ? player.getEntityData().getInt("carrySlot") != current : false)
+			if (player.getPersistentData().contains("carrySlot") ? player.getPersistentData().getInt("carrySlot") != current : false)
 			{
-				player.inventory.currentItem = player.getEntityData().getInt("carrySlot");
+				player.inventory.currentItem = player.getPersistentData().getInt("carrySlot");
 			}
 		}
 	}
@@ -351,8 +350,8 @@ public class RenderEvents
 	public void onPlayerRenderPost(RenderPlayerEvent.Post event)
 	{
 		World world = Minecraft.getInstance().world;
-		PlayerEntity player = event.getEntityPlayer();
-		ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
+		PlayerEntity player = event.getPlayer();
+//		ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
 		float partialticks = event.getPartialRenderTick();
 
@@ -374,13 +373,12 @@ public class RenderEvents
 			double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialticks;
 			double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialticks;
 
-			double c0 = clientPlayer.lastTickPosX + (clientPlayer.posX - clientPlayer.lastTickPosX) * partialticks;
-			double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * partialticks;
-			double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * partialticks;
 
-			double xOffset = d0 - c0;
-			double yOffset = d1 - c1;
-			double zOffset = d2 - c2;
+			Vec3d cameraPos =  Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+			
+			double xOffset = d0 - cameraPos.getX();
+			double yOffset = d1 - cameraPos.getY();
+			double zOffset = d2 - cameraPos.getZ();
 
 			GlStateManager.pushMatrix();
 			GlStateManager.translated(xOffset, yOffset, zOffset);
@@ -401,7 +399,7 @@ public class RenderEvents
 					GlStateManager.translated(0, 0, 0.4);
 			}
 
-			if (player.isSneaking())
+			if (doSneakCheck(player))
 			{
 				GlStateManager.translated(0, -0.3, 0);
 			}
@@ -466,8 +464,7 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			PlayerEntity player = event.getEntityPlayer();
-			ClientPlayerEntity clientPlayer = Minecraft.getInstance().player;
+			PlayerEntity player = event.getPlayer();
 			float partialticks = event.getPartialRenderTick();
 
 			ItemStack stack = player.getHeldItemMainhand();
@@ -487,10 +484,6 @@ public class RenderEvents
 				double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialticks;
 				double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialticks;
 				double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialticks;
-
-				double c0 = clientPlayer.lastTickPosX + (clientPlayer.posX - clientPlayer.lastTickPosX) * partialticks;
-				double c1 = clientPlayer.lastTickPosY + (clientPlayer.posY - clientPlayer.lastTickPosY) * partialticks;
-				double c2 = clientPlayer.lastTickPosZ + (clientPlayer.posZ - clientPlayer.lastTickPosZ) * partialticks;
 
 				Vec3d cameraPos =  Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
 				
@@ -518,30 +511,30 @@ public class RenderEvents
 
 					if (renderLeft && rotLeft != null)
 					{
-						renderArmPost(model.bipedLeftArm, (float) rotLeft[0], (float) rotLeft[2], rotation, false, player.isSneaking());
-						renderArmPost(model.bipedLeftArmwear, (float) rotLeft[0], (float) rotLeft[2], rotation, false, player.isSneaking());
+						renderArmPost(model.bipedLeftArm, (float) rotLeft[0], (float) rotLeft[2], rotation, false, doSneakCheck(player));
+						renderArmPost(model.bipedLeftArmwear, (float) rotLeft[0], (float) rotLeft[2], rotation, false, doSneakCheck(player));
 					} else if (renderLeft)
 					{
-						renderArmPost(model.bipedLeftArm, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, player.isSneaking());
-						renderArmPost(model.bipedLeftArmwear, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, player.isSneaking());
+						renderArmPost(model.bipedLeftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, doSneakCheck(player));
+						renderArmPost(model.bipedLeftArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, doSneakCheck(player));
 					}
 
 					if (renderRight && rotRight != null)
 					{
-						renderArmPost(model.bipedRightArm, (float) rotRight[0], (float) rotRight[2], rotation, true, player.isSneaking());
-						renderArmPost(model.bipedRightArmwear, (float) rotRight[0], (float) rotRight[2], rotation, true, player.isSneaking());
+						renderArmPost(model.bipedRightArm, (float) rotRight[0], (float) rotRight[2], rotation, true, doSneakCheck(player));
+						renderArmPost(model.bipedRightArmwear, (float) rotRight[0], (float) rotRight[2], rotation, true, doSneakCheck(player));
 					} else if (renderRight)
 					{
-						renderArmPost(model.bipedRightArm, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, player.isSneaking());
-						renderArmPost(model.bipedRightArmwear, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, player.isSneaking());
+						renderArmPost(model.bipedRightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, doSneakCheck(player));
+						renderArmPost(model.bipedRightArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, doSneakCheck(player));
 					}
 
 				} else
 				{
-					renderArmPost(model.bipedRightArm, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, player.isSneaking());
-					renderArmPost(model.bipedLeftArm, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, player.isSneaking());
-					renderArmPost(model.bipedLeftArmwear, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, player.isSneaking());
-					renderArmPost(model.bipedRightArmwear, 2.0F + (player.isSneaking() ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, player.isSneaking());
+					renderArmPost(model.bipedRightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, doSneakCheck(player));
+					renderArmPost(model.bipedLeftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, doSneakCheck(player));
+					renderArmPost(model.bipedLeftArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation, false, doSneakCheck(player));
+					renderArmPost(model.bipedRightArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation, true, doSneakCheck(player));
 				}
 				GlStateManager.popMatrix();
 			}
@@ -560,7 +553,7 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			PlayerEntity player = event.getEntityPlayer();
+			PlayerEntity player = event.getPlayer();
 			ItemStack stack = player.getHeldItemMainhand();
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
@@ -643,6 +636,14 @@ public class RenderEvents
 		return true;
 	}
 
+	public static boolean doSneakCheck(PlayerEntity player)
+	{
+		if(player.abilities.isFlying)
+			return false;
+		
+		return player.isSneaking();
+	}
+	
 	public static boolean isChest(Block block)
 	{
 		return block == Blocks.CHEST || block == Blocks.ENDER_CHEST || block == Blocks.TRAPPED_CHEST;

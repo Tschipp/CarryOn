@@ -80,7 +80,6 @@ public class ItemCarryonBlock extends Item
 		return new StringTextComponent("");
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public ActionResultType onItemUse(ItemUseContext context)
 	{
@@ -172,7 +171,7 @@ public class ItemCarryonBlock extends Item
 								clearTileData(stack);
 								player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
 								player.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
-								player.getEntityData().remove("overrideKey");
+								player.getPersistentData().remove("overrideKey");
 								ItemEvents.sendPacket(player, 9, 0);
 								return ActionResultType.SUCCESS;
 

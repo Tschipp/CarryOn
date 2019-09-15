@@ -9,10 +9,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import tschipp.carryon.common.capabilities.IPosition;
 import tschipp.carryon.common.capabilities.PositionProvider;
 import tschipp.carryon.common.capabilities.TEPosition;
@@ -60,7 +60,7 @@ public class PositionClientEvents
 	@SubscribeEvent
 	public void onGuiClose(PlayerContainerEvent.Close event)
 	{
-		PlayerEntity player = event.getEntityPlayer();
+		PlayerEntity player = event.getPlayer();
 		if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
 			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());

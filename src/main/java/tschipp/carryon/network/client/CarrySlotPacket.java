@@ -61,12 +61,12 @@ public class CarrySlotPacket
 					
 					if (slot >= 9)
 					{
-						player.getEntityData().remove("carrySlot");
-						player.getEntityData().remove("overrideKey");
+						player.getPersistentData().remove("carrySlot");
+						player.getPersistentData().remove("overrideKey");
 					} else
 					{
 
-						player.getEntityData().putInt("carrySlot", slot);
+						player.getPersistentData().putInt("carrySlot", slot);
 						if (carryOverride != 0)
 							ScriptChecker.setCarryOnOverride(player, carryOverride);
 					}

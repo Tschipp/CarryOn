@@ -23,7 +23,7 @@ public class CarryOnKeybinds
 	
 	public static boolean isKeyPressed(PlayerEntity player)
 	{
-		CompoundNBT tag = player.getEntityData();
+		CompoundNBT tag = player.getPersistentData();
 		if(tag != null && tag.contains(KEYBIND_KEY))
 		{
 			return tag.getBoolean(KEYBIND_KEY);
@@ -33,7 +33,7 @@ public class CarryOnKeybinds
 	
 	public static void setKeyPressed(PlayerEntity player, boolean pressed)
 	{
-		CompoundNBT tag = player.getEntityData();
+		CompoundNBT tag = player.getPersistentData();
 		tag.putBoolean(KEYBIND_KEY, pressed);
 	}
 	
