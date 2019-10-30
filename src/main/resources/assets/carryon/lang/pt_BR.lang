@@ -1,0 +1,14 @@
+carryon.category.settings=Configurações
+carryon.category.blacklist=Não permitidos
+carryon.category.modeloverrides=Substituições de Modelos (Avançado)
+carryon.category.custompickupconditions=Condições Personalizadas para Segurar (Avançado)
+carryon.category.whitelist=Permitidos
+
+carryon.general.modeloverrides.modeloverrides=Substituições de Modelos
+carryon.general.blacklist.forbiddenentities=Entidades que os jogadores não podem segurar
+carryon.general.blacklist.forbiddentiles=Blocos que os jogadores não podem segurar
+carryon.category.custompickupconditions.custompickupconditionsblocks=Condições Personalizadas para Segurar entidades
+carryon.category.custompickupconditions.custompickupconditionsentities=Condições Personalizadas para Segurar entidades
+
+key.carry.desc=Segurar
+key.carry.category=Segurar
