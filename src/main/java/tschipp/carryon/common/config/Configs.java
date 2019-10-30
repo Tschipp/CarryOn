@@ -116,12 +116,11 @@ public class Configs {
     					"minecraft:waterlily",
     					"minecraft:cake",
     					"animania:block_trough",
-    					"animania:block_invisiblock",
+    					"animania:invisiblock",
     					"colossalchests:*",
     					"ic2:*",
     					"bigreactors:*",
     					"forestry:*",
-    					"tconstruct:*",
     					"rustic:*",
     					"botania:*",
     					"astralsorcery:*",
@@ -185,8 +184,20 @@ public class Configs {
     					"cfm:modern_bed_*",
     					"cfm:grand_chair_*",
     					"cfm:fridge",
-    					"cfm:freezer"
-
+    					"cfm:freezer",
+    					"architecturecraft:*",
+    					"blockcraftery:*",
+    					"dakimakuramod:*",
+    					"stackable:*",
+    					"placeableitems:*",
+    					"dumpsterdiving:powergrinder",
+    					"dumpsterdiving:poweringot",
+    					"dumpsterdiving:trash_furn",
+    					"dumpsterdiving:powerprocessor",
+    					"dumpsterdiving:rep_casing",
+    					"dumpsterdiving:trash_furn_g",
+    					"dumpsterdiving:trash_furn_n",
+    					"*door*"
     			};
 		
 		@Comment("Entities that cannot be picked up")
@@ -206,7 +217,10 @@ public class Configs {
 						"animania:hedgehog*",
 						"animania:cart",
 						"animania:wagon",
-						"mynko:*"
+						"mynko:*",
+						"astikorcarts:*",
+						"dakimakuramod:*",
+						"tektopia:*"
 				};
 		
 		
