@@ -482,7 +482,6 @@ public class ItemEvents
 					{
 						player.inventory.currentItem = itemSlots.get(0);
 						((EntityPlayerMP) player).connection.sendPacket(new SPacketHeldItemChange(player.inventory.currentItem));
-						return;
 					}
 					else
 					{
