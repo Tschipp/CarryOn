@@ -1,7 +1,9 @@
 package tschipp.carryon.common.event;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -13,11 +15,13 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketHeldItemChange;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -434,7 +438,7 @@ public class ItemEvents
 		boolean keepInv = rules.getBoolean("keepInventory");
 		boolean wasCarrying = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
 
-		if ((wasDead ? keepInv : true) && wasCarrying)
+		if (wasDead && keepInv && wasCarrying)
 		{
 			int carrySlot = original.inventory.currentItem;
 
@@ -462,29 +466,29 @@ public class ItemEvents
 
 			if (!entity.world.isRemote)
 			{
-				boolean hasCarried = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
+				List<Integer> itemSlots = new ArrayList<>();
+				getSlots(player, RegistrationHandler.itemTile, itemSlots);
+				getSlots(player, RegistrationHandler.itemEntity, itemSlots);
 				ItemStack inHand = player.getHeldItemMainhand();
 
-				if (hasCarried)
+				if (itemSlots.size() > 1 || (itemSlots.size() > 0
+						&& (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)))
 				{
-					if ((inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity) && player.getPortalCooldown() == 0)
+					// if there is only one item, and it's in the hotbar, just force the selection there
+					// this is necessary, because when switching dimensions, Minecraft will reset selection to 0 for one tick
+					// and completely reset it to 0 when returning from the end
+					// if there are multiple, drop all of them, as it's likely a player trying to exploit a bug
+					if (itemSlots.size() == 1 && InventoryPlayer.isHotbar(itemSlots.get(0)))
 					{
-						int slotBlock = getSlot(player, RegistrationHandler.itemTile);
-						int slotEntity = getSlot(player, RegistrationHandler.itemEntity);
-
-						EntityItem item = null;
-						if (slotBlock != -1)
+						player.inventory.currentItem = itemSlots.get(0);
+						((EntityPlayerMP) player).connection.sendPacket(new SPacketHeldItemChange(player.inventory.currentItem));
+					}
+					else
+					{
+						for (int slotBlock : itemSlots)
 						{
 							ItemStack dropped = player.inventory.removeStackFromSlot(slotBlock);
-							item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
-						}
-						if (slotEntity != -1)
-						{
-							ItemStack dropped = player.inventory.removeStackFromSlot(slotEntity);
-							item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
-						}
-						if (item != null)
-						{
+							EntityItem item = new EntityItem(player.world, player.posX, player.posY, player.posZ, dropped);
 							player.world.spawnEntity(item);
 							sendPacket(player, 9, 0);
 						}
@@ -514,15 +518,14 @@ public class ItemEvents
 		}
 	}
 
-	public int getSlot(EntityPlayer player, Item item)
+	public void getSlots(EntityPlayer player, Item item, List<Integer> outputList)
 	{
 		for (int i = 0; i < player.inventory.getSizeInventory(); i++)
 		{
 			ItemStack stack = player.inventory.getStackInSlot(i);
 			if (stack.getItem() == item)
-				return i;
+				outputList.add(i);
 		}
-		return -1;
 	}
 
 	public static void sendPacket(EntityPlayer player, int currentItem, int hash)
