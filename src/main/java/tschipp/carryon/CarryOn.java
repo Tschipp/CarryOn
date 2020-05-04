@@ -33,6 +33,7 @@ public class CarryOn {
 	@SidedProxy(clientSide = "tschipp.carryon.client.ClientProxy", serverSide = "tschipp.carryon.common.CommonProxy")
 	public static CommonProxy proxy;
 
+	//
 	// Instance
 	@Instance(CarryOn.MODID)
 	public static CarryOn instance;
