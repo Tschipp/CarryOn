@@ -16,19 +16,7 @@ import net.minecraftforge.fml.relauncher.ReflectionHelper;
  */
 public class ReflectionUtil
 {
-	/**
-	 * Get a {@link MethodHandle} for a method.
-	 *
-	 * @param clazz
-	 *            The class
-	 * @param methodNames
-	 *            The possible names of the method
-	 * @param methodTypes
-	 *            The argument types of the method
-	 * @param <T>
-	 *            The class
-	 * @return The MethodHandle
-	 */
+	
 	public static MethodHandle findMethod(final Class<?> clazz, final String methodName, @Nullable final String methodObfName, final Class<?>... parameterTypes)
 	{
 		final Method method = ReflectionHelper.findMethod(clazz, methodName, methodObfName, parameterTypes);
@@ -42,15 +30,7 @@ public class ReflectionUtil
 		}
 	}
 
-	/**
-	 * Get a {@link MethodHandle} for a field's getter.
-	 *
-	 * @param clazz
-	 *            The class
-	 * @param fieldNames
-	 *            The possible names of the field
-	 * @return The MethodHandle
-	 */
+	
 	public static MethodHandle findFieldGetter(Class<?> clazz, String... fieldNames)
 	{
 		final Field field = ReflectionHelper.findField(clazz, fieldNames);
@@ -65,15 +45,7 @@ public class ReflectionUtil
 		}
 	}
 
-	/**
-	 * Get a {@link MethodHandle} for a field's setter.
-	 *
-	 * @param clazz
-	 *            The class
-	 * @param fieldNames
-	 *            The possible names of the field
-	 * @return The MethodHandle
-	 */
+	
 	public static MethodHandle findFieldSetter(Class<?> clazz, String... fieldNames)
 	{
 		final Field field = ReflectionHelper.findField(clazz, fieldNames);

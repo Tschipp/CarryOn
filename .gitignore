@@ -1,5 +1,6 @@
 # eclipse
 bin
+oldBuilds
 *.launch
 .settings
 .metadata
@@ -22,4 +23,3 @@ build
 eclipse
 run
 
-gradle\.properties
