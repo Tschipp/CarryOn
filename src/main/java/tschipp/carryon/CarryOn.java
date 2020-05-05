@@ -45,7 +45,7 @@ public class CarryOn {
 	public static final String UPDATE_JSON = "https://gist.githubusercontent.com/Tschipp/dccadee7c90d7a34e6e76a35d9d6fa2e/raw/";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
 	public static final String DEPENDENCIES = "required-after:forge@[13.20.1.2386,);after:gamestages;";
-	public static final String CERTIFICATE_FINGERPRINT = "FD21553434F4905F2F73EA7838147AC4EA07BD88";
+	public static final String CERTIFICATE_FINGERPRINT = "fd21553434f4905f2f73ea7838147ac4ea07bd88";
 	public static File CONFIGURATION_FILE;
  
 	public static boolean FINGERPRINT_VIOLATED = false;
