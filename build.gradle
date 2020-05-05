@@ -15,9 +15,9 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "${minecraft_version}-${version}"
+version = "${version}"
 group = "tschipp.carryon" 
-archivesBaseName = "carryon"
+archivesBaseName = "carryon-${minecraft_version}"
 
 sourceCompatibility = targetCompatibility = '1.8' 
 compileJava {
