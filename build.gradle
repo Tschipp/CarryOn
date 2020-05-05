@@ -15,6 +15,15 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
+
+apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
+
+import groovy.json.JsonOutput
+
+if (project.hasProperty('secretFile')) {
+    loadSecrets(new File((String) findProperty('secretFile')))
+}
+
 version = "${version}"
 group = "tschipp.carryon" 
 archivesBaseName = "carryon-${minecraft_version}"
@@ -148,16 +157,16 @@ task signJar(type: SignJar, dependsOn: reobfJar) {
 
     // Skips if the keyStore property is missing.
     onlyIf {
-        project.hasProperty('modkeyStore')
+        project.hasProperty('keyStore')
     }
 
     // findProperty allows us to reference the property without it existing. 
     // Using project.propName would cause the script to fail validation if 
     // the property did not exist. 
-    keyStore = project.findProperty('modkeyStore')
-    alias = project.findProperty('modkeyStoreAlias')
-    storePass = project.findProperty('modkeyStorePass')
-    keyPass = project.findProperty('modkeyStoreKeyPass')
+    keyStore = project.findProperty('keyStore')
+    alias = project.findProperty('keyStoreAlias')
+    storePass = project.findProperty('keyStorePass')
+    keyPass = project.findProperty('keyStoreKeyPass')
     inputFile = jar.archivePath
     outputFile = jar.archivePath
 }

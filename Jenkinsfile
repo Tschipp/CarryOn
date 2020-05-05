@@ -5,16 +5,20 @@ pipeline {
     stages {
         stage('Clean') {
             steps {
-                echo 'Cleaning Project'
-                sh 'chmod +x gradlew'
-                sh './gradlew clean'
+			    withCredentials([file(credentialsId: 'mod_build_secrets', variable: 'ORG_GRADLE_PROJECT_secretFile')]) {
+					echo 'Cleaning Project'
+					sh 'chmod +x gradlew'
+					sh './gradlew clean'
+				}
             }
         }
         stage('Build and Deploy') {
             steps {
-                echo 'Building and Deploying to Maven'
-					sh './gradlew build publish'
-                }
+				withCredentials([file(credentialsId: 'mod_build_secrets', variable: 'ORG_GRADLE_PROJECT_secretFile')]) {
+					echo 'Building and Deploying to Maven'
+						sh './gradlew build publish'
+					}
+				}
             }
         }
     post {
