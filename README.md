@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-	deobfCompile "tschipp.linear:linear-MCVERSION:MODVERSION" 
+	deobfCompile "tschipp.carryon:carryon-MCVERSION:MODVERSION" 
 }
 ```
 Make sure to replace `MCVERSION` and `MODVERSION` with the appropriate versions.
