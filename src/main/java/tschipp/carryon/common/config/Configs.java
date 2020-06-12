@@ -34,6 +34,9 @@ public class Configs {
 		@Comment("Whether hostile mobs should be able to picked up in survival mode")
 		public boolean pickupHostileMobs = false;
 		
+		@Comment("Whether tamed hostile mobs should be exempt from the above")
+		public boolean tamedHostileMobExemption = true;
+		
 		@Comment("Larger Entities slow down the player more")
 		public boolean heavyEntities = true;
 		
