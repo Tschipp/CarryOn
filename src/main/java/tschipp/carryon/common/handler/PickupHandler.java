@@ -231,14 +231,9 @@ public class PickupHandler
 							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
 							if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 							{
-								if (toPickUp instanceof EntityTameable)
-								{
-									EntityTameable tame = (EntityTameable) toPickUp;
-									UUID owner = tame.getOwnerId();
-									UUID playerID = player.getUUID(player.getGameProfile());
-									if (owner != null && !owner.equals(playerID))
-										return false;
-								}
+								UUID playerID = player.getUUID(player.getGameProfile());
+								if (OwnerCheck != null && !OwnerCheck.equals(playerID))
+									return false;
 	
 								if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 								{
@@ -299,15 +294,6 @@ public class PickupHandler
 							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
 							if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 							{
-								if (toPickUp instanceof EntityTameable)
-								{
-									EntityTameable tame = (EntityTameable) toPickUp;
-									UUID owner = tame.getOwnerId();
-									UUID playerID = player.getUUID(player.getGameProfile());
-									if (owner != null && !owner.equals(playerID))
-										return false;
-								}
-	
 								if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 								{
 									try
