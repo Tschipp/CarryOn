@@ -126,23 +126,23 @@ public class ItemCarryonBlock extends Item
 
 							BlockState placementState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
 
-							BlockState actualState = containedstate;
+							BlockState actualState = placementState;
 
-							for (IProperty<?> prop : placementState.getValues().keySet())
-							{
-								if (prop instanceof DirectionProperty)
-									actualState = actualState.with((DirectionProperty) prop, placementState.get((DirectionProperty) prop));
-								else if (prop == BlockStateProperties.WATERLOGGED)
-									actualState = actualState.with((BooleanProperty) prop, placementState.get((BooleanProperty) prop));
-								else if(prop instanceof EnumProperty<?>)
-								{
-									Object value = placementState.get(prop);
-									if(value instanceof Direction.Axis)
-									{
-										actualState = actualState.with((EnumProperty)prop, (Direction.Axis)value);
-									}
-								}
-							}
+//							for (IProperty<?> prop : placementState.getValues().keySet())
+//							{
+//								if (prop instanceof DirectionProperty)
+//									actualState = actualState.with((DirectionProperty) prop, placementState.get((DirectionProperty) prop));
+//								else if (prop == BlockStateProperties.WATERLOGGED)
+//									actualState = actualState.with((BooleanProperty) prop, placementState.get((BooleanProperty) prop));
+//								else if(prop instanceof EnumProperty<?>)
+//								{
+//									Object value = placementState.get(prop);
+//									if(value instanceof Direction.Axis)
+//									{
+//										actualState = actualState.with((EnumProperty)prop, (Direction.Axis)value);
+//									}
+//								}
+//							}
 
 							BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
 							EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
