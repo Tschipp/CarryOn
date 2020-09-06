@@ -16,10 +16,8 @@ import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.IRenderTypeBuffer.Impl;
-import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.PlayerRenderer;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
@@ -37,7 +35,9 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
@@ -138,7 +138,7 @@ public class RenderEvents
 					StringTextComponent cf = new StringTextComponent(TextFormatting.AQUA + "Curseforge" + TextFormatting.RED);
 					cf.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
 
-					player.sendMessage(new StringTextComponent(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").appendSibling(cf).appendText(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").appendSibling(cf));
+					player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).appendString(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
 				}
 			}
 
@@ -232,7 +232,7 @@ public class RenderEvents
 		World world = Minecraft.getInstance().world;
 		PlayerEntity player = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 		boolean f1 = Minecraft.getInstance().gameSettings.hideGUI;
 		IRenderTypeBuffer buffer = event.getBuffers();
 		MatrixStack matrix = event.getMatrixStack();
@@ -308,7 +308,7 @@ public class RenderEvents
 		Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
 		MatrixStack matrix = event.getMatrixStack();
 		int light = 0;
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 		EntityRendererManager manager = Minecraft.getInstance().getRenderManager();
 
 		RenderSystem.enableBlend();
@@ -421,11 +421,11 @@ public class RenderEvents
 
 	private void applyGeneralTransformations(PlayerEntity player, float partialticks, MatrixStack matrix)
 	{
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 		Quaternion playerrot = CarryRenderHelper.getExactBodyRotation(player, partialticks);
-		Vec3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
-		Vec3d cameraPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
-		Vec3d offset = playerpos.subtract(cameraPos);
+		Vector3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
+		Vector3d cameraPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+		Vector3d offset = playerpos.subtract(cameraPos);
 		Pose pose = player.getPose();
 
 		matrix.push();
@@ -479,14 +479,14 @@ public class RenderEvents
 					matrix.rotate(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.rotationPitch)));
 			}
 
-			Vec3d vec3d = player.getLook(partialticks);
-			Vec3d vec3d1 = player.getMotion();
-			double d0 = Entity.horizontalMag(vec3d1);
-			double d1 = Entity.horizontalMag(vec3d);
+			Vector3d Vector3d = player.getLook(partialticks);
+			Vector3d Vector3d1 = player.getMotion();
+			double d0 = Entity.horizontalMag(Vector3d1);
+			double d1 = Entity.horizontalMag(Vector3d);
 			if (d0 > 0.0D && d1 > 0.0D)
 			{
-				double d2 = (vec3d1.x * vec3d.x + vec3d1.z * vec3d.z) / (Math.sqrt(d0) * Math.sqrt(d1));
-				double d3 = vec3d1.x * vec3d.z - vec3d1.z * vec3d.x;
+				double d2 = (Vector3d1.x * Vector3d.x + Vector3d1.z * Vector3d.z) / (Math.sqrt(d0) * Math.sqrt(d1));
+				double d3 = Vector3d1.x * Vector3d.z - Vector3d1.z * Vector3d.x;
 
 				matrix.rotate(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
 			}
@@ -501,7 +501,7 @@ public class RenderEvents
 
 	private void applyBlockTransformations(PlayerEntity player, float partialticks, MatrixStack matrix, Block block)
 	{
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 
 		applyGeneralTransformations(player, partialticks, matrix);
 
@@ -520,7 +520,7 @@ public class RenderEvents
 
 	private void applyEntityTransformations(PlayerEntity player, float partialticks, MatrixStack matrix, Entity entity)
 	{
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 		Pose pose = player.getPose();
 
 		applyGeneralTransformations(player, partialticks, matrix);
@@ -563,7 +563,7 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	public void drawArms(PlayerEntity player, float partialticks, MatrixStack matrix, IRenderTypeBuffer buffer, int light)
 	{
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 		Pose pose = player.getPose();
 
 		if (!Settings.renderArms.get())

@@ -19,17 +19,12 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.IProperty;
-import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -75,7 +70,7 @@ public class ItemCarryonBlock extends Item
 				else
 				{
 					BlockState ostate = (BlockState) override;
-					return ostate.getBlock().getNameTextComponent();
+					return ostate.getBlock().getTranslatedName();
 				}
 			}
 
@@ -85,7 +80,6 @@ public class ItemCarryonBlock extends Item
 		return new StringTextComponent("");
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public ActionResultType onItemUse(ItemUseContext context)
 	{
@@ -105,7 +99,7 @@ public class ItemCarryonBlock extends Item
 		{
 			try
 			{
-				Vec3d vec = player.getLookVec();
+				Vector3d vec = player.getLookVec();
 				Direction facing2 = Direction.getFacingFromVector((float) vec.x, 0f, (float) vec.z);
 				BlockPos pos2 = pos;
 				Block containedblock = getBlock(stack);
@@ -144,7 +138,7 @@ public class ItemCarryonBlock extends Item
 //								}
 //							}
 
-							BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
+							BlockSnapshot snapshot = BlockSnapshot.create(world.func_234923_W_(), world, pos2);
 							EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
 							MinecraftForge.EVENT_BUS.post(event);
 
@@ -169,7 +163,7 @@ public class ItemCarryonBlock extends Item
 												switch (type)
 												{
 												case 8:
-													tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
+													tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName2().toUpperCase() : facing2.getOpposite().getName2());
 													break;
 												case 3:
 													tag.putInt(key, facing2.getOpposite().getIndex());
@@ -223,10 +217,10 @@ public class ItemCarryonBlock extends Item
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(stack)))
 						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(stack)));
 
-					player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"));
+					player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"), false);
 					StringTextComponent s = new StringTextComponent(TextFormatting.GOLD + "here");
 					s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-					player.sendMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").appendSibling(s));
+					player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").append(s), false);
 
 				}
 			}

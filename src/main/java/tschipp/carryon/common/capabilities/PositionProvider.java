@@ -7,18 +7,23 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
-public class PositionProvider implements ICapabilitySerializable<CompoundNBT> {
+public class PositionProvider implements ICapabilitySerializable<CompoundNBT>
+{
 
 	@CapabilityInject(IPosition.class)
 	public static final Capability<IPosition> POSITION_CAPABILITY = null;
-	
+
 	private IPosition instance = POSITION_CAPABILITY.getDefaultInstance();
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side)
 	{
-		return (LazyOptional<T>) LazyOptional.of(() -> {return new TEPosition();});
+		if (cap == POSITION_CAPABILITY)
+			return (LazyOptional<T>) LazyOptional.of(() -> {
+				return new TEPosition();
+			});
+		return null;
 	}
 
 	@Override
@@ -30,7 +35,7 @@ public class PositionProvider implements ICapabilitySerializable<CompoundNBT> {
 	@Override
 	public void deserializeNBT(CompoundNBT nbt)
 	{
-		POSITION_CAPABILITY.getStorage().readNBT(POSITION_CAPABILITY, instance, null, nbt);		
+		POSITION_CAPABILITY.getStorage().readNBT(POSITION_CAPABILITY, instance, null, nbt);
 	}
-	
+
 }

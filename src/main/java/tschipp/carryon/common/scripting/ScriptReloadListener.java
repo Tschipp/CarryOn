@@ -4,12 +4,14 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 
 import net.minecraft.client.resources.JsonReloadListener;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
@@ -29,7 +31,7 @@ public class ScriptReloadListener extends JsonReloadListener
 	}
 
 	@Override
-	protected void apply(Map<ResourceLocation, JsonObject> objects, IResourceManager manager, IProfiler profiler)
+	protected void apply(Map<ResourceLocation, JsonElement> objects, IResourceManager manager, IProfiler profiler)
 	{
 		ScriptReader.OVERRIDES.clear();
 
@@ -44,9 +46,9 @@ public class ScriptReloadListener extends JsonReloadListener
 		}
 	}
 	
+	@SubscribeEvent
 	public static void onDatapackRegister(AddReloadListenerEvent event)
 	{
-		
+		event.addListener(new ScriptReloadListener());
 	}
-
 }

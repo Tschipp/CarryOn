@@ -5,24 +5,24 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Quaternion;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 
 public class CarryRenderHelper
 {
-	public static Vec3d getExactPos(Entity entity, float partialticks)
+	public static Vector3d getExactPos(Entity entity, float partialticks)
 	{
-		return new Vec3d(entity.lastTickPosX + (entity.getPosX() - entity.lastTickPosX) * partialticks, entity.lastTickPosY + (entity.getPosY() - entity.lastTickPosY) * partialticks, entity.lastTickPosZ + (entity.getPosZ() - entity.lastTickPosZ) * partialticks);
+		return new Vector3d(entity.lastTickPosX + (entity.getPosX() - entity.lastTickPosX) * partialticks, entity.lastTickPosY + (entity.getPosY() - entity.lastTickPosY) * partialticks, entity.lastTickPosZ + (entity.getPosZ() - entity.lastTickPosZ) * partialticks);
 	}
 
 	public static float getExactBodyRotationDegrees(LivingEntity entity, float partialticks)
@@ -67,5 +67,17 @@ public class CarryRenderHelper
 		}
 		
 		Minecraft.getInstance().getItemRenderer().renderItem(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
+	}
+	
+	public static int getPerspective()
+	{
+		boolean isThirdPerson = !Minecraft.getInstance().gameSettings.func_243230_g().func_243192_a();
+		boolean isThirdPersonReverse = Minecraft.getInstance().gameSettings.func_243230_g().func_243193_b();
+		
+		if(!isThirdPerson && !isThirdPersonReverse)
+			return 0;
+		if(isThirdPerson && !isThirdPersonReverse)
+			return 1;
+		return 2;
 	}
 }

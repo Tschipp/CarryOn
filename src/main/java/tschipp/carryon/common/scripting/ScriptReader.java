@@ -197,25 +197,4 @@ public class ScriptReader
 			CarryOn.LOGGER.error(e);
 		}
 	}
-
-	public static void reloadScripts()
-	{
-		scripts.clear();
-		OVERRIDES.clear();
-
-		for (File file : CarryOn.CONFIGURATION_FILE.listFiles())
-		{
-			if (file.getName().endsWith(".json"))
-				scripts.add(file);
-		}
-
-		try
-		{
-			parseScripts();
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
 }

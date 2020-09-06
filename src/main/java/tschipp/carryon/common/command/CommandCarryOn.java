@@ -43,9 +43,7 @@ public class CommandCarryOn
 					return handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target"));
 				})))
 
-				.then(Commands.literal("reload").requires(src -> src.hasPermissionLevel(2)).executes((cmd) -> {
-					return handleReload(cmd.getSource());
-				}));
+				;
 
 		dispatcher.register(builder);
 
@@ -118,8 +116,8 @@ public class CommandCarryOn
 				if (source.assertIsEntity() != null)
 				{
 					int cleared = 0;
-					cleared += player.inventory.clearMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64);
-					cleared += player.inventory.clearMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64);
+					cleared += player.inventory.func_234564_a_(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64, null); //TODO
+					cleared += player.inventory.func_234564_a_(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64, null);
 
 					CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(9, player.getEntityId()));
 
@@ -139,20 +137,6 @@ public class CommandCarryOn
 		}
 
 		return 0;
-	}
-
-	private static int handleReload(CommandSource source)
-	{
-		if (Settings.useScripts.get())
-		{
-			ScriptReader.reloadScripts();
-			CarryOn.network.send(PacketDistributor.ALL.noArg(), new ScriptReloadPacket());
-
-			source.sendFeedback(new StringTextComponent("Successfully reloaded scripts!"), true);
-		} else
-			source.sendErrorMessage(new StringTextComponent("To use custom Carry On scripts, enable them in the config!"));
-
-		return 1;
 	}
 }
 

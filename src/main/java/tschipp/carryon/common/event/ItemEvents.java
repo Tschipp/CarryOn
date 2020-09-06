@@ -1,8 +1,6 @@
 package tschipp.carryon.common.event;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -25,11 +23,9 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.ClickEvent.Action;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.GameRules.BooleanValue;
-import net.minecraft.world.GameRules.RuleKey;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -40,7 +36,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
-import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -65,15 +60,11 @@ import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
-import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 
 @EventBusSubscriber(modid = CarryOn.MODID)
 public class ItemEvents
 {
-
-	public static Map<BlockPos, Integer> positions = new HashMap<BlockPos, Integer>();
-
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -142,11 +133,11 @@ public class ItemEvents
 				eitem.setItem(ItemStack.EMPTY);
 			}
 
-			BlockPos pos = new BlockPos(Math.floor(eitem.getPosX()), Math.floor(eitem.getPosY()), Math.floor(eitem.getPosZ()));
-			if (positions.containsKey(pos))
-			{
-				event.setCanceled(true);
-			}
+//			BlockPos pos = new BlockPos(Math.floor(eitem.getPosX()), Math.floor(eitem.getPosY()), Math.floor(eitem.getPosZ()));
+//			if (positions.containsKey(pos))
+//			{
+//				event.setCanceled(true);
+//			}
 		}
 
 	}
@@ -183,11 +174,16 @@ public class ItemEvents
 		}
 	}
 
+
+	@SubscribeEvent
+	public void serverLoad(RegisterCommandsEvent event)
+	{
+		CommandCarryOn.register(event.getDispatcher());
+	}
+	
 	@SubscribeEvent
 	public void serverLoad(FMLServerStartingEvent event)
 	{
-		CommandCarryOn.register(event.getCommandDispatcher());
-		ScriptReader.reloadScripts();
 		CustomPickupOverrideHandler.initPickupOverrides();
 		ListHandler.initLists();
 
@@ -285,27 +281,6 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void onWorldTick(TickEvent.WorldTickEvent event)
-	{
-		for (Entry<BlockPos, Integer> entry : positions.entrySet())
-		{
-			entry.setValue(entry.getValue() + 1);
-
-			if (entry.getValue() > 3)
-				positions.remove(entry.getKey());
-		}
-	}
-
-	@SubscribeEvent
-	public void onDrop(HarvestDropsEvent event)
-	{
-		if (positions.containsKey(event.getPos()))
-		{
-			event.getDrops().clear();
-		}
-	}
-
-	@SubscribeEvent
 	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		PlayerEntity player = event.getPlayer();
@@ -340,8 +315,6 @@ public class ItemEvents
 						if (override != null)
 							overrideHash = override.hashCode();
 
-						positions.put(pos, 0);
-
 						boolean success = false;
 
 						try
@@ -372,12 +345,14 @@ public class ItemEvents
 								sendPacket(player, 9, 0);
 								world.setBlockState(pos, statee);
 								if (!tag.isEmpty())
-									TileEntity.create(tag);
+								{
+									TileEntity.readTileEntity(statee, tag);
+								}
 
-								player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot pick up block."));
+								player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot pick up block."), false);
 								StringTextComponent s = new StringTextComponent(TextFormatting.GOLD + "here");
 								s.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-								player.sendMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").appendSibling(s));
+								player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").append(s), false);
 							}
 
 						}
@@ -452,7 +427,7 @@ public class ItemEvents
 		PlayerEntity player = event.getPlayer();
 		boolean wasDead = event.isWasDeath();
 		GameRules rules = player.world.getGameRules();
-		boolean keepInv = rules.getBoolean(new RuleKey<BooleanValue>("keepInventory"));
+		boolean keepInv = rules.getBoolean(GameRules.KEEP_INVENTORY);
 		boolean wasCarrying = player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.hasItemStack(new ItemStack(RegistrationHandler.itemEntity));
 
 		if ((wasDead ? keepInv : true) && wasCarrying)
@@ -464,7 +439,10 @@ public class ItemEvents
 
 			ItemEntity item = new ItemEntity(world, 0, 0, 0);
 			item.setItem(stack);
-			BlockPos pos = original.getBedLocation(original.dimension);
+			BlockPos pos = null;
+			Optional<BlockPos> bedpos = original.getBedPosition();
+			if(bedpos.isPresent())
+				pos = bedpos.get();
 			if (pos == null)
 				pos = player.getPosition();
 			item.setPosition(pos.getX(), pos.getY(), pos.getZ());
@@ -555,7 +533,7 @@ public class ItemEvents
 	{
 		if (player instanceof ServerPlayerEntity)
 		{
-			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.getPosX(), player.getPosY(), player.getPosZ(), 128, player.world.getDimension().getType())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
+			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.getPosX(), player.getPosY(), player.getPosZ(), 128, player.world.func_234923_W_())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 
 			if (currentItem >= 9)

@@ -8,7 +8,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -16,7 +15,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -41,7 +41,7 @@ public class RenderEntityEvents
 		World world = Minecraft.getInstance().world;
 		PlayerEntity player = Minecraft.getInstance().player;
 		ItemStack stack = player.getHeldItemMainhand();
-		int perspective = Minecraft.getInstance().gameSettings.thirdPersonView;
+		int perspective = CarryRenderHelper.getPerspective();
 		float partialticks = event.getPartialTicks();
 		MatrixStack matrix = event.getMatrixStack();
 		int light = event.getLight();
@@ -57,7 +57,7 @@ public class RenderEntityEvents
 
 			if (entity != null)
 			{
-				Vec3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
+				Vector3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
 				
 				entity.setPosition(playerpos.x, playerpos.y, playerpos.z);
 				entity.rotationYaw = 0.0f;
