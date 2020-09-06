@@ -1,5 +1,6 @@
 package tschipp.carryon.common.item;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -26,6 +27,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
@@ -33,6 +35,14 @@ import tschipp.carryon.common.event.ItemEvents;
 
 public class ItemCarryonEntity extends Item {
 
+	private static final Method initGoals;
+	
+	static
+	{
+		initGoals =  ObfuscationReflectionHelper.findMethod(MobEntity.class, "func_184651_r");
+		initGoals.setAccessible(true);
+	}
+	
 	public static final String ENTITY_DATA_KEY = "entityData";
 
 	public ItemCarryonEntity() {
@@ -177,7 +187,16 @@ public class ItemCarryonEntity extends Item {
 		}
 
 		if (entity != null)
-			entity.deserializeNBT(e);
+		{
+			try
+			{
+				initGoals.invoke(entity);
+				entity.deserializeNBT(e);
+			}
+			catch (Exception e1)
+			{
+			}
+		}
 
 		return entity;
 	}

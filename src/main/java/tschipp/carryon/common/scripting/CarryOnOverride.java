@@ -492,7 +492,7 @@ public class CarryOnOverride
 		return renderRotation;
 	}
 
-	public String getRenderscaled()
+	public String getRenderScaled()
 	{
 		return renderscaled;
 	}

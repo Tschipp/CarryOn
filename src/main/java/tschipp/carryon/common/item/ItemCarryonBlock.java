@@ -19,6 +19,11 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.EnumProperty;
+import net.minecraft.state.IProperty;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -80,6 +85,7 @@ public class ItemCarryonBlock extends Item
 		return new StringTextComponent("");
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public ActionResultType onItemUse(ItemUseContext context)
 	{
@@ -117,8 +123,27 @@ public class ItemCarryonBlock extends Item
 					{
 						if (player.canPlayerEdit(pos, facing, stack) && world.isBlockModifiable(player, pos2))
 						{
-							
-							BlockState actualState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
+
+							BlockState placementState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
+
+							BlockState actualState = containedstate;
+
+							for (IProperty<?> prop : placementState.getValues().keySet())
+							{
+								if (prop instanceof DirectionProperty)
+									actualState = actualState.with((DirectionProperty) prop, placementState.get((DirectionProperty) prop));
+								else if (prop == BlockStateProperties.WATERLOGGED)
+									actualState = actualState.with((BooleanProperty) prop, placementState.get((BooleanProperty) prop));
+								else if(prop instanceof EnumProperty<?>)
+								{
+									Object value = placementState.get(prop);
+									if(value instanceof Direction.Axis)
+									{
+										actualState = actualState.with((EnumProperty)prop, (Direction.Axis)value);
+									}
+								}
+							}
+
 							BlockSnapshot snapshot = new BlockSnapshot(world, pos2, containedstate);
 							EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
 							MinecraftForge.EVENT_BUS.post(event);
@@ -180,7 +205,8 @@ public class ItemCarryonBlock extends Item
 
 					}
 				}
-			} catch (Exception e)
+			}
+			catch (Exception e)
 			{
 				e.printStackTrace();
 
@@ -188,7 +214,7 @@ public class ItemCarryonBlock extends Item
 				{
 					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(stack));
 					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(stack));
-//					CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
+					// CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
 					CarryOn.LOGGER.info("ItemStack: " + ItemCarryonBlock.getItemStack(stack));
 
 					if (ModelOverridesHandler.hasCustomOverrideModel(ItemCarryonBlock.getBlockState(stack), ItemCarryonBlock.getTileData(stack)))
@@ -222,7 +248,8 @@ public class ItemCarryonBlock extends Item
 
 				((LivingEntity) entity).addPotionEffect(new EffectInstance(Effects.SLOWNESS, 1, potionLevel(stack), false, false));
 			}
-		} else
+		}
+		else
 		{
 			stack = ItemStack.EMPTY;
 		}
@@ -253,11 +280,12 @@ public class ItemCarryonBlock extends Item
 
 		tag.put(TILE_DATA_KEY, chest);
 
-//		ItemStack drop = new ItemStack(state.getBlock().getItemDropped(state, itemRand, 0), 1, state.getBlock().damageDropped(state));
+		// ItemStack drop = new ItemStack(state.getBlock().getItemDropped(state,
+		// itemRand, 0), 1, state.getBlock().damageDropped(state));
 
 		tag.putString("block", state.getBlock().getRegistryName().toString());
-//		Item item = Item.getItemFromBlock(state.getBlock());
-//		tag.setInt("meta", drop.getItemDamage());
+		// Item item = Item.getItemFromBlock(state.getBlock());
+		// tag.setInt("meta", drop.getItemDamage());
 		tag.putInt("stateid", Block.getStateId(state));
 		stack.setTag(tag);
 		return true;
@@ -295,16 +323,16 @@ public class ItemCarryonBlock extends Item
 		return Blocks.AIR;
 	}
 
-//	public static int getMeta(ItemStack stack)
-//	{
-//		if (stack.hasTag())
-//		{
-//			CompoundNBT tag = stack.getTag();
-//			int meta = tag.getInt("meta");
-//			return meta;
-//		}
-//		return 0;
-//	}
+	// public static int getMeta(ItemStack stack)
+	// {
+	// if (stack.hasTag())
+	// {
+	// CompoundNBT tag = stack.getTag();
+	// int meta = tag.getInt("meta");
+	// return meta;
+	// }
+	// return 0;
+	// }
 
 	public static ItemStack getItemStack(ItemStack stack)
 	{
@@ -335,16 +363,16 @@ public class ItemCarryonBlock extends Item
 		return false;
 	}
 
-//	private boolean equal(Object[] a, Object[] b)
-//	{
-//		if (a.length != b.length)
-//			return false;
-//
-//		List lA = Arrays.asList(a);
-//		List lB = Arrays.asList(b);
-//
-//		return lA.containsAll(lB);
-//	}
+	// private boolean equal(Object[] a, Object[] b)
+	// {
+	// if (a.length != b.length)
+	// return false;
+	//
+	// List lA = Arrays.asList(a);
+	// List lB = Arrays.asList(b);
+	//
+	// return lA.containsAll(lB);
+	// }
 
 	private int potionLevel(ItemStack stack)
 	{

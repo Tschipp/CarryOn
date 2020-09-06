@@ -142,7 +142,7 @@ public class ItemEvents
 				eitem.setItem(ItemStack.EMPTY);
 			}
 
-			BlockPos pos = new BlockPos(Math.floor(eitem.posX), Math.floor(eitem.posY), Math.floor(eitem.posZ));
+			BlockPos pos = new BlockPos(Math.floor(eitem.getPosX()), Math.floor(eitem.getPosY()), Math.floor(eitem.getPosZ()));
 			if (positions.containsKey(pos))
 			{
 				event.setCanceled(true);
@@ -275,7 +275,7 @@ public class ItemEvents
 				if (!player.world.isRemote)
 				{
 					player.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
-					ItemEntity item = new ItemEntity(player.world, player.posX, player.posY, player.posZ, stack);
+					ItemEntity item = new ItemEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), stack);
 					sendPacket(player, 9, 0);
 					player.world.addEntity(item);
 				}
@@ -499,12 +499,12 @@ public class ItemEvents
 						if (slotBlock != -1)
 						{
 							ItemStack dropped = player.inventory.removeStackFromSlot(slotBlock);
-							item = new ItemEntity(player.world, player.posX, player.posY, player.posZ, dropped);
+							item = new ItemEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), dropped);
 						}
 						if (slotEntity != -1)
 						{
 							ItemStack dropped = player.inventory.removeStackFromSlot(slotEntity);
-							item = new ItemEntity(player.world, player.posX, player.posY, player.posZ, dropped);
+							item = new ItemEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), dropped);
 						}
 						if (item != null)
 						{
@@ -529,7 +529,7 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void onConfigChanged(ModConfig.ConfigReloading event)
+	public void onConfigChanged(ModConfig.Reloading event)
 	{
 		if (event.getConfig().getModId().equals(CarryOn.MODID))
 		{
@@ -555,7 +555,7 @@ public class ItemEvents
 	{
 		if (player instanceof ServerPlayerEntity)
 		{
-			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.posX, player.posY, player.posZ, 128, player.world.getDimension().getType())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
+			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.getPosX(), player.getPosY(), player.getPosZ(), 128, player.world.getDimension().getType())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 
 			if (currentItem >= 9)

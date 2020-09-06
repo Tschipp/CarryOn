@@ -132,7 +132,7 @@ public class ItemEntityEvents
 							if (entity instanceof LivingEntity)
 								((LivingEntity) entity).setHealth(0);
 
-							entity.posY=0;
+							entity.setPosition(entity.getPosX(), 0, entity.getPosZ());
 							entity.remove();
 							player.setHeldItem(Hand.MAIN_HAND, stack);
 							event.setCanceled(true);
@@ -172,16 +172,16 @@ public class ItemEntityEvents
 
 									if (distance < 6)
 									{
-										double tempX = entity.posX;
-										double tempY = entity.posY;
-										double tempZ = entity.posZ;
+										double tempX = entity.getPosX();
+										double tempY = entity.getPosY();
+										double tempZ = entity.getPosZ();
 										entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
 										world.addEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
 									} else
 									{
-										entityHeld.setPosition(entity.posX, entity.posY, entity.posZ);
+										entityHeld.setPosition(entity.getPosX(), entity.getPosY(), entity.getPosZ());
 										world.addEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 									}
@@ -191,16 +191,16 @@ public class ItemEntityEvents
 									ItemEvents.sendPacket(player, 9, 0);
 									event.setCanceled(true);
 									event.setCancellationResult(ActionResultType.FAIL);
-									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 								} else
 								{
-									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 									return;
 								}
 							}
 						} else
 						{
-							world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 							return;
 						}
 					}

@@ -144,7 +144,7 @@ public class ScriptReader
 							JsonObject nbt = (JsonObject) render.get("nbt");
 							JsonElement translation = render.get("translation");
 							JsonElement rotation = render.get("rotation");
-							JsonElement scaled = render.get("scaled");
+							JsonElement scaled = render.get("scale");
 							JsonElement rotationLeftArm = render.get("rotation_left_arm");
 							JsonElement rotationRightArm = render.get("rotation_right_arm");
 							JsonElement renderLeftArm = render.get("render_left_arm");

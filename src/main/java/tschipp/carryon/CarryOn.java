@@ -20,6 +20,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.forgespi.language.IModInfo;
 import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.scripting.ScriptReader;
@@ -35,10 +36,9 @@ import tschipp.carryon.proxy.ServerProxy;
 public class CarryOn
 {
 
-	public static IProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new ServerProxy());
+	public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
 	public static final String MODID = "carryon";
-	public static final String VERSION = "1.12.2";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
 	public static final String DEPENDENCIES = "required-after:forge@[13.20.1.2386,);after:gamestages;";
 	public static final String CERTIFICATE_FINGERPRINT = "55e88f24d04398481ae6f1ce76f65fd776f14227";
@@ -47,6 +47,7 @@ public class CarryOn
 	public static boolean FINGERPRINT_VIOLATED = false;
 
 	public static SimpleChannel network;
+	public static IModInfo info;
 
 	public CarryOn()
 	{
@@ -58,13 +59,15 @@ public class CarryOn
 		Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-client.toml"));
 		Configs.loadConfig(Configs.SERVER_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));
 
+		info = ModLoadingContext.get().getActiveContainer().getModInfo();
 	}
 
 	private void setup(final FMLCommonSetupEvent event)
 	{
+		String version = info.getVersion().toString();
 		// PreInitevent.
 		ScriptReader.preInit();
-		CarryOn.network = NetworkRegistry.newSimpleChannel(new ResourceLocation(CarryOn.MODID, "carryonpackets"), () -> CarryOn.VERSION, s -> true, s -> true);
+		CarryOn.network = NetworkRegistry.newSimpleChannel(new ResourceLocation(CarryOn.MODID, "carryonpackets"), () -> version, version::equals, version::equals);
 
 		// CLIENT PACKETS
 		CarryOn.network.registerMessage(0, CarrySlotPacket.class, CarrySlotPacket::toBytes, CarrySlotPacket::new, CarrySlotPacket::handle);
@@ -73,14 +76,12 @@ public class CarryOn
 		// SERVER PACKETS
 		CarryOn.network.registerMessage(2, SyncKeybindPacket.class, SyncKeybindPacket::toBytes, SyncKeybindPacket::new, SyncKeybindPacket::handle);
 
-		
 		RegistrationHandler.regCommonEvents();
 
 		// Init
 		ScriptReader.parseScripts();
 		RegistrationHandler.regOverrideList();
 		RegistrationHandler.regCaps();
-		
 
 		proxy.setup(event);
 	}

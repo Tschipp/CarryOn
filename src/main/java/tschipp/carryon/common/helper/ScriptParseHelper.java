@@ -88,9 +88,9 @@ public class ScriptParseHelper
 		return matching;
 	}
 	
-	public static double[] getXYZArray(String s)
+	public static float[] getXYZArray(String s)
 	{
-		double[] d = new double[3];
+		float[] d = new float[3];
 		d[0] = getValueFromString(s, "x");
 		d[1] = getValueFromString(s, "y");
 		d[2] = getValueFromString(s, "z");
@@ -99,17 +99,17 @@ public class ScriptParseHelper
 	}
 	
 
-	public static double[] getscaled(String s)
+	public static float[] getScaled(String s)
 	{
-		double[] d = new double[3];
-		d[0] = getscaledValueFromString(s, "x");
-		d[1] = getscaledValueFromString(s, "y");
-		d[2] = getscaledValueFromString(s, "z");
+		float[] d = new float[3];
+		d[0] = getScaledValueFromString(s, "x");
+		d[1] = getScaledValueFromString(s, "y");
+		d[2] = getScaledValueFromString(s, "z");
 
 		return d;
 	}
 
-	public static double getscaledValueFromString(String toGetFrom, String key)
+	public static float getScaledValueFromString(String toGetFrom, String key)
 	{
 		if(toGetFrom == null)
 			return 1;
@@ -119,12 +119,12 @@ public class ScriptParseHelper
 		{
 			if (string.contains(key) && string.contains("="))
 			{
-				double numb = 1;
+				float numb = 1;
 				string = string.replace(key + "=", "");
 
 				try
 				{
-					numb = Double.parseDouble(string);
+					numb = Float.parseFloat(string);
 				}
 				catch (Exception e)
 				{
@@ -188,7 +188,7 @@ public class ScriptParseHelper
 		return x && y && z;
 	}
 
-	public static double getValueFromString(String toGetFrom, String key)
+	public static float getValueFromString(String toGetFrom, String key)
 	{
 		if(toGetFrom == null)
 			return 0;
@@ -198,12 +198,12 @@ public class ScriptParseHelper
 		{
 			if (string.contains(key) && string.contains("="))
 			{
-				double numb = 0;
+				float numb = 0;
 				string = string.replace(key + "=", "");
 
 				try
 				{
-					numb = Double.parseDouble(string);
+					numb = Float.parseFloat(string);
 				}
 				catch (Exception e)
 				{

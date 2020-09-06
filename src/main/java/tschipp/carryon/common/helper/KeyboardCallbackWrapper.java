@@ -14,7 +14,7 @@ public class KeyboardCallbackWrapper
 
 	public void setup(Minecraft mc)
 	{
-		oldCallback = GLFW.glfwSetKeyCallback(mc.mainWindow.getHandle(), this::keyCallback);
+		oldCallback = GLFW.glfwSetKeyCallback(mc.getMainWindow().getHandle(), this::keyCallback);
 	}
 
 	private void keyCallback(long window, int key, int scancode, int action, int mods)

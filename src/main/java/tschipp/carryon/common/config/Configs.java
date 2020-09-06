@@ -62,7 +62,7 @@ public class Configs {
 	}
 	
 	@SubscribeEvent
-	public static void onChange(final ModConfig.ConfigReloading event)
+	public static void onChange(final ModConfig.Reloading event)
 	{
 		if(event.getConfig().getModId().equals(CarryOn.MODID))
 		{
@@ -344,7 +344,10 @@ public class Configs {
 			    					"enderstorage:*",
 			    					"betterstorage:*",
 			    					"practicallogistics2:*",
-			    					"wearablebackpacks:*"
+			    					"wearablebackpacks:*",
+			    					"rftools:screen",
+			    					"rftools:creative_screen",
+			    					
 
 			    			}), (obj) -> obj instanceof String ? true : false);
 			
@@ -366,7 +369,9 @@ public class Configs {
 									"animania:hedgehog*",
 									"animania:cart",
 									"animania:wagon",
-									"mynko:*"
+									"mynko:*",
+									"pixelmon:*",
+									"mocreatures:*"
 							}), (obj) -> obj instanceof String ? true : false);
 			
 			forbiddenStacking = s
