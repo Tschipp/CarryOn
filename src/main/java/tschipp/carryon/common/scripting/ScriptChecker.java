@@ -65,8 +65,8 @@ public class ScriptChecker
 		float height = entity.getHeight();
 		float width = entity.getWidth();
 		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;
-		CompoundNBT tag = new CompoundNBT();
-		entity.deserializeNBT(tag);
+		CompoundNBT tag = entity.serializeNBT();
+		
 
 		boolean isAllowed = Settings.useWhitelistEntities.get() ? ListHandler.isAllowed(entity) : !ListHandler.isForbidden(entity);
 
@@ -87,7 +87,7 @@ public class ScriptChecker
 
 	public static boolean matchesAll(CarryOnOverride override, String name, float height, float width, float health, CompoundNBT tag)
 	{
-		boolean matchname = override.getTypeNameEntity() == null ? true : name.equals(override.getTypeNameEntity());
+		boolean matchname = override.getTypeNameEntity().isEmpty() ? true : name.equals(override.getTypeNameEntity());
 		boolean matchheight = ScriptParseHelper.matches(height, override.getTypeHeight());
 		boolean matchwidth = ScriptParseHelper.matches(width, override.getTypeWidth());
 		boolean matchhealth = ScriptParseHelper.matches(health, override.getTypeHealth());
@@ -110,14 +110,14 @@ public class ScriptChecker
 	public static boolean fulfillsConditions(CarryOnOverride override, PlayerEntity player)
 	{
 		AdvancementManager manager = ((ServerPlayerEntity) player).server.getAdvancementManager();
-		Advancement adv = manager.getAdvancement(new ResourceLocation((override.getConditionAchievement()) == null ? "" : override.getConditionAchievement()));
+		Advancement adv = manager.getAdvancement(new ResourceLocation((override.getConditionAchievement()).isEmpty() ? "" : override.getConditionAchievement()));
 
 		boolean achievement = adv == null ? true : ((ServerPlayerEntity) player).getAdvancements().getProgress(adv).isDone();
 		boolean gamemode = ScriptParseHelper.matches(((ServerPlayerEntity) player).interactionManager.getGameType().getID(), override.getConditionGamemode());
 		boolean gamestage = true;
 		if (ModList.get().isLoaded("gamestages"))
 		{
-			if (override.getConditionGamestage() != null)
+			if (!override.getConditionGamestage().isEmpty())
 			{
 				try
 				{

@@ -45,35 +45,39 @@ public class CarrySlotPacket
 
 	public void handle(Supplier<NetworkEvent.Context> ctx)
 	{
-		ctx.get().enqueueWork(() -> {
+		if (ctx.get().getDirection().getReceptionSide().isClient())
+		{
+			ctx.get().enqueueWork(() -> {
 
-			World world = CarryOn.proxy.getWorld();
+				World world = CarryOn.proxy.getWorld();
 
-			if (world != null)
-			{
-				Entity e = world.getEntityByID(entityid);
-
-				if (e != null && e instanceof PlayerEntity)
+				if (world != null)
 				{
-					PlayerEntity player = (PlayerEntity) e;
+					Entity e = world.getEntityByID(entityid);
 
-					ctx.get().setPacketHandled(true);
-					
-					if (slot >= 9)
+					if (e != null && e instanceof PlayerEntity)
 					{
-						player.getPersistentData().remove("carrySlot");
-						player.getPersistentData().remove("overrideKey");
-					} else
-					{
+						PlayerEntity player = (PlayerEntity) e;
 
-						player.getPersistentData().putInt("carrySlot", slot);
-						if (carryOverride != 0)
-							ScriptChecker.setCarryOnOverride(player, carryOverride);
+						ctx.get().setPacketHandled(true);
+
+						if (slot >= 9)
+						{
+							player.getPersistentData().remove("carrySlot");
+							player.getPersistentData().remove("overrideKey");
+						}
+						else
+						{
+
+							player.getPersistentData().putInt("carrySlot", slot);
+							if (carryOverride != 0)
+								ScriptChecker.setCarryOnOverride(player, carryOverride);
+						}
 					}
-				}
 
-			}
-		});
+				}
+			});
+		}
 	}
 
 }

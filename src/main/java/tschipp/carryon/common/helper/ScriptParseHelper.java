@@ -21,7 +21,7 @@ public class ScriptParseHelper
 
 	public static boolean matches(double number, String cond)
 	{
-		if (cond == null)
+		if (cond == null || cond.isEmpty())
 			return true;
 
 		try
@@ -60,7 +60,7 @@ public class ScriptParseHelper
 
 	public static boolean matches(Block block, String cond)
 	{
-		if (cond == null)
+		if (cond == null || cond.isEmpty())
 			return true;
 
 		Block toCheck = StringParser.getBlock(cond);
@@ -72,7 +72,7 @@ public class ScriptParseHelper
 
 	public static boolean matches(CompoundNBT toCheck, CompoundNBT toMatch)
 	{
-		if (toCheck == null || toMatch == null)
+		if (toCheck == null || toMatch == null || toMatch.isEmpty())
 			return true;
 
 		boolean matching = true;
@@ -111,7 +111,7 @@ public class ScriptParseHelper
 
 	public static float getScaledValueFromString(String toGetFrom, String key)
 	{
-		if(toGetFrom == null)
+		if(toGetFrom == null || toGetFrom.isEmpty())
 			return 1;
 		
 		String[] s = toGetFrom.split(",");
@@ -139,7 +139,7 @@ public class ScriptParseHelper
 
 	public static boolean matchesScore(PlayerEntity player, String cond)
 	{
-		if (cond == null)
+		if (cond == null || cond.isEmpty())
 			return true;
 
 		Scoreboard score = player.getWorldScoreboard();
@@ -174,7 +174,7 @@ public class ScriptParseHelper
 
 	public static boolean matches(BlockPos pos, String cond)
 	{
-		if (cond == null)
+		if (cond == null || cond.isEmpty())
 			return true;
 
 		BlockPos blockpos = new BlockPos(getValueFromString(cond, "x"), getValueFromString(cond, "y"), getValueFromString(cond, "z"));
@@ -190,7 +190,7 @@ public class ScriptParseHelper
 
 	public static float getValueFromString(String toGetFrom, String key)
 	{
-		if(toGetFrom == null)
+		if(toGetFrom == null || toGetFrom.isEmpty())
 			return 0;
 		
 		String[] s = toGetFrom.split(",");
@@ -218,7 +218,7 @@ public class ScriptParseHelper
 	
 	public static boolean hasEffects(PlayerEntity player, String cond)
 	{
-		if(cond == null)
+		if(cond == null || cond.isEmpty())
 			return true;
 		
 		Collection<EffectInstance> effects = player.getActivePotionEffects();
@@ -274,7 +274,7 @@ public class ScriptParseHelper
 
 	public static boolean matches(Material material, String cond)
 	{
-		if (cond == null)
+		if (cond == null || cond.isEmpty())
 			return true;
 
 		switch (cond)

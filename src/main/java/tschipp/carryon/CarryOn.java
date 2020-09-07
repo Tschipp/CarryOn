@@ -23,7 +23,6 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.forgespi.language.IModInfo;
 import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.handler.RegistrationHandler;
-import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 import tschipp.carryon.network.client.ScriptReloadPacket;
 import tschipp.carryon.network.server.SyncKeybindPacket;
@@ -57,7 +56,7 @@ public class CarryOn
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Configs.SERVER_CONFIG);
 
 		Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-client.toml"));
-		Configs.loadConfig(Configs.SERVER_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));
+//		Configs.loadConfig(Configs.SERVER_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));
 
 		info = ModLoadingContext.get().getActiveContainer().getModInfo();
 	}
@@ -66,7 +65,6 @@ public class CarryOn
 	{
 		String version = info.getVersion().toString();
 		// PreInitevent.
-		ScriptReader.preInit();
 		CarryOn.network = NetworkRegistry.newSimpleChannel(new ResourceLocation(CarryOn.MODID, "carryonpackets"), () -> version, version::equals, version::equals);
 
 		// CLIENT PACKETS
@@ -79,7 +77,6 @@ public class CarryOn
 		RegistrationHandler.regCommonEvents();
 
 		// Init
-		ScriptReader.parseScripts();
 		RegistrationHandler.regOverrideList();
 		RegistrationHandler.regCaps();
 

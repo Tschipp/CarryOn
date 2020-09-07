@@ -261,7 +261,7 @@ public class Configs {
 			s.comment("Blacklist");
 			
 			forbiddenTiles = s
-					.comment("Tile Entities that cannot be picked up")
+					.comment("Blocks that cannot be picked up")
 					.defineList("blacklist.forbiddenTiles", Arrays.asList(new String[]
 			    			{
 			    					"minecraft:end_portal",

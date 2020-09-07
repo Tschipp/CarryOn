@@ -60,7 +60,9 @@ import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
+import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
+import tschipp.carryon.network.client.ScriptReloadPacket;
 
 @EventBusSubscriber(modid = CarryOn.MODID)
 public class ItemEvents
@@ -85,14 +87,14 @@ public class ItemEvents
 				{
 					String command = override.getCommandPlace();
 
-					if (command != null)
+					if (command != null && !command.isEmpty())
 						player.getServer().getCommandManager().handleCommand(player.getServer().getCommandSource(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
 			}
 		}
 
 	}
-
+	
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onItemDropped(EntityJoinWorldEvent event)
 	{
@@ -171,6 +173,10 @@ public class ItemEvents
 				}
 			}
 
+		}
+		if(event.getPlayer() instanceof ServerPlayerEntity)
+		{
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity)event.getPlayer()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
 		}
 	}
 

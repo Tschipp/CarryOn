@@ -23,7 +23,7 @@ public class PositionProvider implements ICapabilitySerializable<CompoundNBT>
 			return (LazyOptional<T>) LazyOptional.of(() -> {
 				return new TEPosition();
 			});
-		return null;
+		return LazyOptional.empty();
 	}
 
 	@Override

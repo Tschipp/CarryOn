@@ -28,14 +28,17 @@ public class SyncKeybindPacket
 
 	public void handle(Supplier<NetworkEvent.Context> ctx)
 	{
-		ctx.get().enqueueWork(() -> {
-			
-			ServerPlayerEntity player = ctx.get().getSender();
+		if (ctx.get().getDirection().getReceptionSide().isServer())
+		{
+			ctx.get().enqueueWork(() -> {
 
-			CarryOnKeybinds.setKeyPressed(player, pressed);
-			
-			ctx.get().setPacketHandled(true);
-		});
+				ServerPlayerEntity player = ctx.get().getSender();
+
+				CarryOnKeybinds.setKeyPressed(player, pressed);
+
+				ctx.get().setPacketHandled(true);
+			});
+		}
 	}
 
 }

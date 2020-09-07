@@ -40,16 +40,19 @@ public class CarryRenderHelper
 
 	public static void performOverrideTransformation(MatrixStack matrix, CarryOnOverride override)
 	{
+		int perspective = getPerspective();
+
 		float[] translation = ScriptParseHelper.getXYZArray(override.getRenderTranslation());
 		float[] rotation = ScriptParseHelper.getXYZArray(override.getRenderRotation());
 		float[] scaled = ScriptParseHelper.getScaled(override.getRenderScaled());
-
-		matrix.translate(translation[0], translation[1], translation[2]);
+			
 		Quaternion rot = Vector3f.XP.rotationDegrees(rotation[0]);
-		rot.multiply(Vector3f.YP.rotationDegrees(rotation[1]));
+		rot.multiply(Vector3f.YP.rotationDegrees(rotation[1]));		
 		rot.multiply(Vector3f.ZP.rotationDegrees(rotation[2]));
-
 		matrix.rotate(rot);
+		
+		matrix.translate(translation[0], translation[1], perspective == 1 && override.isBlock() ? -translation[2] : translation[2]);		
+
 		matrix.scale(scaled[0], scaled[1], scaled[2]);
 	}
 
@@ -61,22 +64,22 @@ public class CarryRenderHelper
 
 			if (override instanceof ItemStack)
 			{
-				Minecraft.getInstance().getItemRenderer().renderItem((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model); //Note: I'm not sure what the second to last argument does, but it seems to work like this
+				Minecraft.getInstance().getItemRenderer().renderItem((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model); 
 				return;
 			}
 		}
-		
+
 		Minecraft.getInstance().getItemRenderer().renderItem(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
 	}
-	
+
 	public static int getPerspective()
 	{
 		boolean isThirdPerson = !Minecraft.getInstance().gameSettings.func_243230_g().func_243192_a();
 		boolean isThirdPersonReverse = Minecraft.getInstance().gameSettings.func_243230_g().func_243193_b();
-		
-		if(!isThirdPerson && !isThirdPersonReverse)
+
+		if (!isThirdPerson && !isThirdPersonReverse)
 			return 0;
-		if(isThirdPerson && !isThirdPersonReverse)
+		if (isThirdPerson && !isThirdPersonReverse)
 			return 1;
 		return 2;
 	}

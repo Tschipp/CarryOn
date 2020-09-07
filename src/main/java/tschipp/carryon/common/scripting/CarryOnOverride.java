@@ -1,60 +1,226 @@
 package tschipp.carryon.common.scripting;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
+import tschipp.carryon.common.helper.InvalidConfigException;
 
 public class CarryOnOverride
 {
 	// BLOCKS
-	private CompoundNBT typeBlockTag;
-	private String typeNameBlock;
-	private String typeMaterial;
-	private String typeHardness;
-	private String typeResistance;
+	private CompoundNBT typeBlockTag = new CompoundNBT();
+	private String typeNameBlock = "";
+	private String typeMaterial = "";
+	private String typeHardness = "";
+	private String typeResistance = "";
 
 	// ENTITIES
 	private CompoundNBT typeEntityTag;
-	private String typeNameEntity;
-	private String typeHeight;
-	private String typeWidth;
-	private String typeHealth;
+	private String typeNameEntity = "";
+	private String typeHeight = "";
+	private String typeWidth = "";
+	private String typeHealth = "";
 
 	// CONDITIONS
-	private String conditionGamestage;
-	private String conditionAchievement;
-	private String conditionXp;
-	private String conditionGamemode;
-	private String conditionScoreboard;
-	private String conditionPosition;
-	private String conditionEffects;
+	private String conditionGamestage = "";
+	private String conditionAchievement = "";
+	private String conditionXp = "";
+	private String conditionGamemode = "";
+	private String conditionScoreboard = "";
+	private String conditionPosition = "";
+	private String conditionEffects = "";
 
 	// RENDER
-	private String renderNameBlock;
-	private String renderNameEntity;
-	private CompoundNBT renderNBT;
-	private String renderTranslation;
-	private String renderRotation;
-	private String renderscaled;
-	private String renderRotationLeftArm;
-	private String renderRotationRightArm;
+	private String renderNameBlock = "";
+	private String renderNameEntity = "";
+	private CompoundNBT renderNBT = new CompoundNBT();
+	private String renderTranslation = "";
+	private String renderRotation = "";
+	private String renderscaled = "";
+	private String renderRotationLeftArm = "";
+	private String renderRotationRightArm = "";
 	private boolean renderLeftArm = true;
 	private boolean renderRightArm = true;
-	
-	//EFFECTS
-	private String commandInit;
-	private String commandLoop;
-	private String commandPlace;
+
+	// EFFECTS
+	private String commandInit = "";
+	private String commandLoop = "";
+	private String commandPlace = "";
 
 	private boolean isBlock;
 	private boolean isEntity;
-	private String resourceLocation;
-	
+	private String resourceLocation = "";
+	public boolean isInvalid = false;
 
 	public CarryOnOverride(String path)
 	{
 		this.resourceLocation = path;
 	}
-	
+
+	public CarryOnOverride(JsonElement jsonElem, ResourceLocation loc)
+	{
+		boolean errored = false;
+		resourceLocation = loc.toString();
+
+		if (jsonElem != null && jsonElem.isJsonObject())
+		{
+			try
+			{
+				JsonObject json = jsonElem.getAsJsonObject();
+				JsonObject object = (JsonObject) json.get("object");
+				JsonObject conditions = (JsonObject) json.get("conditions");
+				JsonObject render = (JsonObject) json.get("render");
+				JsonObject effects = (JsonObject) json.get("effects");
+
+				if ((object != null && conditions != null) || (object != null && render != null) || (object != null && effects != null))
+				{
+					JsonObject block = (JsonObject) object.get("block");
+					JsonObject entity = (JsonObject) object.get("entity");
+
+					if ((block == null && entity == null) || (block != null && entity != null))
+						errored = true;
+
+					if (!errored)
+					{
+						if (block != null)
+						{
+							setBlock(true);
+							JsonElement name = block.get("name");
+							JsonElement material = block.get("material");
+							JsonElement hardness = block.get("hardness");
+							JsonElement resistance = block.get("resistance");
+							JsonObject nbt = (JsonObject) block.get("nbt");
+
+							if (name != null)
+								setTypeNameBlock(name.getAsString());
+							if (material != null)
+								setTypeMaterial(material.getAsString());
+							if (hardness != null)
+								setTypeHardness(hardness.getAsString());
+							if (resistance != null)
+								setTypeResistance(resistance.getAsString());
+							if (nbt != null)
+								setTypeBlockTag(JsonToNBT.getTagFromJson(nbt.toString()));
+						}
+						else
+						{
+							setEntity(true);
+							JsonElement name = entity.get("name");
+							JsonElement health = entity.get("health");
+							JsonElement height = entity.get("height");
+							JsonElement width = entity.get("width");
+							JsonObject nbt = (JsonObject) entity.get("nbt");
+
+							if (name != null)
+								setTypeNameEntity(name.getAsString());
+							if (health != null)
+								setTypeHealth(health.getAsString());
+							if (height != null)
+								setTypeHeight(height.getAsString());
+							if (width != null)
+								setTypeWidth(width.getAsString());
+							if (nbt != null)
+								setTypeEntityTag(JsonToNBT.getTagFromJson(nbt.toString()));
+						}
+
+						if (conditions != null)
+						{
+							JsonElement gamestage = conditions.get("gamestage");
+							JsonElement achievement = conditions.get("advancement");
+							JsonElement xp = conditions.get("xp");
+							JsonElement gamemode = conditions.get("gamemode");
+							JsonElement scoreboard = conditions.get("scoreboard");
+							JsonElement position = conditions.get("position");
+							JsonElement potionEffects = conditions.get("effects");
+
+							if (gamestage != null)
+								setConditionGamestage(gamestage.getAsString());
+							if (achievement != null)
+								setConditionAchievement(achievement.getAsString());
+							if (xp != null)
+								setConditionXp(xp.getAsString());
+							if (gamemode != null)
+								setConditionGamemode(gamemode.getAsString());
+							if (scoreboard != null)
+								setConditionScoreboard(scoreboard.getAsString());
+							if (position != null)
+								setConditionPosition(position.getAsString());
+							if (potionEffects != null)
+								setConditionEffects(potionEffects.getAsString());
+						}
+
+						if (render != null)
+						{
+							JsonElement name_block = render.get("name_block");
+							JsonElement name_entity = render.get("name_entity");
+							JsonObject nbt = (JsonObject) render.get("nbt");
+							JsonElement translation = render.get("translation");
+							JsonElement rotation = render.get("rotation");
+							JsonElement scaled = render.get("scale");
+							JsonElement rotationLeftArm = render.get("rotation_left_arm");
+							JsonElement rotationRightArm = render.get("rotation_right_arm");
+							JsonElement renderLeftArm = render.get("render_left_arm");
+							JsonElement renderRightArm = render.get("render_right_arm");
+
+							if (name_block != null)
+								setRenderNameBlock(name_block.getAsString());
+							if (name_entity != null)
+								setRenderNameEntity(name_entity.getAsString());
+							if (translation != null)
+								setRenderTranslation(translation.getAsString());
+							if (rotation != null)
+								setRenderRotation(rotation.getAsString());
+							if (scaled != null)
+								setRenderscaled(scaled.getAsString());
+							if (nbt != null)
+								setRenderNBT(JsonToNBT.getTagFromJson(nbt.toString()));
+							if (rotationLeftArm != null)
+								setRenderRotationLeftArm(rotationLeftArm.getAsString());
+							if (rotationRightArm != null)
+								setRenderRotationRightArm(rotationRightArm.getAsString());
+							if (renderLeftArm != null)
+								setRenderLeftArm(renderLeftArm.getAsBoolean());
+							if (renderRightArm != null)
+								setRenderRightArm(renderRightArm.getAsBoolean());
+						}
+
+						if (effects != null)
+						{
+							JsonElement commandInit = effects.get("commandPickup");
+							JsonElement commandLoop = effects.get("commandLoop");
+							JsonElement commandPlace = effects.get("commandPlace");
+
+							if (commandInit != null)
+								setCommandInit(commandInit.getAsString());
+							if (commandLoop != null)
+								setCommandLoop(commandLoop.getAsString());
+							if (commandPlace != null)
+								setCommandPlace(commandPlace.getAsString());
+						}
+					}
+					else
+						isInvalid = true;
+				}
+			}
+			catch (Exception e)
+			{
+				isInvalid = true;
+			}
+		}
+		else
+			isInvalid = true;
+		
+		if(!isBlock && !isEntity)
+			isInvalid = true;
+		
+		if(isInvalid)
+			new InvalidConfigException("The script parsing for " + resourceLocation + " has failed! Please double check!").printException();
+	}
+
 	public String getCommandInit()
 	{
 		return commandInit;
@@ -133,13 +299,13 @@ public class CarryOnOverride
 		result = prime * result + ((resourceLocation == null) ? 0 : resourceLocation.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return "Code: " + this.hashCode();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -364,8 +530,6 @@ public class CarryOnOverride
 		return true;
 	}
 
-
-
 	public boolean isBlock()
 	{
 		return isBlock;
@@ -501,7 +665,6 @@ public class CarryOnOverride
 		this.typeBlockTag = typeBlockTag;
 	}
 
-
 	public void setTypeNameBlock(String typeNameBlock)
 	{
 		this.typeNameBlock = typeNameBlock;
@@ -607,8 +770,6 @@ public class CarryOnOverride
 		this.renderscaled = renderscaled;
 	}
 
-
-
 	public String getCommandPlace()
 	{
 		return commandPlace;
@@ -618,7 +779,7 @@ public class CarryOnOverride
 	{
 		this.commandPlace = commandPlace;
 	}
-	
+
 	public void serialize(PacketBuffer buf)
 	{
 		// BLOCKS
@@ -655,8 +816,8 @@ public class CarryOnOverride
 		buf.writeString(renderRotationRightArm);
 		buf.writeBoolean(renderLeftArm);
 		buf.writeBoolean(renderRightArm);
-		
-		//EFFECTS
+
+		// EFFECTS
 		buf.writeString(commandInit);
 		buf.writeString(commandLoop);
 		buf.writeString(commandPlace);
@@ -665,7 +826,7 @@ public class CarryOnOverride
 		buf.writeBoolean(isEntity);
 		buf.writeString(resourceLocation);
 	}
-	
+
 	public static CarryOnOverride deserialize(PacketBuffer buf)
 	{
 		CarryOnOverride override = new CarryOnOverride("");
@@ -702,8 +863,8 @@ public class CarryOnOverride
 		override.renderRotationRightArm = buf.readString();
 		override.renderLeftArm = buf.readBoolean();
 		override.renderRightArm = buf.readBoolean();
-		
-		//EFFECTS
+
+		// EFFECTS
 		override.commandInit = buf.readString();
 		override.commandLoop = buf.readString();
 		override.commandPlace = buf.readString();
@@ -711,7 +872,7 @@ public class CarryOnOverride
 		override.isBlock = buf.readBoolean();
 		override.isEntity = buf.readBoolean();
 		override.resourceLocation = buf.readString();
-		
+
 		return override;
 	}
 

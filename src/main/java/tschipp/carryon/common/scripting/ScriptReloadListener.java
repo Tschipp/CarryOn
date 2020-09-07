@@ -35,9 +35,10 @@ public class ScriptReloadListener extends JsonReloadListener
 	{
 		ScriptReader.OVERRIDES.clear();
 
-		objects.forEach((path, jsonObj) -> {
-			CarryOnOverride override = GSON.fromJson(jsonObj, CarryOnOverride.class);
-			ScriptReader.OVERRIDES.put(override.hashCode(), override);
+		objects.forEach((path, jsonElem) -> {
+			CarryOnOverride override = new CarryOnOverride(jsonElem, path);
+			if(!override.isInvalid)
+				ScriptReader.OVERRIDES.put(override.hashCode(), override);
 		});
 
 		if (EffectiveSide.get().isServer() && ServerLifecycleHooks.getCurrentServer() != null)

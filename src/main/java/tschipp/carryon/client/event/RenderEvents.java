@@ -253,7 +253,7 @@ public class RenderEvents
 			matrix.translate(0, -0.5, -1);
 			RenderSystem.enableBlend();
 			RenderSystem.disableCull();
-			
+
 			if (Settings.facePlayer.get() ? !isChest(block) : isChest(block))
 			{
 				matrix.rotate(Vector3f.YP.rotationDegrees(180));
@@ -271,12 +271,15 @@ public class RenderEvents
 			{
 				CarryRenderHelper.performOverrideTransformation(matrix, carryOverride);
 
-				Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
-				if (b != null)
+				if (!carryOverride.getRenderNameBlock().isEmpty())
 				{
-					ItemStack s = new ItemStack(b, 1);
-					s.setTag(carryOverride.getRenderNBT());
-					model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(s, world, player);
+					Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
+					if (b != null)
+					{
+						ItemStack s = new ItemStack(b, 1);
+						s.setTag(carryOverride.getRenderNBT());
+						model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(s, world, player);
+					}
 				}
 			}
 
@@ -339,12 +342,15 @@ public class RenderEvents
 				{
 					CarryRenderHelper.performOverrideTransformation(matrix, carryOverride);
 
-					Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
-					if (b != null)
+					if (!carryOverride.getRenderNameBlock().isEmpty())
 					{
-						ItemStack s = new ItemStack(b, 1);
-						s.setTag(carryOverride.getRenderNBT());
-						model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(s, world, player);
+						Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
+						if (b != null)
+						{
+							ItemStack s = new ItemStack(b, 1);
+							s.setTag(carryOverride.getRenderNBT());
+							model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(s, world, player);
+						}
 					}
 				}
 
@@ -524,8 +530,8 @@ public class RenderEvents
 		Pose pose = player.getPose();
 
 		applyGeneralTransformations(player, partialticks, matrix);
-		
-		if(perspective == 2)
+
+		if (perspective == 2)
 			matrix.translate(0, -1.6, 0.65);
 		else
 			matrix.translate(0, -1.6, -0.65);
@@ -542,7 +548,7 @@ public class RenderEvents
 
 		if (perspective == 2)
 			matrix.rotate(Vector3f.YP.rotationDegrees(180));
-		
+
 		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
 		matrix.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
 
@@ -550,11 +556,11 @@ public class RenderEvents
 		{
 			matrix.rotate(Vector3f.XN.rotationDegrees(90));
 			matrix.translate(0, -0.2 * height, 0);
-			
-			if(pose == Pose.FALL_FLYING)
-				matrix.translate(0, 0 , 0.2);
+
+			if (pose == Pose.FALL_FLYING)
+				matrix.translate(0, 0, 0.2);
 		}
-		
+
 	}
 
 	/*
@@ -595,9 +601,9 @@ public class RenderEvents
 				{
 					float[] rotLeft = null;
 					float[] rotRight = null;
-					if (overrider.getRenderRotationLeftArm() != null)
+					if (!overrider.getRenderRotationLeftArm().isEmpty())
 						rotLeft = ScriptParseHelper.getXYZArray(overrider.getRenderRotationLeftArm());
-					if (overrider.getRenderRotationRightArm() != null)
+					if (!overrider.getRenderRotationRightArm().isEmpty())
 						rotRight = ScriptParseHelper.getXYZArray(overrider.getRenderRotationRightArm());
 
 					boolean renderRight = overrider.isRenderRightArm();
