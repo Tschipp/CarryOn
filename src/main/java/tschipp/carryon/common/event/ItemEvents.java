@@ -539,7 +539,7 @@ public class ItemEvents
 	{
 		if (player instanceof ServerPlayerEntity)
 		{
-			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.getPosX(), player.getPosY(), player.getPosZ(), 128, player.world.func_234923_W_())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
+			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.getPosX(), player.getPosY(), player.getPosZ(), 128, player.world.getDimensionKey())), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(currentItem, player.getEntityId(), hash));
 
 			if (currentItem >= 9)

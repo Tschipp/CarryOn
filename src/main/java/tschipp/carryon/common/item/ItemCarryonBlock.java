@@ -138,7 +138,7 @@ public class ItemCarryonBlock extends Item
 //								}
 //							}
 
-							BlockSnapshot snapshot = BlockSnapshot.create(world.func_234923_W_(), world, pos2);
+							BlockSnapshot snapshot = BlockSnapshot.create(world.getDimensionKey(), world, pos2);
 							EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
 							MinecraftForge.EVENT_BUS.post(event);
 

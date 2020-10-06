@@ -74,8 +74,8 @@ public class CarryRenderHelper
 
 	public static int getPerspective()
 	{
-		boolean isThirdPerson = !Minecraft.getInstance().gameSettings.func_243230_g().func_243192_a();
-		boolean isThirdPersonReverse = Minecraft.getInstance().gameSettings.func_243230_g().func_243193_b();
+		boolean isThirdPerson = !Minecraft.getInstance().gameSettings.getPointOfView().func_243192_a(); //isThirdPerson
+		boolean isThirdPersonReverse = Minecraft.getInstance().gameSettings.getPointOfView().func_243193_b();
 
 		if (!isThirdPerson && !isThirdPersonReverse)
 			return 0;
