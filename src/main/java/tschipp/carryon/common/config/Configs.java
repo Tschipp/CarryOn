@@ -122,101 +122,104 @@ public class Configs {
 			c.comment("Settings");
 			s.comment("Settings");
 
+			s.push("settings");
+			c.push("settings");
 			
 			maxDistance = s
 					.comment("Maximum distance from where Blocks and Entities can be picked up")
-					.defineInRange("settings.maxDistance", 2.5, 0, Double.MAX_VALUE);
+					.defineInRange("maxDistance", 2.5, 0, Double.MAX_VALUE);
 			
 			maxEntityWidth = s
 					.comment("Max width of entities that can be picked up in survival mode")
-					.defineInRange("settings.maxEntityWidth", 1.5, 0, 10);
+					.defineInRange("maxEntityWidth", 1.5, 0, 10);
 			
 			maxEntityHeight = s
 					.comment("Max height of entities that can be picked up in survival mode")
-					.defineInRange("settings.maxEntityHeight", 1.5, 0, 10);
+					.defineInRange("maxEntityHeight", 1.5, 0, 10);
 			
 			maxEntityWidth = s
 					.comment("Max width of entities that can be picked up in survival mode")
-					.defineInRange("settings.maxEntityWidth", 1.5, 0, 10);
+					.defineInRange("maxEntityWidth", 1.5, 0, 10);
 			
 			blockSlownessMultiplier = s
 					.comment("Slowness multiplier for blocks")
-					.defineInRange("settings.blockSlownessMultiplier", 1, 0, Double.MAX_VALUE);
+					.defineInRange("blockSlownessMultiplier", 1, 0, Double.MAX_VALUE);
 			
 			entitySlownessMultiplier = s
 					.comment("Slowness multiplier for entities")
-					.defineInRange("settings.entitySlownessMultiplier", 1, 0, Double.MAX_VALUE);
+					.defineInRange("entitySlownessMultiplier", 1, 0, Double.MAX_VALUE);
 			
 			maxEntityStackLimit = s
 					.comment("Maximum stack limit for entities")
-					.defineInRange("settings.maxEntityStackLimit", 10, 1, Integer.MAX_VALUE);
+					.defineInRange("maxEntityStackLimit", 10, 1, Integer.MAX_VALUE);
 			
 			facePlayer = c
 					.comment("If the front of the Tile Entities should face the player or should face outward")
-					.define("settings.facePlayer", false);
+					.define("facePlayer", false);
 			
 			heavyTiles = s
 					.comment("More complex Tile Entities slow down the player more")
-					.define("settings.heavyTiles", true);
+					.define("heavyTiles", true);
 				
 			pickupAllBlocks = s
 					.comment("Allow all blocks to be picked up, not just Tile Entites")
-					.define("settings.pickupAllBlocks", false);
+					.define("pickupAllBlocks", false);
 			
 			slownessInCreative = s
 					.comment("Whether Blocks and Entities slow the creative player down when carried")
-					.define("settings.slownessInCreative", true);
+					.define("slownessInCreative", true);
 			
 			pickupHostileMobs = s
 					.comment("Whether hostile mobs should be able to picked up in survival mode")
-					.define("settings.pickupHostileMobs", false);
+					.define("pickupHostileMobs", false);
 			
 			heavyEntities = s
 					.comment("Larger Entities slow down the player more")
-					.define("settings.heavyEntities", true);
+					.define("heavyEntities", true);
 			
 			renderArms = c
 					.comment("Arms should render on sides when carrying")
-					.define("settings.renderArms", true);
+					.define("renderArms", true);
 			
 			allowBabies = s
 					.comment("Allow babies to be carried even when adult mob is blacklisted (or not whitelisted)")
-					.define("settings.allowBabies", false);
+					.define("allowBabies", false);
 			
 			useWhitelistBlocks = s
 					.comment("Use Whitelist instead of Blacklist for Blocks")
-					.define("settings.useWhitelistBlocks", false);
+					.define("useWhitelistBlocks", false);
 			
 			useWhitelistEntities = s
 					.comment("Use Whitelist instead of Blacklist for Entities")
-					.define("settings.useWhitelistEntities", false);
+					.define("useWhitelistEntities", false);
 			
 			useWhitelistStacking = s
 					.comment("Use Whitelist instead of Blacklist for Stacking")
-					.define("settings.useWhitelistStacking", false);
+					.define("useWhitelistStacking", false);
 			
 			hitWhileCarrying = s
 					.comment("Whether the player can hit blocks and entities while carrying or not")
-					.define("settings.hitWhileCarrying", false);
+					.define("hitWhileCarrying", false);
 			
 			dropCarriedWhenHit = s
 					.comment("Whether the player drops the carried object when hit or not")
-					.define("settings.dropCarriedWhenHit", false);
+					.define("dropCarriedWhenHit", false);
 			
 			useScripts = s
 					.comment("Use custom Pickup Scripts. Having this set to false, will not allow you to run scripts, but will increase your performance")
 					.worldRestart()
-					.define("settings.useScripts", false);
+					.define("useScripts", false);
 			
 			stackableEntities = s
 					.comment("Allows entities to be stacked using Carry On")
-					.define("settings.stackableEntities", true);
+					.define("stackableEntities", true);
 			
 			entitySizeMattersStacking = s
 					.comment("Whether entities' size matters when stacking or not")
-					.define("settings.stackableEntities", true);
+					.define("stackableEntities", true);
 			
-		
+			s.pop();
+			c.pop();
 			
 		}
 		
@@ -347,6 +350,7 @@ public class Configs {
 			    					"wearablebackpacks:*",
 			    					"rftools:screen",
 			    					"rftools:creative_screen",
+			    					"create:*"
 			    					
 
 			    			}), (obj) -> obj instanceof String ? true : false);
@@ -397,22 +401,13 @@ public class Configs {
 					.comment("Model Overrides based on NBT or on Meta. Advanced Users Only!")
 					.defineList("modeloverrides.overrides", Arrays.asList(new String[]
 			    			{
-			        				"minecraft:lit_furnace->minecraft:furnace",
 			        				"minecraft:hopper->(block)minecraft:hopper",
-			        				"minecraft:unpowered_comparator->(block)minecraft:unpowered_comparator",
-			        				"minecraft:unpowered_repeater->(block)minecraft:unpowered_repeater",
-			        				"minecraft:powered_comparator->(block)minecraft:powered_comparator",
-			        				"minecraft:powered_repeater->(block)minecraft:powered_repeater",
+			        				"minecraft:comparator->(block)minecraft:comparator",
+			        				"minecraft:repeater->(block)minecraft:repeater",
 			        				"minecraft:cauldron->(block)minecraft:cauldron",
 			        				"minecraft:brewing_stand->(item)minecraft:brewing_stand",
-			        				"minecraft:tallgrass;1->(item)minecraft:tallgrass;1",
-			        				"minecraft:tallgrass;2->(item)minecraft:tallgrass;2",
 			        				"minecraft:flower_pot->(block)minecraft:flower_pot",
-			        				"minecraft:leaves2->(item)minecraft:leaves2",
-			        				"minecraft:reeds->(block)minecraft:reeds",
-			        				"minecraft:daylight_detector_inverted->minecraft:daylight_detector",
-			        	            "minecraft:standing_sign->(item)minecraft:sign",
-			        				"minecraft:wall_sign->(item)minecraft:sign",
+			        				"minecraft:sugar_cane->(block)minecraft:sugar_cane",
 			        	            "minecraft:redstone_wire->(item)minecraft:redstone",
 			        	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
 			        	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
