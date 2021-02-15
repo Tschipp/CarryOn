@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -28,8 +29,11 @@ import tschipp.carryon.common.scripting.ScriptChecker;
 public class PickupHandler
 {
 
-	public static boolean canPlayerPickUpBlock(PlayerEntity player, @Nullable TileEntity tile, World world, BlockPos pos)
+	public static boolean canPlayerPickUpBlock(ServerPlayerEntity player, @Nullable TileEntity tile, World world, BlockPos pos)
 	{		
+		if(player.interactionManager.getGameType() == GameType.SPECTATOR || player.interactionManager.getGameType() == GameType.ADVENTURE)
+			return false;
+		
 		
 		BlockState state = world.getBlockState(pos);
 		CompoundNBT tag = new CompoundNBT();
@@ -75,7 +79,7 @@ public class PickupHandler
 						}
 						else if (Settings.pickupAllBlocks.get() ? true : tile != null)
 						{
-							return handleProtections((ServerPlayerEntity) player, world, pos, state);
+							return handleProtections(player, world, pos, state);
 						}
 
 					}
@@ -86,8 +90,11 @@ public class PickupHandler
 		return false;
 	}
 
-	public static boolean canPlayerPickUpEntity(PlayerEntity player, Entity toPickUp)
+	public static boolean canPlayerPickUpEntity(ServerPlayerEntity player, Entity toPickUp)
 	{
+		if(player.interactionManager.getGameType() == GameType.SPECTATOR || player.interactionManager.getGameType() == GameType.ADVENTURE)
+			return false;
+		
 		BlockPos pos = toPickUp.getPosition();
 
 		if (toPickUp instanceof PlayerEntity)
@@ -96,7 +103,7 @@ public class PickupHandler
 		CarryOnOverride override = ScriptChecker.inspectEntity(toPickUp);
 		if (override != null)
 		{
-			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((ServerPlayerEntity) player, toPickUp);
+			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections(player, toPickUp);
 		}
 		else
 		{
@@ -177,11 +184,27 @@ public class PickupHandler
 		return false;
 	}
 
+	public static class PickUpBlockEvent extends BlockEvent.BreakEvent
+	{
+		public PickUpBlockEvent(World world, BlockPos pos, BlockState state, PlayerEntity player)
+		{
+			super(world, pos, state, player);
+		}		
+	}
+	
+	public static class PickUpEntityEvent extends AttackEntityEvent
+	{
+		public PickUpEntityEvent(PlayerEntity player, Entity target)
+		{
+			super(player, target);
+		}
+	}
+	
 	private static boolean handleProtections(ServerPlayerEntity player, World world, BlockPos pos, BlockState state)
 	{
 		boolean breakable = true;
 
-		BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
+		PickUpBlockEvent event = new PickUpBlockEvent(world, pos, state, player);
 		MinecraftForge.EVENT_BUS.post(event);
 
 		if (event.isCanceled())
@@ -194,7 +217,7 @@ public class PickupHandler
 	{
 		boolean canPickup = true;
 
-		AttackEntityEvent event = new AttackEntityEvent(player, entity);
+		PickUpEntityEvent event = new PickUpEntityEvent(player, entity);
 		MinecraftForge.EVENT_BUS.post(event);
 
 		if (event.isCanceled())

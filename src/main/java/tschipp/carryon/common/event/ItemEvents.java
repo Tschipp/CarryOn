@@ -26,6 +26,7 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -55,6 +56,7 @@ import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
+import tschipp.carryon.common.handler.PickupHandler.PickUpBlockEvent;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.item.ItemCarryonEntity;
@@ -143,7 +145,7 @@ public class ItemEvents
 		}
 
 	}
-
+	
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
@@ -191,8 +193,12 @@ public class ItemEvents
 	public void serverLoad(FMLServerStartingEvent event)
 	{
 		CustomPickupOverrideHandler.initPickupOverrides();
-		ListHandler.initLists();
-
+	}
+	
+	@SubscribeEvent
+	public void reloadTags(TagsUpdatedEvent event)
+	{
+		ListHandler.initConfigLists();
 	}
 
 	@SubscribeEvent
@@ -286,10 +292,13 @@ public class ItemEvents
 		}
 	}
 
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		PlayerEntity player = event.getPlayer();
+		
+		if(event.isCanceled())
+			return;
 
 		if (!player.world.isRemote)
 		{
@@ -306,9 +315,11 @@ public class ItemEvents
 				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
 				TileEntity te = world.getTileEntity(pos);
-				if (PickupHandler.canPlayerPickUpBlock(player, te, world, pos))
+				if (PickupHandler.canPlayerPickUpBlock((ServerPlayerEntity) player, te, world, pos))
 				{
 					player.closeScreen();
+		            world.playEvent(1010, pos, 0);
+
 
 					if (ItemCarryonBlock.storeTileData(te, world, pos, state, stack))
 					{
@@ -517,7 +528,7 @@ public class ItemEvents
 	{
 		if (event.getConfig().getModId().equals(CarryOn.MODID))
 		{
-			ListHandler.initLists();
+			ListHandler.initConfigLists();
 
 			Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-client.toml"));
 			Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));

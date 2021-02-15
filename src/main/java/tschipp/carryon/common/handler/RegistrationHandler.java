@@ -60,7 +60,7 @@ public class RegistrationHandler
 	{
 		ModelOverridesHandler.initOverrides();
 		CustomPickupOverrideHandler.initPickupOverrides();
-		ListHandler.initLists();
+//		ListHandler.initConfigLists();
 	}
 	
 	public static void regCaps()

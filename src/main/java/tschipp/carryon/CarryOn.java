@@ -1,6 +1,7 @@
 package tschipp.carryon;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,9 +16,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.forgespi.language.IModInfo;
@@ -68,11 +69,11 @@ public class CarryOn
 		CarryOn.network = NetworkRegistry.newSimpleChannel(new ResourceLocation(CarryOn.MODID, "carryonpackets"), () -> version, version::equals, version::equals);
 
 		// CLIENT PACKETS
-		CarryOn.network.registerMessage(0, CarrySlotPacket.class, CarrySlotPacket::toBytes, CarrySlotPacket::new, CarrySlotPacket::handle);
-		CarryOn.network.registerMessage(1, ScriptReloadPacket.class, ScriptReloadPacket::toBytes, ScriptReloadPacket::new, ScriptReloadPacket::handle);
+		CarryOn.network.registerMessage(0, CarrySlotPacket.class, CarrySlotPacket::toBytes, CarrySlotPacket::new, CarrySlotPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+		CarryOn.network.registerMessage(1, ScriptReloadPacket.class, ScriptReloadPacket::toBytes, ScriptReloadPacket::new, ScriptReloadPacket::handle,  Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
 		// SERVER PACKETS
-		CarryOn.network.registerMessage(2, SyncKeybindPacket.class, SyncKeybindPacket::toBytes, SyncKeybindPacket::new, SyncKeybindPacket::handle);
+		CarryOn.network.registerMessage(2, SyncKeybindPacket.class, SyncKeybindPacket::toBytes, SyncKeybindPacket::new, SyncKeybindPacket::handle,  Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
 		RegistrationHandler.regCommonEvents();
 
@@ -91,13 +92,4 @@ public class CarryOn
 		event.getRegistry().register(RegistrationHandler.itemEntity);
 		event.getRegistry().register(RegistrationHandler.itemTile);
 	}
-
-	@SubscribeEvent
-	public void onFingerprintViolation(FMLFingerprintViolationEvent event)
-	{
-
-		LOGGER.error("WARNING! Invalid fingerprint detected! The file " + event.getSource().getName() + " may have been tampered with! If you didn't download the file from https://minecraft.curseforge.com/projects/carry-on or through any kind of mod launcher, immediately delete the file and re-download it from https://minecraft.curseforge.com/projects/carry-on");
-		FINGERPRINT_VIOLATED = true;
-	}
-
 }

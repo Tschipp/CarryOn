@@ -119,9 +119,10 @@ public class ItemCarryonBlock extends Item
 						{
 
 							BlockState placementState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
+							
+							BlockState actualState = placementState == null ? containedstate : placementState;
 
-							BlockState actualState = placementState;
-
+							//Attempted fix for #287
 //							for (IProperty<?> prop : placementState.getValues().keySet())
 //							{
 //								if (prop instanceof DirectionProperty)
@@ -184,8 +185,9 @@ public class ItemCarryonBlock extends Item
 								TileEntity tile = world.getTileEntity(pos2);
 								if (tile != null)
 								{
-									tile.deserializeNBT(getTileData(stack));
-									tile.setPos(pos2);
+									CompoundNBT data = getTileData(stack);
+									updateTileLocation(data, pos2);
+									tile.read(actualState, data);
 								}
 								clearTileData(stack);
 								player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
@@ -264,15 +266,15 @@ public class ItemCarryonBlock extends Item
 		if (stack.isEmpty())
 			return false;
 
-		CompoundNBT chest = new CompoundNBT();
+		CompoundNBT tileTag = new CompoundNBT();
 		if (tile != null)
-			chest = tile.write(chest);
+			tileTag = tile.write(tileTag);
 
 		CompoundNBT tag = stack.hasTag() ? stack.getTag() : new CompoundNBT();
 		if (tag.contains(TILE_DATA_KEY))
 			return false;
 
-		tag.put(TILE_DATA_KEY, chest);
+		tag.put(TILE_DATA_KEY, tileTag);
 
 		// ItemStack drop = new ItemStack(state.getBlock().getItemDropped(state,
 		// itemRand, 0), 1, state.getBlock().damageDropped(state));
@@ -283,6 +285,13 @@ public class ItemCarryonBlock extends Item
 		tag.putInt("stateid", Block.getStateId(state));
 		stack.setTag(tag);
 		return true;
+	}
+	
+	public static void updateTileLocation(CompoundNBT tag, BlockPos pos)
+	{
+		tag.putInt("x", pos.getX());
+		tag.putInt("y", pos.getY());
+		tag.putInt("z", pos.getZ());
 	}
 
 	public static void clearTileData(ItemStack stack)

@@ -2,9 +2,18 @@ package tschipp.carryon.common.handler;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.entity.Entity;
+import net.minecraft.state.Property;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.common.config.Configs.CustomPickupConditions;
@@ -74,28 +83,65 @@ public class CustomPickupOverrideHandler
 		}
 	}
 
+	private static final Function<Entry<Property<?>, Comparable<?>>, String> func = new Function<Entry<Property<?>, Comparable<?>>, String>() {
+		public String apply(@Nullable Entry<Property<?>, Comparable<?>> p_apply_1_)
+		{
+			if (p_apply_1_ == null)
+			{
+				return "<NULL>";
+			}
+			else
+			{
+				Property<?> property = p_apply_1_.getKey();
+				return property.getName() + "=" + this.func_235905_a_(property, p_apply_1_.getValue());
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		private <T extends Comparable<T>> String func_235905_a_(Property<T> p_235905_1_, Comparable<?> comp)
+		{
+			return p_235905_1_.getName((T) comp);
+		}
+	};
+
 	public static boolean hasSpecialPickupConditions(BlockState state)
 	{
 		if (!ModList.get().isLoaded("gamestages"))
 			return false;
 
-		String block = state.getBlock().getRegistryName().toString();
+		for(String cond : PICKUP_CONDITIONS.keySet())
+		{
+			BlockStateParser parser = new BlockStateParser(new StringReader(cond), false);
+			try
+			{
+				parser.parse(false);
+			}
+			catch (CommandSyntaxException e)
+			{
+			}
+			if(parser.getState() == state)
+				return true;
+		}
 		
-		boolean absolute = PICKUP_CONDITIONS.containsKey(block);
-
-		return absolute;
+		return false;
 	}
 
 	public static String getPickupCondition(BlockState state)
 	{
-		String block = state.getBlock().getRegistryName().toString();
-
-		String absolute = PICKUP_CONDITIONS.get(block);
-
-		if (absolute != null)
-			return absolute;
-		else
-			return null;
+		for(String cond : PICKUP_CONDITIONS.keySet())
+		{
+			BlockStateParser parser = new BlockStateParser(new StringReader(cond), false);
+			try
+			{
+				parser.parse(false);
+			}
+			catch (CommandSyntaxException e)
+			{
+			}
+			if(parser.getState() == state)
+				return PICKUP_CONDITIONS.get(cond);
+		}
+		return null;
 	}
 
 	public static boolean hasSpecialPickupConditions(Entity entity)

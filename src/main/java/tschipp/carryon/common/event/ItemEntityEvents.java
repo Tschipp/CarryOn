@@ -109,7 +109,7 @@ public class ItemEntityEvents
 					if (entity instanceof AnimalEntity)
 						((AnimalEntity) entity).clearLeashed(true, true);
 
-					if (PickupHandler.canPlayerPickUpEntity(player, entity))
+					if (PickupHandler.canPlayerPickUpEntity((ServerPlayerEntity) player, entity))
 					{
 						if (ItemCarryonEntity.storeEntityData(entity, world, stack))
 						{
@@ -132,6 +132,7 @@ public class ItemEntityEvents
 							if (entity instanceof LivingEntity)
 								((LivingEntity) entity).setHealth(0);
 
+							entity.removePassengers();
 							entity.setPosition(entity.getPosX(), 0, entity.getPosZ());
 							entity.remove();
 							player.setHeldItem(Hand.MAIN_HAND, stack);
@@ -148,7 +149,7 @@ public class ItemEntityEvents
 				if (entity.hurtResistantTime == 0 && entityHeld instanceof LivingEntity)
 				{
 
-					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && !entityHeld.isAlive() && !entity.isAlive())
+					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && entity.isAlive())
 					{
 
 						double sizeHeldEntity = entityHeld.getHeight() * entityHeld.getWidth();

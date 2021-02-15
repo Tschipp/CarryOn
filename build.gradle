@@ -92,12 +92,32 @@ repositories {
 	maven {
         url "https://maven.mcmoddev.com/"
     }
+	
+	flatDir {
+		dirs 'libs'
+	}
+	
+	maven {
+        url "https://www.cursemaven.com"
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 	
-	//compileOnly fg.deobf("net.darkhax.gamestages:GameStages-1.16.1:3.1.8")
+	implementation fg.deobf("net.darkhax.gamestages:GameStages-1.16.4:6.0.1")
+	implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.18")
+	implementation fg.deobf("curse.maven:obfuscate-289380:3169370")
+	
+	fileTree("libs").matching {
+		include "*.jar"
+	}.each {
+		String filename = it.getName();
+		filename = filename.substring(0, filename.length() - 4);
+		int lastDash = filename.lastIndexOf("-");
+		filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
+		implementation fg.deobf("blank:${filename}")
+	}
 
 }
 

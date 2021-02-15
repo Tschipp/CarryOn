@@ -49,6 +49,7 @@ import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedInEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -59,6 +60,7 @@ import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.helper.CarryRenderHelper;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
+import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.helper.KeyboardCallbackWrapper.KeyPressedEvent;
@@ -297,6 +299,13 @@ public class RenderEvents
 			matrix.pop();
 		}
 	}
+	
+//	@SubscribeEvent
+//	public void onJoinServer(LoggedInEvent event)
+//	{
+//		ListHandler.initConfigLists();
+//	}
+	
 
 	/*
 	 * Render blocks and entities in third person
@@ -313,7 +322,7 @@ public class RenderEvents
 		int light = 0;
 		int perspective = CarryRenderHelper.getPerspective();
 		EntityRendererManager manager = Minecraft.getInstance().getRenderManager();
-
+		
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();

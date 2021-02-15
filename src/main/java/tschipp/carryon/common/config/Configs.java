@@ -66,7 +66,7 @@ public class Configs {
 	{
 		if(event.getConfig().getModId().equals(CarryOn.MODID))
 		{
-			ListHandler.initLists();
+			ListHandler.initConfigLists();
 		}
 	}
 	
@@ -235,7 +235,7 @@ public class Configs {
 		
 		public static void init(ForgeConfigSpec.Builder s, ForgeConfigSpec.Builder c)
 		{
-			s.comment("Whitelist");
+			s.comment("Whitelist. Read about the format here: https://github.com/Tschipp/CarryOn/wiki/Black---and-Whitelist-Config");
 			
 			allowedEntities = s
 					.comment("Entities that CAN be picked up (useWhitelistEntities must be true)")
@@ -261,12 +261,15 @@ public class Configs {
 		
 		public static void init(ForgeConfigSpec.Builder s, ForgeConfigSpec.Builder c)
 		{
-			s.comment("Blacklist");
+			s.comment("Blacklist. Read about the format here: https://github.com/Tschipp/CarryOn/wiki/Black---and-Whitelist-Config");
 			
 			forbiddenTiles = s
 					.comment("Blocks that cannot be picked up")
 					.defineList("blacklist.forbiddenTiles", Arrays.asList(new String[]
 			    			{
+			    					"#forge:immovable",
+			    					"#forge:relocation_not_supported",
+			    					"#mekanism:cardboard_blacklist",
 			    					"minecraft:end_portal",
 			    					"minecraft:end_gateway",
 			    					"minecraft:tall_grass",
@@ -350,7 +353,10 @@ public class Configs {
 			    					"wearablebackpacks:*",
 			    					"rftools:screen",
 			    					"rftools:creative_screen",
-			    					"create:*"
+			    					"create:*",
+			    					"magic_doorknob:*",
+			    					"iceandfire:*",
+			    					"ftbquests:*"
 			    					
 
 			    			}), (obj) -> obj instanceof String ? true : false);
@@ -375,7 +381,9 @@ public class Configs {
 									"animania:wagon",
 									"mynko:*",
 									"pixelmon:*",
-									"mocreatures:*"
+									"mocreatures:*",
+									"quark:totem",
+									"vehicle:*"
 							}), (obj) -> obj instanceof String ? true : false);
 			
 			forbiddenStacking = s
@@ -394,7 +402,7 @@ public class Configs {
 		
 		public static void init(ForgeConfigSpec.Builder s, ForgeConfigSpec.Builder c)
 		{
-			c.comment("Model Overrides");
+			c.comment("Model Overrides. Read about the format here: https://github.com/Tschipp/CarryOn/wiki/Model-Override-Config");
 
 			
 			modelOverrides = c
@@ -409,41 +417,6 @@ public class Configs {
 			        				"minecraft:flower_pot->(block)minecraft:flower_pot",
 			        				"minecraft:sugar_cane->(block)minecraft:sugar_cane",
 			        	            "minecraft:redstone_wire->(item)minecraft:redstone",
-			        	            "quark:custom_chest{type:\"spruce\"}->quark:custom_chest;0",
-			        	            "quark:custom_chest{type:\"birch\"}->quark:custom_chest;1",
-			        	            "quark:custom_chest{type:\"jungle\"}->quark:custom_chest;2",
-			        	            "quark:custom_chest{type:\"acacia\"}->quark:custom_chest;3",
-			        	            "quark:custom_chest{type:\"dark_oak\"}->quark:custom_chest;4",
-			        	            "quark:custom_chest_trap{type:\"spruce\"}->quark:custom_chest_trap;0",
-			        	            "quark:custom_chest_trap{type:\"birch\"}->quark:custom_chest_trap;1",
-			        	            "quark:custom_chest_trap{type:\"jungle\"}->quark:custom_chest_trap;2",
-			        	            "quark:custom_chest_trap{type:\"acacia\"}->quark:custom_chest_trap;3",
-			        	            "quark:custom_chest_trap{type:\"dark_oak\"}->quark:custom_chest_trap;4",
-			        	            "storagedrawers:basicdrawers;0{Mat:\"spruce\"}->storagedrawers:basicdrawers;0{material:\"spruce\"}",
-			        	            "storagedrawers:basicdrawers;0{Mat:\"birch\"}->storagedrawers:basicdrawers;0{material:\"birch\"}",
-			        	            "storagedrawers:basicdrawers;0{Mat:\"jungle\"}->storagedrawers:basicdrawers;0{material:\"jungle\"}",
-			        	            "storagedrawers:basicdrawers;0{Mat:\"acacia\"}->storagedrawers:basicdrawers;0{material:\"acacia\"}",
-			        	            "storagedrawers:basicdrawers;0{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;0{material:\"dark_oak\"}",
-			        	            "storagedrawers:basicdrawers;1{Mat:\"spruce\"}->storagedrawers:basicdrawers;1{material:\"spruce\"}",
-			        	            "storagedrawers:basicdrawers;1{Mat:\"birch\"}->storagedrawers:basicdrawers;1{material:\"birch\"}",
-			        	            "storagedrawers:basicdrawers;1{Mat:\"jungle\"}->storagedrawers:basicdrawers;1{material:\"jungle\"}",
-			        	            "storagedrawers:basicdrawers;1{Mat:\"acacia\"}->storagedrawers:basicdrawers;1{material:\"acacia\"}",
-			        	            "storagedrawers:basicdrawers;1{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;1{material:\"dark_oak\"}",
-			        	            "storagedrawers:basicdrawers;2{Mat:\"spruce\"}->storagedrawers:basicdrawers;2{material:\"spruce\"}",
-			        	            "storagedrawers:basicdrawers;2{Mat:\"birch\"}->storagedrawers:basicdrawers;2{material:\"birch\"}",
-			        	            "storagedrawers:basicdrawers;2{Mat:\"jungle\"}->storagedrawers:basicdrawers;2{material:\"jungle\"}",
-			        	            "storagedrawers:basicdrawers;2{Mat:\"acacia\"}->storagedrawers:basicdrawers;2{material:\"acacia\"}",
-			        	            "storagedrawers:basicdrawers;2{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;2{material:\"dark_oak\"}",
-			        	            "storagedrawers:basicdrawers;3{Mat:\"spruce\"}->storagedrawers:basicdrawers;3{material:\"spruce\"}",
-			        	            "storagedrawers:basicdrawers;3{Mat:\"birch\"}->storagedrawers:basicdrawers;3{material:\"birch\"}",
-			        	            "storagedrawers:basicdrawers;3{Mat:\"jungle\"}->storagedrawers:basicdrawers;3{material:\"jungle\"}",
-			        	            "storagedrawers:basicdrawers;3{Mat:\"acacia\"}->storagedrawers:basicdrawers;3{material:\"acacia\"}",
-			        	            "storagedrawers:basicdrawers;3{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;3{material:\"dark_oak\"}",
-			        	            "storagedrawers:basicdrawers;4{Mat:\"spruce\"}->storagedrawers:basicdrawers;4{material:\"spruce\"}",
-			        	            "storagedrawers:basicdrawers;4{Mat:\"birch\"}->storagedrawers:basicdrawers;4{material:\"birch\"}",
-			        	            "storagedrawers:basicdrawers;4{Mat:\"jungle\"}->storagedrawers:basicdrawers;4{material:\"jungle\"}",
-			        	            "storagedrawers:basicdrawers;4{Mat:\"acacia\"}->storagedrawers:basicdrawers;4{material:\"acacia\"}",
-			        	            "storagedrawers:basicdrawers;4{Mat:\"dark_oak\"}->storagedrawers:basicdrawers;4{material:\"dark_oak\"}",
 			        	            "animania:block_nest->(block)animania:block_nest",
 			        	            "animania:cheese_mold;0->(block)animania:cheese_mold;0",
 			        	            "animania:cheese_mold;1->(block)animania:cheese_mold;1",
@@ -471,7 +444,7 @@ public class Configs {
 		
 		public static void init(ForgeConfigSpec.Builder s, ForgeConfigSpec.Builder c)
 		{
-			s.comment("Custom Pickup Conditions");
+			s.comment("Custom Pickup Conditions. Read about the format here: https://github.com/Tschipp/CarryOn/wiki/Custom-Pickup-Condition-Config");
 
 			
 			customPickupConditionsBlocks = s
