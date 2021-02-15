@@ -269,7 +269,6 @@ public class Configs {
 			    			{
 			    					"#forge:immovable",
 			    					"#forge:relocation_not_supported",
-			    					"#mekanism:cardboard_blacklist",
 			    					"minecraft:end_portal",
 			    					"minecraft:end_gateway",
 			    					"minecraft:tall_grass",
