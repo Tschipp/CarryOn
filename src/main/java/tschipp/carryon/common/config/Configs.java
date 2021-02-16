@@ -1,11 +1,10 @@
 package tschipp.carryon.common.config;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.io.WritingMode;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
@@ -14,11 +13,12 @@ import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.config.ModConfig;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.ListHandler;
 
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = CarryOn.MODID, bus = Bus.MOD)
 public class Configs {
 	
 	private static final ForgeConfigSpec.Builder SERVER_BUILDER = new ForgeConfigSpec.Builder();
@@ -39,34 +39,23 @@ public class Configs {
 		CLIENT_CONFIG = CLIENT_BUILDER.build();
 	}
 	
-	public static void loadConfig(ForgeConfigSpec spec, Path path)
-	{
-		final CommentedFileConfig configData = CommentedFileConfig.builder(path)
-				.sync()
-				.autosave()
-				.autoreload()
-				.writingMode(WritingMode.REPLACE)
-				.preserveInsertionOrder()
-				.build();
-		
-		CarryOn.LOGGER.debug("Loading CarryOn Config");
-		configData.load();
-		spec.setConfig(configData);
-		
-	}
-	
-	
 	@SubscribeEvent
 	public static void onLoad(final ModConfig.Loading event)
 	{
+
 	}
 	
 	@SubscribeEvent
-	public static void onChange(final ModConfig.Reloading event)
+	public static void onConfigChanged(ModConfig.Reloading event)
 	{
-		if(event.getConfig().getModId().equals(CarryOn.MODID))
+		if (event.getConfig().getModId().equals(CarryOn.MODID))
 		{
 			ListHandler.initConfigLists();
+
+			CommentedConfig cfg = event.getConfig().getConfigData();
+						
+			if(cfg instanceof CommentedFileConfig)
+				((CommentedFileConfig) cfg).load();
 		}
 	}
 	

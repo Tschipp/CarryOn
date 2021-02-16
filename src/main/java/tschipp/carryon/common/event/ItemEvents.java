@@ -41,9 +41,7 @@ import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.PacketDistributor.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -51,12 +49,10 @@ import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.command.CommandCarryOn;
-import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.PickupHandler;
-import tschipp.carryon.common.handler.PickupHandler.PickUpBlockEvent;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.item.ItemCarryonEntity;
@@ -520,18 +516,6 @@ public class ItemEvents
 				}
 
 			}
-		}
-	}
-
-	@SubscribeEvent
-	public void onConfigChanged(ModConfig.Reloading event)
-	{
-		if (event.getConfig().getModId().equals(CarryOn.MODID))
-		{
-			ListHandler.initConfigLists();
-
-			Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-client.toml"));
-			Configs.loadConfig(Configs.CLIENT_CONFIG, FMLPaths.CONFIGDIR.get().resolve("carryon-server.toml"));
 		}
 	}
 
