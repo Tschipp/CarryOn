@@ -145,7 +145,7 @@ public class ListHandler
 	}
 
 	public static void initConfigLists()
-	{
+	{		
 		FORBIDDEN_ENTITIES.clear();
 		FORBIDDEN_ENTITIES_TAGS.clear();
 		FORBIDDEN_STACKING.clear();

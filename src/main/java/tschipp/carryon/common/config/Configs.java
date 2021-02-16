@@ -42,7 +42,15 @@ public class Configs {
 	@SubscribeEvent
 	public static void onLoad(final ModConfig.Loading event)
 	{
+		if (event.getConfig().getModId().equals(CarryOn.MODID))
+		{
+			ListHandler.initConfigLists();
 
+			CommentedConfig cfg = event.getConfig().getConfigData();
+						
+			if(cfg instanceof CommentedFileConfig)
+				((CommentedFileConfig) cfg).load();
+		}
 	}
 	
 	@SubscribeEvent
