@@ -219,73 +219,132 @@ public class PickupHandler
 				}
 			}
 
-			if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
-			{
-				if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
+			if(toPickUp instanceof EntityTameable) {
+				EntityTameable tamecheck = (EntityTameable) toPickUp;
+				UUID OwnerCheck = tamecheck.getOwnerId();
+				if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || (CarryOnConfig.settings.tamedHostileMobExemption ? (OwnerCheck != null) : false) || player.isCreative()))
 				{
-					if ((toPickUp.height <= CarryOnConfig.settings.maxEntityHeight && toPickUp.width <= CarryOnConfig.settings.maxEntityWidth || player.isCreative()))
+					if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || (CarryOnConfig.settings.tamedHostileMobExemption ? (OwnerCheck != null) : false) || player.isCreative()))
 					{
-						double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
-						if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+						if ((toPickUp.height <= CarryOnConfig.settings.maxEntityHeight && toPickUp.width <= CarryOnConfig.settings.maxEntityWidth || player.isCreative()))
 						{
-							if (toPickUp instanceof EntityTameable)
+							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+							if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
 							{
-								EntityTameable tame = (EntityTameable) toPickUp;
-								UUID owner = tame.getOwnerId();
 								UUID playerID = player.getUUID(player.getGameProfile());
-								if (owner != null && !owner.equals(playerID))
+								if (OwnerCheck != null && !OwnerCheck.equals(playerID))
 									return false;
-							}
-
-							if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
-							{
-								try
-								{
-									Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
-									Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
-
-									Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
-									Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
-
-									Object stageData = getPlayerData.invoke(null, player);
-									String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
-									boolean has = (boolean) hasStage.invoke(stageData, condition);
-
-									if (has)
-										return handleProtections((EntityPlayerMP) player, toPickUp);
-								}
-								catch (Exception e)
+	
+								if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 								{
 									try
 									{
-										Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
-										Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
-
-										Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
-										Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
-
-										Object stageData = getStageData.invoke(null, player);
+										Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+										Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+	
+										Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
+										Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+	
+										Object stageData = getPlayerData.invoke(null, player);
 										String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
-										boolean has = (boolean) hasUnlockedStage.invoke(stageData, condition);
-
+										boolean has = (boolean) hasStage.invoke(stageData, condition);
+	
 										if (has)
 											return handleProtections((EntityPlayerMP) player, toPickUp);
 									}
-									catch (Exception ex)
+									catch (Exception e)
 									{
-										return handleProtections((EntityPlayerMP) player, toPickUp);
+										try
+										{
+											Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+											Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
+	
+											Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
+											Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+	
+											Object stageData = getStageData.invoke(null, player);
+											String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+											boolean has = (boolean) hasUnlockedStage.invoke(stageData, condition);
+	
+											if (has)
+												return handleProtections((EntityPlayerMP) player, toPickUp);
+										}
+										catch (Exception ex)
+										{
+											return handleProtections((EntityPlayerMP) player, toPickUp);
+										}
 									}
 								}
+								else
+									return handleProtections((EntityPlayerMP) player, toPickUp);
 							}
-							else
-								return handleProtections((EntityPlayerMP) player, toPickUp);
+							
+	
 						}
-						
-
 					}
+	
 				}
-
+			} else {
+				if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
+				{
+					if ((CarryOnConfig.settings.pickupHostileMobs ? true : !toPickUp.isCreatureType(EnumCreatureType.MONSTER, false) || player.isCreative()))
+					{
+						if ((toPickUp.height <= CarryOnConfig.settings.maxEntityHeight && toPickUp.width <= CarryOnConfig.settings.maxEntityWidth || player.isCreative()))
+						{
+							double distance = pos.distanceSqToCenter(player.posX, player.posY + 0.5, player.posZ);
+							if (distance < Math.pow(CarryOnConfig.settings.maxDistance, 2))
+							{
+								if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
+								{
+									try
+									{
+										Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+										Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+	
+										Method getPlayerData = ReflectionHelper.findMethod(gameStageHelper, "getPlayerData", null, EntityPlayer.class);
+										Method hasStage = ReflectionHelper.findMethod(iStageData, "hasStage", null, String.class);
+	
+										Object stageData = getPlayerData.invoke(null, player);
+										String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+										boolean has = (boolean) hasStage.invoke(stageData, condition);
+	
+										if (has)
+											return handleProtections((EntityPlayerMP) player, toPickUp);
+									}
+									catch (Exception e)
+									{
+										try
+										{
+											Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+											Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
+	
+											Method getStageData = ReflectionHelper.findMethod(playerDataHandler, "getStageData", null, EntityPlayer.class);
+											Method hasUnlockedStage = ReflectionHelper.findMethod(iStageData, "hasUnlockedStage", null, String.class);
+	
+											Object stageData = getStageData.invoke(null, player);
+											String condition = CustomPickupOverrideHandler.getPickupCondition(toPickUp);
+											boolean has = (boolean) hasUnlockedStage.invoke(stageData, condition);
+	
+											if (has)
+												return handleProtections((EntityPlayerMP) player, toPickUp);
+										}
+										catch (Exception ex)
+										{
+											return handleProtections((EntityPlayerMP) player, toPickUp);
+										}
+									}
+								}
+								else
+									return handleProtections((EntityPlayerMP) player, toPickUp);
+							}
+							
+	
+						}
+					}
+	
+				}
 			}
+
 		}
 
 		return false;
