@@ -210,8 +210,11 @@ public class ItemTile extends Item
 								TileEntity tile = world.getTileEntity(pos2);
 								if (tile != null)
 								{
-									tile.readFromNBT(getTileData(stack));
-									tile.setPos(pos2);
+									NBTTagCompound tag = getTileData(stack);
+									updateTileLocation(tag, pos2);
+									tile.readFromNBT(tag);
+//									tile.readFromNBT(getTileData(stack));
+//									tile.setPos(pos2);
 								}
 								clearTileData(stack);
 								player.playSound(containedblock.getSoundType().getPlaceSound(), 1.0f, 0.5f);
@@ -319,6 +322,13 @@ public class ItemTile extends Item
 			tag.removeTag("meta");
 			tag.removeTag("stateid");
 		}
+	}
+	
+	public static void updateTileLocation(NBTTagCompound tag, BlockPos pos)
+	{
+		tag.setInteger("x", pos.getX());
+		tag.setInteger("y", pos.getY());
+		tag.setInteger("z", pos.getZ());
 	}
 
 	public static NBTTagCompound getTileData(ItemStack stack)

@@ -90,7 +90,7 @@ public class ItemEvents
 				{
 					String command = override.getCommandPlace();
 					if (command != null)
-						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+						player.getServer().getCommandManager().executeCommand(player.getServer(), "execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
 				}
 			}
 		}
@@ -375,7 +375,10 @@ public class ItemEvents
 						{
 							String command = override.getCommandInit();
 							if (command != null)
-								player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+							{
+								CarryOn.LOGGER.info("Executing command: execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+								player.getServer().getCommandManager().executeCommand(player.getServer(), "execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+							}
 						}
 
 					}
@@ -501,7 +504,7 @@ public class ItemEvents
 				{
 					String command = override.getCommandLoop();
 					if (command != null)
-						player.getServer().getCommandManager().executeCommand(player.getServer(), "/execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
+						player.getServer().getCommandManager().executeCommand(player.getServer(), "execute " + player.getGameProfile().getName() + " ~ ~ ~ " + command);
 				}
 
 			}

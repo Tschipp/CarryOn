@@ -197,7 +197,14 @@ public class Configs {
     					"dumpsterdiving:rep_casing",
     					"dumpsterdiving:trash_furn_g",
     					"dumpsterdiving:trash_furn_n",
-    					"*door*"
+    					"*door*",
+    					"waystones:*",
+    					"immersiverailroading:*",
+    					"integrateddynamics:*",
+    					"bloodmagic:*",
+    					"rftools:screen",
+						"rftools:creative_screen",
+    					
     			};
 		
 		@Comment("Entities that cannot be picked up")
@@ -220,7 +227,11 @@ public class Configs {
 						"mynko:*",
 						"astikorcarts:*",
 						"dakimakuramod:*",
-						"tektopia:*"
+						"tektopia:*",
+						"mocreatures:*",
+						"pixelmon:*",
+					    "thebetweenlands:draeton**",
+		    	        "mysticalworld:*"
 				};
 		
 		
@@ -300,7 +311,7 @@ public class Configs {
     	            "animania:cheese_mold;7->(block)animania:cheese_mold;7",
     	            "animania:cheese_mold;8->(block)animania:cheese_mold;8",
     	            "animania:cheese_mold;9->(block)animania:cheese_mold;9",
-    	            "animania:cheese_mold;10->(block)animania:cheese_mold;10",
+    	            "animania:cheese_mold;10->(block)animania:cheese_mold;10"
     			};
 	}
 	
