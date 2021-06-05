@@ -39,7 +39,7 @@ public class ItemCarryonEntity extends Item {
 	
 	static
 	{
-		initGoals =  ObfuscationReflectionHelper.findMethod(MobEntity.class, "registerGoals");
+		initGoals =  ObfuscationReflectionHelper.findMethod(MobEntity.class, "func_184651_r");
 		initGoals.setAccessible(true);
 	}
 	
