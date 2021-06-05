@@ -31,14 +31,14 @@ public class PickupHandler
 
 	public static boolean canPlayerPickUpBlock(ServerPlayerEntity player, @Nullable TileEntity tile, World world, BlockPos pos)
 	{		
-		if(player.interactionManager.getGameType() == GameType.SPECTATOR || player.interactionManager.getGameType() == GameType.ADVENTURE)
+		if(player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR || player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE)
 			return false;
 		
 		
 		BlockState state = world.getBlockState(pos);
 		CompoundNBT tag = new CompoundNBT();
 		if (tile != null)
-			tile.write(tag);
+			tile.save(tag);
 		
 		CarryOnOverride override = ScriptChecker.inspectBlock(world.getBlockState(pos), world, pos, tag);
 		if (override != null)
@@ -62,9 +62,9 @@ public class PickupHandler
 				}
 			}
 
-			if ((state.getBlockHardness(world, pos) != -1 || player.isCreative()))
+			if ((state.getDestroySpeed(world, pos) != -1 || player.isCreative()))
 			{
-				double distance = Vector3d.copy(pos).distanceTo(player.getPositionVec());
+				double distance = Vector3d.atLowerCornerOf(pos).distanceTo(player.position());
 				double maxDist = Settings.maxDistance.get();
 				
 				if (distance < maxDist)
@@ -92,10 +92,10 @@ public class PickupHandler
 
 	public static boolean canPlayerPickUpEntity(ServerPlayerEntity player, Entity toPickUp)
 	{
-		if(player.interactionManager.getGameType() == GameType.SPECTATOR || player.interactionManager.getGameType() == GameType.ADVENTURE)
+		if(player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR || player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE)
 			return false;
 		
-		BlockPos pos = toPickUp.getPosition();
+		BlockPos pos = toPickUp.blockPosition();
 
 		if (toPickUp instanceof PlayerEntity)
 			return false;
@@ -110,16 +110,16 @@ public class PickupHandler
 			if (toPickUp instanceof AgeableEntity && Settings.allowBabies.get())
 			{
 				AgeableEntity living = (AgeableEntity) toPickUp;
-				if (living.getGrowingAge() < 0 || living.isChild())
+				if (living.getAge() < 0 || living.isBaby())
 				{
 
-					double distance = pos.distanceSq(player.getPosition());
+					double distance = pos.distSqr(player.blockPosition());
 					if (distance < Math.pow(Settings.maxDistance.get(), 2))
 					{
 						if (toPickUp instanceof TameableEntity)
 						{
 							TameableEntity tame = (TameableEntity) toPickUp;
-							if (tame.getOwnerId() != null && tame.getOwnerId() != PlayerEntity.getUUID(player.getGameProfile()))
+							if (tame.getOwnerUUID() != null && tame.getOwnerUUID() != PlayerEntity.createPlayerUUID(player.getGameProfile()))
 								return false;
 						}
 					}
@@ -148,20 +148,20 @@ public class PickupHandler
 				}
 			}
 
-			if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getClassification() != EntityClassification.MONSTER || player.isCreative()))
+			if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getCategory() != EntityClassification.MONSTER || player.isCreative()))
 			{
-				if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getClassification() != EntityClassification.MONSTER  || player.isCreative()))
+				if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getCategory() != EntityClassification.MONSTER  || player.isCreative()))
 				{
-					if ((toPickUp.getHeight() <= Settings.maxEntityHeight.get() && toPickUp.getWidth() <= Settings.maxEntityWidth.get() || player.isCreative()))
+					if ((toPickUp.getBbHeight() <= Settings.maxEntityHeight.get() && toPickUp.getBbWidth() <= Settings.maxEntityWidth.get() || player.isCreative()))
 					{
-						double distance = pos.distanceSq(player.getPosition());
+						double distance = pos.distSqr(player.blockPosition());
 						if (distance < Math.pow(Settings.maxDistance.get(), 2))
 						{
 							if (toPickUp instanceof TameableEntity)
 							{
 								TameableEntity tame = (TameableEntity) toPickUp;
-								UUID owner = tame.getOwnerId();
-								UUID playerID = PlayerEntity.getUUID(player.getGameProfile());
+								UUID owner = tame.getOwnerUUID();
+								UUID playerID = PlayerEntity.createPlayerUUID(player.getGameProfile());
 								if (owner != null && !owner.equals(playerID))
 									return false;
 							}

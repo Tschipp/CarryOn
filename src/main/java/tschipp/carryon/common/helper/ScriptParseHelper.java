@@ -76,7 +76,7 @@ public class ScriptParseHelper
 			return true;
 
 		boolean matching = true;
-		for (String key : toMatch.keySet())
+		for (String key : toMatch.getAllKeys())
 		{
 			INBT tag = toMatch.get(key);
 			key = key.replace("\"", "");
@@ -142,7 +142,7 @@ public class ScriptParseHelper
 		if (cond == null || cond.isEmpty())
 			return true;
 
-		Scoreboard score = player.getWorldScoreboard();
+		Scoreboard score = player.getScoreboard();
 		String numb;
 		String scorename;
 		int iE = cond.indexOf("=");
@@ -157,13 +157,13 @@ public class ScriptParseHelper
 			numb = cond.substring(iL);
 
 		scorename = cond.replace(numb, "");
-		Map<ScoreObjective, Score> o = score.getObjectivesForEntity(player.getGameProfile().getName());
+		Map<ScoreObjective, Score> o = score.getPlayerScores(player.getGameProfile().getName());
 		if (o != null)
 		{
 			Score sc = o.get(score.getObjective(scorename));
 			if (sc != null)
 			{
-				int points = sc.getScorePoints();
+				int points = sc.getScore();
 
 				return matches(points, numb);
 			}
@@ -179,7 +179,7 @@ public class ScriptParseHelper
 
 		BlockPos blockpos = new BlockPos(getValueFromString(cond, "x"), getValueFromString(cond, "y"), getValueFromString(cond, "z"));
 		BlockPos expand = new BlockPos(getValueFromString(cond, "dx"), getValueFromString(cond, "dy"), getValueFromString(cond, "dz"));
-		BlockPos expanded = blockpos.add(expand);
+		BlockPos expanded = blockpos.offset(expand);
 
 		boolean x = (pos.getX() >= blockpos.getX() && pos.getX() <= expanded.getX()) || blockpos.getX() == 0;
 		boolean y = (pos.getY() >= blockpos.getY() && pos.getY() <= expanded.getY()) || blockpos.getY() == 0;
@@ -221,7 +221,7 @@ public class ScriptParseHelper
 		if(cond == null || cond.isEmpty())
 			return true;
 		
-		Collection<EffectInstance> effects = player.getActivePotionEffects();
+		Collection<EffectInstance> effects = player.getActiveEffects();
 		String[] potions = cond.split(",");
 		
 		List<String> names = new ArrayList<String>();
@@ -257,7 +257,7 @@ public class ScriptParseHelper
 		for(EffectInstance effect : effects)
 		{
 			int amp = effect.getAmplifier();
-			String name = effect.getPotion().getRegistryName().toString();
+			String name = effect.getEffect().getRegistryName().toString();
 			
 			if(names.contains(name))
 			{
@@ -282,7 +282,7 @@ public class ScriptParseHelper
 		case "air":
 			return material == Material.AIR;
 		case "anvil":
-			return material == Material.ANVIL;
+			return material == Material.HEAVY_METAL;
 		case "barrier":
 			return material == Material.BARRIER;
 		case "cactus":
@@ -290,7 +290,7 @@ public class ScriptParseHelper
 		case "cake":
 			return material == Material.CAKE;
 		case "carpet":
-			return material == Material.CARPET;
+			return material == Material.CLOTH_DECORATION;
 		case "clay":
 			return material == Material.CLAY;
 		case "cloth":
@@ -298,49 +298,49 @@ public class ScriptParseHelper
 		case "coral":
 			return material == Material.CORAL;
 		case "dragon_egg":
-			return material == Material.DRAGON_EGG;
+			return material == Material.EGG;
 		case "fire":
 			return material == Material.FIRE;
 		case "glass":
 			return material == Material.GLASS;
 		case "gourd":
-			return material == Material.GOURD;
+			return material == Material.VEGETABLE;
 		case "grass":
-			return material == Material.ORGANIC;
+			return material == Material.GRASS;
 		case "ground":
-			return material == Material.ORGANIC;
+			return material == Material.GRASS;
 		case "ice":
 			return material == Material.ICE;
 		case "iron":
-			return material == Material.IRON;
+			return material == Material.METAL;
 		case "lava":
 			return material == Material.LAVA;
 		case "leaves":
 			return material == Material.LEAVES;
 		case "packed_ice":
-			return material == Material.PACKED_ICE;
+			return material == Material.ICE_SOLID;
 		case "piston":
 			return material == Material.PISTON;
 		case "plants":
-			return material == Material.PLANTS;
+			return material == Material.PLANT;
 		case "portal":
 			return material == Material.PORTAL;
 		case "redstone_light":
-			return material == Material.REDSTONE_LIGHT;
+			return material == Material.BUILDABLE_GLASS;
 		case "rock":
-			return material == Material.ROCK;
+			return material == Material.STONE;
 		case "sand":
 			return material == Material.SAND;
 		case "snow":
-			return material == Material.SNOW;
+			return material == Material.TOP_SNOW;
 		case "sponge":
 			return material == Material.SPONGE;
 		case "structure_void":
-			return material == Material.STRUCTURE_VOID;
+			return material == Material.STRUCTURAL_AIR;
 		case "tnt":
-			return material == Material.TNT;
+			return material == Material.EXPLOSIVE;
 		case "vine":
-			return material == Material.PLANTS;
+			return material == Material.PLANT;
 		case "water":
 			return material == Material.WATER;
 		case "web":

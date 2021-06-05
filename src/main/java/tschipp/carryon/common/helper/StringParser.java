@@ -114,7 +114,7 @@ public class StringParser
 			string = string.replace(nbt, "");
 			try
 			{
-				tag = JsonToNBT.getTagFromJson(nbt);
+				tag = JsonToNBT.parseTag(nbt);
 			}
 			catch (Exception e)
 			{

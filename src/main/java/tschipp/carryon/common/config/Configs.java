@@ -352,10 +352,11 @@ public class Configs {
 			    					"create:*",
 			    					"magic_doorknob:*",
 			    					"iceandfire:*",
-			    					"ftbquests:*"
+			    					"ftbquests:*",
+			    					"waystones:*"
 			    					
 
-			    			}), (obj) -> obj instanceof String ? true : false);
+			    			}), (obj) -> obj instanceof String);
 			
 			forbiddenEntities = s
 					.comment("Entities that cannot be picked up")

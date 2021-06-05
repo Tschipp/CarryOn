@@ -86,7 +86,7 @@ public class RenderEvents
 
 		if (player != null)
 		{
-			ItemStack stack = player.getHeldItemMainhand();
+			ItemStack stack = player.getMainHandItem();
 
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 			{
@@ -107,7 +107,7 @@ public class RenderEvents
 
 		if (player != null && event.side == LogicalSide.CLIENT)
 		{
-			boolean keyPressed = CarryOnKeybinds.carryKey.isKeyDown();
+			boolean keyPressed = CarryOnKeybinds.carryKey.isDown();
 			boolean playerKeyPressed = CarryOnKeybinds.isKeyPressed(player);
 
 			if (keyPressed && !playerKeyPressed)
@@ -130,7 +130,7 @@ public class RenderEvents
 		if (event.getEntity() instanceof PlayerEntity)
 		{
 			PlayerEntity player = (PlayerEntity) event.getEntity();
-			if (player.world.isRemote)
+			if (player.level.isClientSide)
 			{
 				CarryOnKeybinds.setKeyPressed(player, false);
 				CarryOn.network.sendToServer(new SyncKeybindPacket(false));
@@ -138,9 +138,9 @@ public class RenderEvents
 				if (CarryOn.FINGERPRINT_VIOLATED)
 				{
 					StringTextComponent cf = new StringTextComponent(TextFormatting.AQUA + "Curseforge" + TextFormatting.RED);
-					cf.getStyle().setClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
+					cf.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
 
-					player.sendStatusMessage(new StringTextComponent(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).appendString(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
+					player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).append(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
 				}
 			}
 
@@ -161,13 +161,13 @@ public class RenderEvents
 
 			if (player != null && inventory)
 			{
-				ItemStack stack = player.getHeldItem(Hand.MAIN_HAND);
+				ItemStack stack = player.getItemInHand(Hand.MAIN_HAND);
 
 				if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
 				{
-					Minecraft.getInstance().player.closeScreen();
-					Minecraft.getInstance().currentScreen = null;
-					Minecraft.getInstance().mouseHelper.grabMouse();
+					Minecraft.getInstance().player.closeContainer();
+					Minecraft.getInstance().screen = null;
+					Minecraft.getInstance().mouseHandler.grabMouse();
 
 				}
 
@@ -182,43 +182,43 @@ public class RenderEvents
 	@SubscribeEvent
 	public void inputEvent(KeyPressedEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
-		GameSettings settings = Minecraft.getInstance().gameSettings;
+		GameSettings settings = Minecraft.getInstance().options;
 		int key = event.key;
 		int scancode = event.scancode;
 		PlayerEntity player = Minecraft.getInstance().player;
 
 		if (player != null)
 		{
-			ItemStack stack = Minecraft.getInstance().player.getHeldItemMainhand();
+			ItemStack stack = Minecraft.getInstance().player.getMainHandItem();
 
 			if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
 			{
-				if (settings.keyBindDrop.matchesKey(key, scancode))
+				if (settings.keyDrop.matches(key, scancode))
 				{
 					event.setCanceled(true);
 				}
-				if (settings.keyBindSwapHands.matchesKey(key, scancode))
+				if (settings.keySwapOffhand.matches(key, scancode))
 				{
 					event.setCanceled(true);
 				}
-				if (settings.keyBindPickBlock.matchesKey(key, scancode))
+				if (settings.keyPickItem.matches(key, scancode))
 				{
 					event.setCanceled(true);
 				}
-				for (KeyBinding keyBind : settings.keyBindsHotbar)
+				for (KeyBinding keyBind : settings.keyHotbarSlots)
 				{
-					if (keyBind.matchesKey(key, scancode))
+					if (keyBind.matches(key, scancode))
 					{
 						event.setCanceled(true);
 					}
 				}
 			}
 
-			int current = player.inventory.currentItem;
+			int current = player.inventory.selected;
 
 			if (player.getPersistentData().contains("carrySlot") ? player.getPersistentData().getInt("carrySlot") != current : false)
 			{
-				player.inventory.currentItem = player.getPersistentData().getInt("carrySlot");
+				player.inventory.selected = player.getPersistentData().getInt("carrySlot");
 			}
 		}
 	}
@@ -231,11 +231,11 @@ public class RenderEvents
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-		World world = Minecraft.getInstance().world;
+		World world = Minecraft.getInstance().level;
 		PlayerEntity player = Minecraft.getInstance().player;
-		ItemStack stack = player.getHeldItemMainhand();
+		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
-		boolean f1 = Minecraft.getInstance().gameSettings.hideGUI;
+		boolean f1 = Minecraft.getInstance().options.hideGui;
 		IRenderTypeBuffer buffer = event.getBuffers();
 		MatrixStack matrix = event.getMatrixStack();
 		int light = event.getLight();
@@ -250,7 +250,7 @@ public class RenderEvents
 			BlockState state = ItemCarryonBlock.getBlockState(stack);
 			ItemStack tileStack = ItemCarryonBlock.getItemStack(stack);
 
-			matrix.push();
+			matrix.pushPose();
 			matrix.scale(2.5f, 2.5f, 2.5f);
 			matrix.translate(0, -0.5, -1);
 			RenderSystem.enableBlend();
@@ -258,15 +258,15 @@ public class RenderEvents
 
 			if (Settings.facePlayer.get() ? !isChest(block) : isChest(block))
 			{
-				matrix.rotate(Vector3f.YP.rotationDegrees(180));
-				matrix.rotate(Vector3f.XN.rotationDegrees(8));
+				matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+				matrix.mulPose(Vector3f.XN.rotationDegrees(8));
 			}
 			else
 			{
-				matrix.rotate(Vector3f.XP.rotationDegrees(8));
+				matrix.mulPose(Vector3f.XP.rotationDegrees(8));
 			}
 
-			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileStack.isEmpty() ? Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state) : Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(tileStack, world, player));
+			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, world, player));
 
 			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
@@ -280,12 +280,12 @@ public class RenderEvents
 					{
 						ItemStack s = new ItemStack(b, 1);
 						s.setTag(carryOverride.getRenderNBT());
-						model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(s, world, player);
+						model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player);
 					}
 				}
 			}
 
-			Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+			Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
 
 			CarryRenderHelper.renderItem(state, tag, stack, tileStack, matrix, buffer, light, model);
 
@@ -296,7 +296,7 @@ public class RenderEvents
 
 			RenderSystem.enableCull();
 			RenderSystem.disableBlend();
-			matrix.pop();
+			matrix.popPose();
 		}
 	}
 	
@@ -315,25 +315,25 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event)
 	{
-		World world = Minecraft.getInstance().world;
+		World world = Minecraft.getInstance().level;
 		float partialticks = event.getPartialTicks();
-		Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
+		Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
 		MatrixStack matrix = event.getMatrixStack();
 		int light = 0;
 		int perspective = CarryRenderHelper.getPerspective();
-		EntityRendererManager manager = Minecraft.getInstance().getRenderManager();
+		EntityRendererManager manager = Minecraft.getInstance().getEntityRenderDispatcher();
 		
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();
 
-		for (PlayerEntity player : world.getPlayers())
+		for (PlayerEntity player : world.players())
 		{
 			if (perspective == 0 && player == Minecraft.getInstance().player)
 				continue;
 
-			light = Minecraft.getInstance().getRenderManager().getPackedLight(player, partialticks);
-			ItemStack stack = player.getHeldItemMainhand();
+			light = Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(player, partialticks);
+			ItemStack stack = player.getMainHandItem();
 
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
 			{
@@ -344,7 +344,7 @@ public class RenderEvents
 
 				applyBlockTransformations(player, partialticks, matrix, block);
 
-				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state) : Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(tileItem, world, player));
+				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player));
 
 				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
@@ -358,24 +358,24 @@ public class RenderEvents
 						{
 							ItemStack s = new ItemStack(b, 1);
 							s.setTag(carryOverride.getRenderNBT());
-							model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(s, world, player);
+							model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player);
 						}
 					}
 				}
 
-				Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+				Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
 				CarryRenderHelper.renderItem(state, tag, stack, tileItem, matrix, buffer, light, model);
-				buffer.finish();
+				buffer.endBatch();
 
-				matrix.pop();
+				matrix.popPose();
 
 				drawArms(player, partialticks, matrix, buffer, light);
 
-				matrix.pop();
+				matrix.popPose();
 			}
 			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
-				Entity entity = ItemCarryonEntity.getEntity(stack, world);
+				Entity entity = RenderEntityEvents.getEntity(stack, world);
 
 				if (entity != null)
 				{
@@ -393,7 +393,7 @@ public class RenderEvents
 						{
 							Entity newEntity = null;
 
-							Optional<EntityType<?>> type = EntityType.byKey(entityname);
+							Optional<EntityType<?>> type = EntityType.byString(entityname);
 							if (type.isPresent())
 								newEntity = type.get().create(world);
 
@@ -403,11 +403,11 @@ public class RenderEvents
 								if (nbttag != null)
 									newEntity.deserializeNBT(nbttag);
 								entity = newEntity;
-								entity.rotationYaw = 0.0f;
-								entity.prevRotationYaw = 0.0f;
-								entity.setRotationYawHead(0.0f);
-								entity.rotationPitch = 0.0f;
-								entity.prevRotationPitch = 0.0f;
+								entity.yRot = 0.0f;
+								entity.yRotO = 0.0f;
+								entity.setYHeadRot(0.0f);
+								entity.xRot = 0.0f;
+								entity.xRotO = 0.0f;
 							}
 						}
 					}
@@ -415,16 +415,16 @@ public class RenderEvents
 					if (entity instanceof LivingEntity)
 						((LivingEntity) entity).hurtTime = 0;
 
-					manager.renderEntityStatic(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
-					buffer.finish();
+					manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+					buffer.endBatch();
 
-					matrix.pop();
+					matrix.popPose();
 
 					drawArms(player, partialticks, matrix, buffer, light);
 
 					manager.setRenderShadow(true);
 
-					matrix.pop();
+					matrix.popPose();
 				}
 			}
 
@@ -439,18 +439,18 @@ public class RenderEvents
 		int perspective = CarryRenderHelper.getPerspective();
 		Quaternion playerrot = CarryRenderHelper.getExactBodyRotation(player, partialticks);
 		Vector3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
-		Vector3d cameraPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+		Vector3d cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 		Vector3d offset = playerpos.subtract(cameraPos);
 		Pose pose = player.getPose();
 
-		matrix.push();
+		matrix.pushPose();
 		matrix.translate(offset.x, offset.y, offset.z);
 
 		if (perspective == 2)
-			playerrot.multiply(Vector3f.YP.rotationDegrees(180));
-		matrix.rotate(playerrot);
+			playerrot.mul(Vector3f.YP.rotationDegrees(180));
+		matrix.mulPose(playerrot);
 
-		matrix.push();
+		matrix.pushPose();
 		matrix.scale(0.6f, 0.6f, 0.6f);
 
 		if (perspective == 2)
@@ -463,16 +463,16 @@ public class RenderEvents
 
 		if (pose == Pose.SWIMMING)
 		{
-			float f = player.getSwimAnimation(partialticks);
-			float f3 = player.isInWater() ? -90.0F - player.rotationPitch : -90.0F;
+			float f = player.getSwimAmount(partialticks);
+			float f3 = player.isInWater() ? -90.0F - player.xRot : -90.0F;
 			float f4 = MathHelper.lerp(f, 0.0F, f3);
 			if (perspective == 2)
 			{
 				matrix.translate(0, 0, 1.35);
-				matrix.rotate(Vector3f.XP.rotationDegrees(f4));
+				matrix.mulPose(Vector3f.XP.rotationDegrees(f4));
 			}
 			else
-				matrix.rotate(Vector3f.XN.rotationDegrees(f4));
+				matrix.mulPose(Vector3f.XN.rotationDegrees(f4));
 
 			matrix.translate(0, -1.5, -1.848);
 			if (perspective == 2)
@@ -481,29 +481,29 @@ public class RenderEvents
 
 		if (pose == Pose.FALL_FLYING)
 		{
-			float f1 = (float) player.getTicksElytraFlying() + partialticks;
+			float f1 = (float) player.getFallFlyingTicks() + partialticks;
 			float f2 = MathHelper.clamp(f1 * f1 / 100.0F, 0.0F, 1.0F);
-			if (!player.isSpinAttacking())
+			if (!player.isAutoSpinAttack())
 			{
 				if (perspective == 2)
 					matrix.translate(0, 0, 1.35);
 
 				if (perspective == 2)
-					matrix.rotate(Vector3f.XP.rotationDegrees(f2 * (-90.0F - player.rotationPitch)));
+					matrix.mulPose(Vector3f.XP.rotationDegrees(f2 * (-90.0F - player.xRot)));
 				else
-					matrix.rotate(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.rotationPitch)));
+					matrix.mulPose(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.xRot)));
 			}
 
-			Vector3d Vector3d = player.getLook(partialticks);
-			Vector3d Vector3d1 = player.getMotion();
-			double d0 = Entity.horizontalMag(Vector3d1);
-			double d1 = Entity.horizontalMag(Vector3d);
+			Vector3d Vector3d = player.getViewVector(partialticks);
+			Vector3d Vector3d1 = player.getDeltaMovement();
+			double d0 = Entity.getHorizontalDistanceSqr(Vector3d1);
+			double d1 = Entity.getHorizontalDistanceSqr(Vector3d);
 			if (d0 > 0.0D && d1 > 0.0D)
 			{
 				double d2 = (Vector3d1.x * Vector3d.x + Vector3d1.z * Vector3d.z) / (Math.sqrt(d0) * Math.sqrt(d1));
 				double d3 = Vector3d1.x * Vector3d.z - Vector3d1.z * Vector3d.x;
 
-				matrix.rotate(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
+				matrix.mulPose(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
 			}
 
 			if (perspective != 2)
@@ -524,7 +524,7 @@ public class RenderEvents
 		{
 			if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 				matrix.translate(0, 0, -0.4);
-			matrix.rotate(Vector3f.YP.rotationDegrees(180));
+			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 		}
 		else
 		{
@@ -546,24 +546,24 @@ public class RenderEvents
 			matrix.translate(0, -1.6, -0.65);
 		matrix.scale(1.666f, 1.666f, 1.666f);
 
-		float height = entity.getHeight();
-		float width = entity.getWidth();
+		float height = entity.getBbHeight();
+		float width = entity.getBbWidth();
 		float multiplier = height * width;
-		entity.rotationYaw = 0.0f;
-		entity.prevRotationYaw = 0.0f;
-		entity.setRotationYawHead(0.0f);
-		entity.rotationPitch = 0.0f;
-		entity.prevRotationPitch = 0.0f;
+		entity.yRot = 0.0f;
+		entity.yRotO = 0.0f;
+		entity.setYHeadRot(0.0f);
+		entity.xRot = 0.0f;
+		entity.xRotO = 0.0f;
 
 		if (perspective == 2)
-			matrix.rotate(Vector3f.YP.rotationDegrees(180));
+			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 
 		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
 		matrix.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
 
 		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
 		{
-			matrix.rotate(Vector3f.XN.rotationDegrees(90));
+			matrix.mulPose(Vector3f.XN.rotationDegrees(90));
 			matrix.translate(0, -0.2 * height, 0);
 
 			if (pose == Pose.FALL_FLYING)
@@ -589,22 +589,22 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			ItemStack stack = player.getHeldItemMainhand();
+			ItemStack stack = player.getMainHandItem();
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
 				PlayerModel<AbstractClientPlayerEntity> model = getPlayerModel((AbstractClientPlayerEntity) player);
 
 				AbstractClientPlayerEntity aplayer = (AbstractClientPlayerEntity) player;
-				ResourceLocation skinLoc = aplayer.getLocationSkin();
+				ResourceLocation skinLoc = aplayer.getSkinTextureLocation();
 
-				matrix.push();
+				matrix.pushPose();
 				if (perspective == 2)
-					matrix.rotate(Vector3f.YP.rotationDegrees(180));
+					matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 
-				Minecraft.getInstance().getTextureManager().bindTexture(skinLoc);
+				Minecraft.getInstance().getTextureManager().bind(skinLoc);
 
 				CarryOnOverride overrider = ScriptChecker.getOverride(player);
-				IVertexBuilder builder = buffer.getBuffer(RenderType.getEntityCutout(skinLoc));
+				IVertexBuilder builder = buffer.getBuffer(RenderType.entityCutout(skinLoc));
 
 				if (overrider != null)
 				{
@@ -620,38 +620,38 @@ public class RenderEvents
 
 					if (renderLeft && rotLeft != null)
 					{
-						renderArmPost(model.bipedLeftArm, (float) rotLeft[0], (float) rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.bipedLeftArmwear, (float) rotLeft[0], (float) rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftArm, (float) rotLeft[0], (float) rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftSleeve, (float) rotLeft[0], (float) rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
 					}
 					else if (renderLeft)
 					{
-						renderArmPost(model.bipedLeftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.bipedLeftArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
 					}
 
 					if (renderRight && rotRight != null)
 					{
-						renderArmPost(model.bipedRightArm, (float) rotRight[0], (float) rotRight[2], true, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.bipedRightArmwear, (float) rotRight[0], (float) rotRight[2], true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightArm, (float) rotRight[0], (float) rotRight[2], true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightSleeve, (float) rotRight[0], (float) rotRight[2], true, doSneakCheck(player), light, matrix, builder);
 					}
 					else if (renderRight)
 					{
-						renderArmPost(model.bipedRightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.bipedRightArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
 					}
 				}
 				else
 				{
-					renderArmPost(model.bipedRightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.bipedLeftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.bipedLeftArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.bipedRightArmwear, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
 				}
 
 				if (buffer instanceof Impl)
-					((Impl) buffer).finish();
+					((Impl) buffer).endBatch();
 
-				matrix.pop();
+				matrix.popPose();
 			}
 		}
 	}
@@ -670,10 +670,10 @@ public class RenderEvents
 		{
 			PlayerEntity player = event.getPlayer();
 			Pose pose = player.getPose();
-			ItemStack stack = player.getHeldItemMainhand();
+			ItemStack stack = player.getMainHandItem();
 			if (pose != Pose.SWIMMING && pose != Pose.FALL_FLYING && !stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
 			{
-				PlayerModel<AbstractClientPlayerEntity> model = event.getRenderer().getEntityModel();
+				PlayerModel<AbstractClientPlayerEntity> model = event.getRenderer().getModel();
 
 				CarryOnOverride overrider = ScriptChecker.getOverride(player);
 				if (overrider != null)
@@ -683,23 +683,23 @@ public class RenderEvents
 
 					if (renderRight)
 					{
-						renderArmPre(model.bipedRightArm);
-						renderArmPre(model.bipedRightArmwear);
+						renderArmPre(model.rightArm);
+						renderArmPre(model.rightSleeve);
 
 					}
 
 					if (renderLeft)
 					{
-						renderArmPre(model.bipedLeftArm);
-						renderArmPre(model.bipedLeftArmwear);
+						renderArmPre(model.leftArm);
+						renderArmPre(model.leftSleeve);
 					}
 				}
 				else
 				{
-					renderArmPre(model.bipedRightArm);
-					renderArmPre(model.bipedLeftArm);
-					renderArmPre(model.bipedLeftArmwear);
-					renderArmPre(model.bipedRightArmwear);
+					renderArmPre(model.rightArm);
+					renderArmPre(model.leftArm);
+					renderArmPre(model.leftSleeve);
+					renderArmPre(model.rightSleeve);
 				}
 			}
 		}
@@ -708,30 +708,30 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	private void renderArmPost(ModelRenderer arm, float x, float z, boolean right, boolean sneaking, int light, MatrixStack matrix, IVertexBuilder builder)
 	{
-		matrix.push();
-		arm.showModel = true;
+		matrix.pushPose();
+		arm.visible = true;
 		if (right)
 			matrix.translate(0.015, 0, 0);
 		else
 			matrix.translate(-0.015, 0, 0);
 
 		if (!sneaking)
-			arm.rotationPointY = 20;
+			arm.y = 20;
 		else
-			arm.rotationPointY = 15;
+			arm.y = 15;
 
-		arm.rotateAngleX = (float) x;
-		arm.rotateAngleY = (float) 0;
-		arm.rotateAngleZ = (float) -z;
+		arm.xRot = (float) x;
+		arm.yRot = (float) 0;
+		arm.zRot = (float) -z;
 		arm.render(matrix, builder, light, 655360);
-		arm.rotationPointY = 2;
-		matrix.pop();
+		arm.y = 2;
+		matrix.popPose();
 	}
 
 	@OnlyIn(Dist.CLIENT)
 	private void renderArmPre(ModelRenderer arm)
 	{
-		arm.showModel = false;
+		arm.visible = false;
 	}
 
 	public boolean handleMobends()
@@ -752,10 +752,10 @@ public class RenderEvents
 
 	public static boolean doSneakCheck(PlayerEntity player)
 	{
-		if (player.abilities.isFlying)
+		if (player.abilities.flying)
 			return false;
 
-		return (player.isSneaking() || player.isCrouching());
+		return (player.isShiftKeyDown() || player.isCrouching());
 	}
 
 	public static boolean isChest(Block block)
@@ -767,14 +767,14 @@ public class RenderEvents
 	private static PlayerRenderer getRenderPlayer(AbstractClientPlayerEntity player)
 	{
 		Minecraft mc = Minecraft.getInstance();
-		EntityRendererManager manager = mc.getRenderManager();
-		return manager.getSkinMap().get(player.getSkinType());
+		EntityRendererManager manager = mc.getEntityRenderDispatcher();
+		return manager.getSkinMap().get(player.getModelName());
 	}
 
 	@OnlyIn(Dist.CLIENT)
 	private static PlayerModel<AbstractClientPlayerEntity> getPlayerModel(AbstractClientPlayerEntity player)
 	{
-		return getRenderPlayer(player).getEntityModel();
+		return getRenderPlayer(player).getModel();
 	}
 
 	// @SubscribeEvent

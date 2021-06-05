@@ -33,10 +33,10 @@ public class CommandCarryOn
 				}))
 
 				.then(Commands.literal("clear").executes((cmd) -> {
-					return handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().asPlayer()));
+					return handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().getPlayerOrException()));
 				}))
 
-				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermissionLevel(2)).executes((cmd) -> {
+				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermission(2)).executes((cmd) -> {
 					return handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target"));
 				})))
 
@@ -50,22 +50,22 @@ public class CommandCarryOn
 	{
 		try
 		{
-			if (source.assertIsEntity() != null)
+			if (source.getEntityOrException() != null)
 			{
-				ServerPlayerEntity player = source.asPlayer();
+				ServerPlayerEntity player = source.getPlayerOrException();
 
-				ItemStack main = player.getHeldItemMainhand();
+				ItemStack main = player.getMainHandItem();
 				if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemTile)
 				{
-					source.sendFeedback(new StringTextComponent("Block: " + ItemCarryonBlock.getBlock(main)), true);
-					source.sendFeedback(new StringTextComponent("BlockState: " + ItemCarryonBlock.getBlockState(main)), true);
-					source.sendFeedback(new StringTextComponent("ItemStack: " + ItemCarryonBlock.getItemStack(main)), true);
+					source.sendSuccess(new StringTextComponent("Block: " + ItemCarryonBlock.getBlock(main)), true);
+					source.sendSuccess(new StringTextComponent("BlockState: " + ItemCarryonBlock.getBlockState(main)), true);
+					source.sendSuccess(new StringTextComponent("ItemStack: " + ItemCarryonBlock.getItemStack(main)), true);
 
 					if (ModelOverridesHandler.hasCustomOverrideModel(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main)))
-						source.sendFeedback(new StringTextComponent("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main))), true);
+						source.sendSuccess(new StringTextComponent("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main))), true);
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(main)))
-						source.sendFeedback(new StringTextComponent("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(main))), true);
+						source.sendSuccess(new StringTextComponent("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(main))), true);
 
 					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(main));
 					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(main));
@@ -81,17 +81,17 @@ public class CommandCarryOn
 				}
 				else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity)
 				{
-					source.sendFeedback(new StringTextComponent("Entity: " + ItemCarryonEntity.getEntity(main, player.world)), true);
-					source.sendFeedback(new StringTextComponent("Entity Name: " + ItemCarryonEntity.getEntityName(main)), true);
+					source.sendSuccess(new StringTextComponent("Entity: " + ItemCarryonEntity.getEntity(main, player.level)), true);
+					source.sendSuccess(new StringTextComponent("Entity Name: " + ItemCarryonEntity.getEntityName(main)), true);
 
-					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonEntity.getEntity(main, player.world)))
-						source.sendFeedback(new StringTextComponent("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.world))), true);
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonEntity.getEntity(main, player.level)))
+						source.sendSuccess(new StringTextComponent("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.level))), true);
 
-					CarryOn.LOGGER.info("Entity: " + ItemCarryonEntity.getEntity(main, player.world));
+					CarryOn.LOGGER.info("Entity: " + ItemCarryonEntity.getEntity(main, player.level));
 					CarryOn.LOGGER.info("Entity Name: " + ItemCarryonEntity.getEntityName(main));
 
-					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonEntity.getEntity(main, player.world)))
-						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.world)));
+					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonEntity.getEntity(main, player.level)))
+						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.level)));
 
 					return 1;
 				}
@@ -111,15 +111,15 @@ public class CommandCarryOn
 		for (ServerPlayerEntity player : players)
 		{
 			int cleared = 0;
-			cleared += player.inventory.func_234564_a_(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64, player.container.func_234641_j_()); // TODO
-			cleared += player.inventory.func_234564_a_(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64, player.container.func_234641_j_());
+			cleared += player.inventory.clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64, player.inventoryMenu.getCraftSlots()); // TODO
+			cleared += player.inventory.clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64, player.inventoryMenu.getCraftSlots());
 
-			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(9, player.getEntityId()));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(9, player.getId()));
 
 			if (cleared != 1)
-				source.sendFeedback(new StringTextComponent("Cleared " + cleared + " Items!"), true);
+				source.sendSuccess(new StringTextComponent("Cleared " + cleared + " Items!"), true);
 			else
-				source.sendFeedback(new StringTextComponent("Cleared " + cleared + " Item!"), true);
+				source.sendSuccess(new StringTextComponent("Cleared " + cleared + " Item!"), true);
 
 			return 1;
 		}

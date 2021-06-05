@@ -39,23 +39,23 @@ public class ItemCarryonEntity extends Item {
 	
 	static
 	{
-		initGoals =  ObfuscationReflectionHelper.findMethod(MobEntity.class, "func_184651_r");
+		initGoals =  ObfuscationReflectionHelper.findMethod(MobEntity.class, "registerGoals");
 		initGoals.setAccessible(true);
 	}
 	
 	public static final String ENTITY_DATA_KEY = "entityData";
 
 	public ItemCarryonEntity() {
-		super(new Item.Properties().maxStackSize(1));
+		super(new Item.Properties().stacksTo(1));
 		this.setRegistryName(CarryOn.MODID, "entity_item");
 	}
 
 	@Override
-	public ITextComponent getDisplayName(ItemStack stack)
+	public ITextComponent getName(ItemStack stack)
 	{
 		if (hasEntityData(stack)) {
 			
-			return new TranslationTextComponent(getEntityType(stack).getTranslationKey());
+			return new TranslationTextComponent(getEntityType(stack).getDescriptionId());
 		}
 
 		return new StringTextComponent("");
@@ -92,13 +92,13 @@ public class ItemCarryonEntity extends Item {
 	}
 
 	@Override
-	public ActionResultType onItemUse(ItemUseContext context) {
+	public ActionResultType useOn(ItemUseContext context) {
 		PlayerEntity player = context.getPlayer();
-		World world = context.getWorld();
-		BlockPos pos = context.getPos();
-		Direction facing = context.getFace();
+		World world = context.getLevel();
+		BlockPos pos = context.getClickedPos();
+		Direction facing = context.getClickedFace();
 
-		ItemStack stack = context.getItem();
+		ItemStack stack = context.getItemInHand();
 
 		BlockState state = world.getBlockState(pos);
 
@@ -110,21 +110,21 @@ public class ItemCarryonEntity extends Item {
 		if (hasEntityData(stack)) {
 			BlockPos finalPos = pos;
 
-			if (!state.isReplaceable(new BlockItemUseContext(context))) {
-				finalPos = pos.offset(facing);
+			if (!state.canBeReplaced(new BlockItemUseContext(context))) {
+				finalPos = pos.relative(facing);
 			}
 
 			Entity entity = getEntity(stack, world);
 			if (entity != null) {
-				if (!world.isRemote) {
-					entity.setPositionAndRotation(finalPos.getX() + 0.5, finalPos.getY(), finalPos.getZ() + 0.5,
-							180 + player.rotationYawHead, 0.0f);
-					world.addEntity(entity);
+				if (!world.isClientSide) {
+					entity.absMoveTo(finalPos.getX() + 0.5, finalPos.getY(), finalPos.getZ() + 0.5,
+							180 + player.yHeadRot, 0.0f);
+					world.addFreshEntity(entity);
 					if (entity instanceof MobEntity) {
 						((MobEntity) entity).playAmbientSound();
 					}
 					clearEntityData(stack);
-					player.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+					player.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
 					ItemEvents.sendPacket(player, 9, 0);
 
 				}
@@ -147,8 +147,8 @@ public class ItemCarryonEntity extends Item {
 						: ((PlayerEntity) entity).isCreative())
 					return;
 
-				((LivingEntity) entity).addPotionEffect(
-						new EffectInstance(Effects.SLOWNESS, 1, potionLevel(stack, world), false, false));
+				((LivingEntity) entity).addEffect(
+						new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack, world), false, false));
 			}
 
 		} else {
@@ -179,7 +179,7 @@ public class ItemCarryonEntity extends Item {
 		String name = getEntityName(stack);
 
 		CompoundNBT e = getPersistentData(stack);
-		Optional<EntityType<?>> type = EntityType.byKey(name);
+		Optional<EntityType<?>> type = EntityType.byString(name);
 		Entity entity = null;
 
 		if (type.isPresent()) {
@@ -225,7 +225,7 @@ public class ItemCarryonEntity extends Item {
 		if (stack.hasTag()) {
 			CompoundNBT tag = stack.getTag();
 			String name = tag.getString("entity");
-			Optional<EntityType<?>> type = EntityType.byKey(name);
+			Optional<EntityType<?>> type = EntityType.byString(name);
 			if (type.isPresent())
 				return type.get();
 		}
@@ -237,7 +237,7 @@ public class ItemCarryonEntity extends Item {
 		if (e == null)
 			return 1;
 
-		int i = (int) (e.getHeight() * e.getWidth());
+		int i = (int) (e.getBbHeight() * e.getBbWidth());
 		if (i > 4)
 			i = 4;
 

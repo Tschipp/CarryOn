@@ -34,7 +34,7 @@ public class ObfuscateEvents
 			return;
 		
 		PlayerModel<?> model = event.getModelPlayer();
-		ItemStack stack = player.getHeldItemMainhand();
+		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
 			
@@ -55,33 +55,33 @@ public class ObfuscateEvents
 
 				if (renderLeft && rotLeft != null)
 				{
-					renderArmPre(model.bipedLeftArm, (float) rotLeft[0], (float) rotLeft[2], rotation);
-					renderArmPre(model.bipedLeftArmwear, (float) rotLeft[0], (float) rotLeft[2], rotation);
+					renderArmPre(model.leftArm, (float) rotLeft[0], (float) rotLeft[2], rotation);
+					renderArmPre(model.leftSleeve, (float) rotLeft[0], (float) rotLeft[2], rotation);
 				}
 				else if (renderLeft)
 				{
-					renderArmPre(model.bipedLeftArm, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
-					renderArmPre(model.bipedLeftArmwear, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+					renderArmPre(model.leftArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+					renderArmPre(model.leftSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
 				}
 
 				if (renderRight && rotRight != null)
 				{
-					renderArmPre(model.bipedRightArm, (float) rotRight[0], (float) rotRight[2], rotation);
-					renderArmPre(model.bipedRightArmwear, (float) rotRight[0], (float) rotRight[2], rotation);
+					renderArmPre(model.rightArm, (float) rotRight[0], (float) rotRight[2], rotation);
+					renderArmPre(model.rightSleeve, (float) rotRight[0], (float) rotRight[2], rotation);
 				}
 				else if (renderRight)
 				{
-					renderArmPre(model.bipedRightArm, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
-					renderArmPre(model.bipedRightArmwear, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+					renderArmPre(model.rightArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+					renderArmPre(model.rightSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
 				}
 
 			}
 			else
 			{
-				renderArmPre(model.bipedRightArm, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
-				renderArmPre(model.bipedRightArmwear, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
-				renderArmPre(model.bipedLeftArm, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
-				renderArmPre(model.bipedLeftArmwear, 0.8F + (player.isSneaking() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+				renderArmPre(model.rightArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+				renderArmPre(model.rightSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+				renderArmPre(model.leftArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+				renderArmPre(model.leftSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
 			}
 			
 		}	
@@ -92,9 +92,9 @@ public class ObfuscateEvents
 	@OnlyIn(Dist.CLIENT)
 	private void renderArmPre(ModelRenderer arm, float x, float z, float rotation)
 	{
-		arm.rotateAngleX = (float) -x;
-		arm.rotateAngleY = (float) -Math.toRadians(rotation);
-		arm.rotateAngleZ = (float) z;
+		arm.xRot = (float) -x;
+		arm.yRot = (float) -Math.toRadians(rotation);
+		arm.zRot = (float) z;
 	}
 	
 	

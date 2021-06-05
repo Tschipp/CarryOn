@@ -34,7 +34,7 @@ if (System.getenv('BUILD_NUMBER') != null) {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: "${mcp_mappings}"
+    mappings channel: 'official', version: "1.16.5"
    
     runs {
         client {
@@ -43,6 +43,9 @@ minecraft {
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
             property 'forge.logging.console.level', 'debug'
+
+			property 'mixin.env.remapRefMap', 'true'
+			property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             mods {
                 carryon {
@@ -57,6 +60,9 @@ minecraft {
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
             property 'forge.logging.console.level', 'debug'
+
+			property 'mixin.env.remapRefMap', 'true'
+			property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             mods {
                 carryon {

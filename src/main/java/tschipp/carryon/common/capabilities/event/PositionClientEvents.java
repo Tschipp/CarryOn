@@ -36,15 +36,15 @@ public class PositionClientEvents
 					IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
 					if(cap.isBlockActivated())
 					{
-						World world = player.world;
+						World world = player.level;
 						BlockPos pos = cap.getPos();
 						if(world != null)
 						{
-							TileEntity te = world.getTileEntity(pos);
+							TileEntity te = world.getBlockEntity(pos);
 							if(te == null)
 							{
 //								player.openContainer = null;
-								Minecraft.getInstance().currentScreen = null;
+								Minecraft.getInstance().screen = null;
 //								Minecraft.getInstance().fo;
 								cap.setBlockActivated(false);
 								cap.setPos(new BlockPos(0,0,0));
@@ -80,7 +80,7 @@ public class PositionClientEvents
 			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{
 				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
-				if (cap.isBlockActivated() && Minecraft.getInstance().currentScreen == null)
+				if (cap.isBlockActivated() && Minecraft.getInstance().screen == null)
 				{
 					cap.setBlockActivated(false);
 					cap.setPos(new BlockPos(0, 0, 0));

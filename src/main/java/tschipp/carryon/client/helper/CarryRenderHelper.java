@@ -22,15 +22,15 @@ public class CarryRenderHelper
 {
 	public static Vector3d getExactPos(Entity entity, float partialticks)
 	{
-		return new Vector3d(entity.lastTickPosX + (entity.getPosX() - entity.lastTickPosX) * partialticks, entity.lastTickPosY + (entity.getPosY() - entity.lastTickPosY) * partialticks, entity.lastTickPosZ + (entity.getPosZ() - entity.lastTickPosZ) * partialticks);
+		return new Vector3d(entity.xOld + (entity.getX() - entity.xOld) * partialticks, entity.yOld + (entity.getY() - entity.yOld) * partialticks, entity.zOld + (entity.getZ() - entity.zOld) * partialticks);
 	}
 
 	public static float getExactBodyRotationDegrees(LivingEntity entity, float partialticks)
 	{
-		if (entity.getRidingEntity() != null && entity.getRidingEntity() instanceof LivingEntity)
-			return -(entity.prevRotationYawHead + (entity.rotationYawHead - entity.prevRotationYawHead) * partialticks);
+		if (entity.getVehicle() != null && entity.getVehicle() instanceof LivingEntity)
+			return -(entity.yHeadRotO + (entity.yHeadRot - entity.yHeadRotO) * partialticks);
 		else
-			return -(entity.prevRenderYawOffset + (entity.renderYawOffset - entity.prevRenderYawOffset) * partialticks);
+			return -(entity.yBodyRotO + (entity.yBodyRot - entity.yBodyRotO) * partialticks);
 	}
 
 	public static Quaternion getExactBodyRotation(LivingEntity entity, float partialticks)
@@ -47,9 +47,9 @@ public class CarryRenderHelper
 		float[] scaled = ScriptParseHelper.getScaled(override.getRenderScaled());
 			
 		Quaternion rot = Vector3f.XP.rotationDegrees(rotation[0]);
-		rot.multiply(Vector3f.YP.rotationDegrees(rotation[1]));		
-		rot.multiply(Vector3f.ZP.rotationDegrees(rotation[2]));
-		matrix.rotate(rot);
+		rot.mul(Vector3f.YP.rotationDegrees(rotation[1]));		
+		rot.mul(Vector3f.ZP.rotationDegrees(rotation[2]));
+		matrix.mulPose(rot);
 		
 		matrix.translate(translation[0], translation[1], perspective == 1 && override.isBlock() ? -translation[2] : translation[2]);		
 
@@ -64,18 +64,18 @@ public class CarryRenderHelper
 
 			if (override instanceof ItemStack)
 			{
-				Minecraft.getInstance().getItemRenderer().renderItem((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model); 
+				Minecraft.getInstance().getItemRenderer().render((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model); 
 				return;
 			}
 		}
 
-		Minecraft.getInstance().getItemRenderer().renderItem(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
+		Minecraft.getInstance().getItemRenderer().render(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
 	}
 
 	public static int getPerspective()
 	{
-		boolean isThirdPerson = !Minecraft.getInstance().gameSettings.getPointOfView().func_243192_a(); //isThirdPerson
-		boolean isThirdPersonReverse = Minecraft.getInstance().gameSettings.getPointOfView().func_243193_b();
+		boolean isThirdPerson = !Minecraft.getInstance().options.getCameraType().isFirstPerson(); //isThirdPerson
+		boolean isThirdPersonReverse = Minecraft.getInstance().options.getCameraType().isMirrored();
 
 		if (!isThirdPerson && !isThirdPersonReverse)
 			return 0;

@@ -69,7 +69,7 @@ public class ModelOverridesHandler
 			toOverride = toOverride.replace(nbt, "");
 			try
 			{
-				tag = JsonToNBT.getTagFromJson(nbt);
+				tag = JsonToNBT.parseTag(nbt);
 			}
 			catch (Exception e)
 			{
@@ -135,7 +135,7 @@ public class ModelOverridesHandler
 					}
 					else
 					{
-						keyComp.putInt("stateid", Block.getStateId((BlockState) toOverrideObject));
+						keyComp.putInt("stateid", Block.getId((BlockState) toOverrideObject));
 						keyComp.putString("block", ((BlockState) toOverrideObject).getBlock().getRegistryName().toString());
 					}
 					OVERRIDE_OBJECTS.put(keyComp, overrideObject);
@@ -161,7 +161,7 @@ public class ModelOverridesHandler
 		if (OVERRIDE_OBJECTS.isEmpty())
 			return false;
 
-		int stateid = Block.getStateId(state);
+		int stateid = Block.getId(state);
 		CompoundNBT[] keys = new CompoundNBT[OVERRIDE_OBJECTS.size()];
 		OVERRIDE_OBJECTS.keySet().toArray(keys);
 		for (CompoundNBT key : keys)
@@ -171,15 +171,15 @@ public class ModelOverridesHandler
 			if (id == 0 ? block == state.getBlock() : id == stateid)
 			{
 				CompoundNBT toCheckForCompound = key.getCompound("nbttag");
-				Set<String> kSetToCheck = toCheckForCompound.keySet();
-				Set<String> kSetTile = tag.keySet();
+				Set<String> kSetToCheck = toCheckForCompound.getAllKeys();
+				Set<String> kSetTile = tag.getAllKeys();
 
 				boolean flag = true;
 				if (kSetTile.containsAll(kSetToCheck))
 				{
 					for (String skey : kSetToCheck)
 					{
-						if (!NBTUtil.areNBTEquals(tag.get(skey), toCheckForCompound.get(skey), true))
+						if (!NBTUtil.compareNbt(tag.get(skey), toCheckForCompound.get(skey), true))
 							flag = false;
 					}
 					if (flag)
@@ -194,7 +194,7 @@ public class ModelOverridesHandler
 	@OnlyIn(Dist.CLIENT)
 	public static IBakedModel getCustomOverrideModel(BlockState state, CompoundNBT tag, World world, PlayerEntity player)
 	{
-		int stateid = Block.getStateId(state);
+		int stateid = Block.getId(state);
 		CompoundNBT[] keys = new CompoundNBT[OVERRIDE_OBJECTS.size()];
 		OVERRIDE_OBJECTS.keySet().toArray(keys);
 		for (CompoundNBT key : keys)
@@ -204,15 +204,15 @@ public class ModelOverridesHandler
 			if (id == 0 ? block == state.getBlock() : id == stateid)
 			{
 				CompoundNBT toCheckForCompound = key.getCompound("nbttag");
-				Set<String> kSetToCheck = toCheckForCompound.keySet();
-				Set<String> kSetTile = tag.keySet();
+				Set<String> kSetToCheck = toCheckForCompound.getAllKeys();
+				Set<String> kSetTile = tag.getAllKeys();
 
 				boolean flag = true;
 				if (kSetTile.containsAll(kSetToCheck))
 				{
 					for (String skey : kSetToCheck)
 					{
-						if (!NBTUtil.areNBTEquals(tag.get(skey), toCheckForCompound.get(skey), true))
+						if (!NBTUtil.compareNbt(tag.get(skey), toCheckForCompound.get(skey), true))
 							flag = false;
 					}
 					if (flag)
@@ -223,9 +223,9 @@ public class ModelOverridesHandler
 							return null;
 
 						if (override instanceof BlockState)
-							return Minecraft.getInstance().getBlockRendererDispatcher().getModelForState((BlockState) override);
+							return Minecraft.getInstance().getBlockRenderer().getBlockModel((BlockState) override);
 						else
-							return Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides((ItemStack) override, world, player);
+							return Minecraft.getInstance().getItemRenderer().getModel((ItemStack) override, world, player);
 					}
 				}
 			}
@@ -236,7 +236,7 @@ public class ModelOverridesHandler
 	
 	public static Object getOverrideObject(BlockState state, CompoundNBT tag)
 	{
-		int stateid = Block.getStateId(state);
+		int stateid = Block.getId(state);
 		CompoundNBT[] keys = new CompoundNBT[OVERRIDE_OBJECTS.size()];
 		OVERRIDE_OBJECTS.keySet().toArray(keys);
 		for (CompoundNBT key : keys)
@@ -246,15 +246,15 @@ public class ModelOverridesHandler
 			if (id == 0 ? block == state.getBlock() : id == stateid)
 			{
 				CompoundNBT toCheckForCompound = key.getCompound("nbttag");
-				Set<String> kSetToCheck = toCheckForCompound.keySet();
-				Set<String> kSetTile = tag.keySet();
+				Set<String> kSetToCheck = toCheckForCompound.getAllKeys();
+				Set<String> kSetTile = tag.getAllKeys();
 
 				boolean flag = true;
 				if (kSetTile.containsAll(kSetToCheck))
 				{
 					for (String skey : kSetToCheck)
 					{
-						if (!NBTUtil.areNBTEquals(tag.get(skey), toCheckForCompound.get(skey), true))
+						if (!NBTUtil.compareNbt(tag.get(skey), toCheckForCompound.get(skey), true))
 							flag = false;
 					}
 					if (flag)

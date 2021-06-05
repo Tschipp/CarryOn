@@ -33,7 +33,7 @@ public class ScriptChecker
 
 		Block block = state.getBlock();
 		Material material = state.getMaterial();
-		float hardness = state.getBlockHardness(world, pos);
+		float hardness = state.getDestroySpeed(world, pos);
 		@SuppressWarnings("deprecation")
 		float resistance = block.getExplosionResistance();
 		CompoundNBT nbt = tag;
@@ -62,8 +62,8 @@ public class ScriptChecker
 			return null;
 
 		String name = entity.getType().getRegistryName().toString();
-		float height = entity.getHeight();
-		float width = entity.getWidth();
+		float height = entity.getBbHeight();
+		float width = entity.getBbWidth();
 		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;
 		CompoundNBT tag = entity.serializeNBT();
 		
@@ -109,11 +109,11 @@ public class ScriptChecker
 
 	public static boolean fulfillsConditions(CarryOnOverride override, PlayerEntity player)
 	{
-		AdvancementManager manager = ((ServerPlayerEntity) player).server.getAdvancementManager();
+		AdvancementManager manager = ((ServerPlayerEntity) player).server.getAdvancements();
 		Advancement adv = manager.getAdvancement(new ResourceLocation((override.getConditionAchievement()).isEmpty() ? "" : override.getConditionAchievement()));
 
-		boolean achievement = adv == null ? true : ((ServerPlayerEntity) player).getAdvancements().getProgress(adv).isDone();
-		boolean gamemode = ScriptParseHelper.matches(((ServerPlayerEntity) player).interactionManager.getGameType().getID(), override.getConditionGamemode());
+		boolean achievement = adv == null ? true : ((ServerPlayerEntity) player).getAdvancements().getOrStartProgress(adv).isDone();
+		boolean gamemode = ScriptParseHelper.matches(((ServerPlayerEntity) player).gameMode.getGameModeForPlayer().getId(), override.getConditionGamemode());
 		boolean gamestage = true;
 		if (ModList.get().isLoaded("gamestages"))
 		{
@@ -154,7 +154,7 @@ public class ScriptChecker
 			}
 		}
 
-		boolean position = ScriptParseHelper.matches(player.getPosition(), override.getConditionPosition());
+		boolean position = ScriptParseHelper.matches(player.blockPosition(), override.getConditionPosition());
 		boolean xp = ScriptParseHelper.matches(player.experienceLevel, override.getConditionXp());
 		boolean scoreboard = ScriptParseHelper.matchesScore(player, override.getConditionScoreboard());
 		boolean effects = ScriptParseHelper.hasEffects(player, override.getConditionEffects());

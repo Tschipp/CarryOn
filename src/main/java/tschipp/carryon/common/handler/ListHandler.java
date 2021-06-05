@@ -276,17 +276,17 @@ public class ListHandler
 			}
 		}
 
-		ITagCollection<Block> blocktags = BlockTags.getCollection();
-		ITagCollection<EntityType<?>> entitytags = EntityTypeTags.getCollection();
+		ITagCollection<Block> blocktags = BlockTags.getAllTags();
+		ITagCollection<EntityType<?>> entitytags = EntityTypeTags.getAllTags();
 
-		System.out.println(blocktags.getRegisteredTags());
+		System.out.println(blocktags.getAvailableTags());
 		
 		for (String s : forbidden)
 		{
 			if (s.startsWith("#"))
 			{
 				String sub = s.substring(1, s.length());
-				ITag<Block> tag = blocktags.get(new ResourceLocation(sub));
+				ITag<Block> tag = blocktags.getTag(new ResourceLocation(sub));
 				if (tag != null)
 					FORBIDDEN_TILES_TAGS.add(tag);
 			}
@@ -296,7 +296,7 @@ public class ListHandler
 		{
 			if (s.startsWith("#"))
 			{
-				ITag<Block> tag = blocktags.get(new ResourceLocation(s.substring(1, s.length())));
+				ITag<Block> tag = blocktags.getTag(new ResourceLocation(s.substring(1, s.length())));
 				if (tag != null)
 					ALLOWED_TILES_TAGS.add(tag);
 			}
@@ -306,7 +306,7 @@ public class ListHandler
 		{
 			if (s.startsWith("#"))
 			{
-				ITag<EntityType<?>> tag = entitytags.get(new ResourceLocation(s.substring(1, s.length())));
+				ITag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
 				if (tag != null)
 					FORBIDDEN_ENTITIES_TAGS.add(tag);
 			}
@@ -316,7 +316,7 @@ public class ListHandler
 		{
 			if (s.startsWith("#"))
 			{
-				ITag<EntityType<?>> tag = entitytags.get(new ResourceLocation(s.substring(1, s.length())));
+				ITag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
 				if (tag != null)
 					ALLOWED_ENTITIES_TAGS.add(tag);
 			}
@@ -326,7 +326,7 @@ public class ListHandler
 		{
 			if (s.startsWith("#"))
 			{
-				ITag<EntityType<?>> tag = entitytags.get(new ResourceLocation(s.substring(1, s.length())));
+				ITag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
 				if (tag != null)
 					FORBIDDEN_STACKING_TAGS.add(tag);
 			}
@@ -336,7 +336,7 @@ public class ListHandler
 		{
 			if (s.startsWith("#"))
 			{
-				ITag<EntityType<?>> tag = entitytags.get(new ResourceLocation(s.substring(1, s.length())));
+				ITag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
 				if (tag != null)
 					ALLOWED_STACKING_TAGS.add(tag);
 			}

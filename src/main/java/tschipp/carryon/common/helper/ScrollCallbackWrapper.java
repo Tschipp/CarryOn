@@ -15,7 +15,7 @@ public class ScrollCallbackWrapper
 
 	public void setup(Minecraft mc)
 	{
-		oldCallback = GLFW.glfwSetScrollCallback(mc.getMainWindow().getHandle(), this::scrollCallback);
+		oldCallback = GLFW.glfwSetScrollCallback(mc.getWindow().getWindow(), this::scrollCallback);
 	}
 
 	private void scrollCallback(long window, double xoffset, double yoffset)

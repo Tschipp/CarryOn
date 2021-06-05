@@ -53,7 +53,7 @@ public class CarrySlotPacket
 
 				if (world != null)
 				{
-					Entity e = world.getEntityByID(entityid);
+					Entity e = world.getEntity(entityid);
 
 					if (e != null && e instanceof PlayerEntity)
 					{

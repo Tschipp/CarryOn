@@ -104,7 +104,7 @@ public class CarryOnOverride
 							if (resistance != null)
 								setTypeResistance(resistance.getAsString());
 							if (nbt != null)
-								setTypeBlockTag(JsonToNBT.getTagFromJson(nbt.toString()));
+								setTypeBlockTag(JsonToNBT.parseTag(nbt.toString()));
 						}
 						else
 						{
@@ -124,7 +124,7 @@ public class CarryOnOverride
 							if (width != null)
 								setTypeWidth(width.getAsString());
 							if (nbt != null)
-								setTypeEntityTag(JsonToNBT.getTagFromJson(nbt.toString()));
+								setTypeEntityTag(JsonToNBT.parseTag(nbt.toString()));
 						}
 
 						if (conditions != null)
@@ -177,7 +177,7 @@ public class CarryOnOverride
 							if (scaled != null)
 								setRenderscaled(scaled.getAsString());
 							if (nbt != null)
-								setRenderNBT(JsonToNBT.getTagFromJson(nbt.toString()));
+								setRenderNBT(JsonToNBT.parseTag(nbt.toString()));
 							if (rotationLeftArm != null)
 								setRenderRotationLeftArm(rotationLeftArm.getAsString());
 							if (rotationRightArm != null)
@@ -783,95 +783,95 @@ public class CarryOnOverride
 	public void serialize(PacketBuffer buf)
 	{
 		// BLOCKS
-		buf.writeCompoundTag(typeBlockTag);
-		buf.writeString(typeNameBlock);
-		buf.writeString(typeMaterial);
-		buf.writeString(typeHardness);
-		buf.writeString(typeResistance);
+		buf.writeNbt(typeBlockTag);
+		buf.writeUtf(typeNameBlock);
+		buf.writeUtf(typeMaterial);
+		buf.writeUtf(typeHardness);
+		buf.writeUtf(typeResistance);
 
 		// ENTITIES
-		buf.writeCompoundTag(typeEntityTag);
-		buf.writeString(typeNameEntity);
-		buf.writeString(typeHeight);
-		buf.writeString(typeWidth);
-		buf.writeString(typeHealth);
+		buf.writeNbt(typeEntityTag);
+		buf.writeUtf(typeNameEntity);
+		buf.writeUtf(typeHeight);
+		buf.writeUtf(typeWidth);
+		buf.writeUtf(typeHealth);
 
 		// CONDITIONS
-		buf.writeString(conditionGamestage);
-		buf.writeString(conditionAchievement);
-		buf.writeString(conditionXp);
-		buf.writeString(conditionGamemode);
-		buf.writeString(conditionScoreboard);
-		buf.writeString(conditionPosition);
-		buf.writeString(conditionEffects);
+		buf.writeUtf(conditionGamestage);
+		buf.writeUtf(conditionAchievement);
+		buf.writeUtf(conditionXp);
+		buf.writeUtf(conditionGamemode);
+		buf.writeUtf(conditionScoreboard);
+		buf.writeUtf(conditionPosition);
+		buf.writeUtf(conditionEffects);
 
 		// RENDER
-		buf.writeString(renderNameBlock);
-		buf.writeString(renderNameEntity);
-		buf.writeCompoundTag(renderNBT);
-		buf.writeString(renderTranslation);
-		buf.writeString(renderRotation);
-		buf.writeString(renderscaled);
-		buf.writeString(renderRotationLeftArm);
-		buf.writeString(renderRotationRightArm);
+		buf.writeUtf(renderNameBlock);
+		buf.writeUtf(renderNameEntity);
+		buf.writeNbt(renderNBT);
+		buf.writeUtf(renderTranslation);
+		buf.writeUtf(renderRotation);
+		buf.writeUtf(renderscaled);
+		buf.writeUtf(renderRotationLeftArm);
+		buf.writeUtf(renderRotationRightArm);
 		buf.writeBoolean(renderLeftArm);
 		buf.writeBoolean(renderRightArm);
 
 		// EFFECTS
-		buf.writeString(commandInit);
-		buf.writeString(commandLoop);
-		buf.writeString(commandPlace);
+		buf.writeUtf(commandInit);
+		buf.writeUtf(commandLoop);
+		buf.writeUtf(commandPlace);
 
 		buf.writeBoolean(isBlock);
 		buf.writeBoolean(isEntity);
-		buf.writeString(resourceLocation);
+		buf.writeUtf(resourceLocation);
 	}
 
 	public static CarryOnOverride deserialize(PacketBuffer buf)
 	{
 		CarryOnOverride override = new CarryOnOverride("");
-		override.typeBlockTag = buf.readCompoundTag();
-		override.typeNameBlock = buf.readString();
-		override.typeMaterial = buf.readString();
-		override.typeHardness = buf.readString();
-		override.typeResistance = buf.readString();
+		override.typeBlockTag = buf.readNbt();
+		override.typeNameBlock = buf.readUtf();
+		override.typeMaterial = buf.readUtf();
+		override.typeHardness = buf.readUtf();
+		override.typeResistance = buf.readUtf();
 
 		// ENTITIES
-		override.typeEntityTag = buf.readCompoundTag();
-		override.typeNameEntity = buf.readString();
-		override.typeHeight = buf.readString();
-		override.typeWidth = buf.readString();
-		override.typeHealth = buf.readString();
+		override.typeEntityTag = buf.readNbt();
+		override.typeNameEntity = buf.readUtf();
+		override.typeHeight = buf.readUtf();
+		override.typeWidth = buf.readUtf();
+		override.typeHealth = buf.readUtf();
 
 		// CONDITIONS
-		override.conditionGamestage = buf.readString();
-		override.conditionAchievement = buf.readString();
-		override.conditionXp = buf.readString();
-		override.conditionGamemode = buf.readString();
-		override.conditionScoreboard = buf.readString();
-		override.conditionPosition = buf.readString();
-		override.conditionEffects = buf.readString();
+		override.conditionGamestage = buf.readUtf();
+		override.conditionAchievement = buf.readUtf();
+		override.conditionXp = buf.readUtf();
+		override.conditionGamemode = buf.readUtf();
+		override.conditionScoreboard = buf.readUtf();
+		override.conditionPosition = buf.readUtf();
+		override.conditionEffects = buf.readUtf();
 
 		// RENDER
-		override.renderNameBlock = buf.readString();
-		override.renderNameEntity = buf.readString();
-		override.renderNBT = buf.readCompoundTag();
-		override.renderTranslation = buf.readString();
-		override.renderRotation = buf.readString();
-		override.renderscaled = buf.readString();
-		override.renderRotationLeftArm = buf.readString();
-		override.renderRotationRightArm = buf.readString();
+		override.renderNameBlock = buf.readUtf();
+		override.renderNameEntity = buf.readUtf();
+		override.renderNBT = buf.readNbt();
+		override.renderTranslation = buf.readUtf();
+		override.renderRotation = buf.readUtf();
+		override.renderscaled = buf.readUtf();
+		override.renderRotationLeftArm = buf.readUtf();
+		override.renderRotationRightArm = buf.readUtf();
 		override.renderLeftArm = buf.readBoolean();
 		override.renderRightArm = buf.readBoolean();
 
 		// EFFECTS
-		override.commandInit = buf.readString();
-		override.commandLoop = buf.readString();
-		override.commandPlace = buf.readString();
+		override.commandInit = buf.readUtf();
+		override.commandLoop = buf.readUtf();
+		override.commandPlace = buf.readUtf();
 
 		override.isBlock = buf.readBoolean();
 		override.isEntity = buf.readBoolean();
-		override.resourceLocation = buf.readString();
+		override.resourceLocation = buf.readUtf();
 
 		return override;
 	}

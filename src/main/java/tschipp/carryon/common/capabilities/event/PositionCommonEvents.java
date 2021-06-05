@@ -44,7 +44,7 @@ public class PositionCommonEvents
 		if (player instanceof FakePlayer)
 			return;
 
-		TileEntity te = world.getTileEntity(pos);
+		TileEntity te = world.getBlockEntity(pos);
 		if (te != null)
 		{
 			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())

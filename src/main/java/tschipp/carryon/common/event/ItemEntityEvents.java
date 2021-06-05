@@ -43,13 +43,13 @@ public class ItemEntityEvents
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		PlayerEntity player = event.getPlayer();
-		ItemStack stack = player.getHeldItemMainhand();
+		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
 			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
 
-			if (!player.world.isRemote)
+			if (!player.level.isClientSide)
 			{
 				CarryOnOverride override = ScriptChecker.getOverride(player);
 				if (override != null)
@@ -57,7 +57,7 @@ public class ItemEntityEvents
 					String command = override.getCommandPlace();
 					
 					if (command != null)
-						player.getServer().getCommandManager().handleCommand(player.getServer().getCommandSource(), "/execute as " + player.getGameProfile().getName() + " run " + command);
+						player.getServer().getCommands().performCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
 			}
 		}
@@ -76,10 +76,10 @@ public class ItemEntityEvents
 			Item item = stack.getItem();
 			if (item == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
-				BlockPos pos = eitem.getPosition();
+				BlockPos pos = eitem.blockPosition();
 				Entity entity = ItemCarryonEntity.getEntity(stack, world);
-				entity.setPosition(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-				world.addEntity(entity);
+				entity.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+				world.addFreshEntity(entity);
 
 				ItemCarryonEntity.clearEntityData(stack);
 				eitem.setItem(ItemStack.EMPTY);
@@ -94,20 +94,20 @@ public class ItemEntityEvents
 
 		if (player instanceof ServerPlayerEntity)
 		{
-			ItemStack main = player.getHeldItemMainhand();
-			ItemStack off = player.getHeldItemOffhand();
+			ItemStack main = player.getMainHandItem();
+			ItemStack off = player.getOffhandItem();
 			World world = event.getWorld();
 			Entity entity = event.getTarget();
-			BlockPos pos = entity.getPosition();
+			BlockPos pos = entity.blockPosition();
 
 			if (main.isEmpty() && off.isEmpty() && CarryOnKeybinds.isKeyPressed(player))
 			{
 				ItemStack stack = new ItemStack(RegistrationHandler.itemEntity);
 
-				if (entity.hurtResistantTime == 0)
+				if (entity.invulnerableTime == 0)
 				{
 					if (entity instanceof AnimalEntity)
-						((AnimalEntity) entity).clearLeashed(true, true);
+						((AnimalEntity) entity).dropLeash(true, true);
 
 					if (PickupHandler.canPlayerPickUpEntity((ServerPlayerEntity) player, entity))
 					{
@@ -127,15 +127,15 @@ public class ItemEntityEvents
 							if (override != null)
 								overrideHash = override.hashCode();
 
-							ItemEvents.sendPacket(player, player.inventory.currentItem, overrideHash);
+							ItemEvents.sendPacket(player, player.inventory.selected, overrideHash);
 
 							if (entity instanceof LivingEntity)
 								((LivingEntity) entity).setHealth(0);
 
-							entity.removePassengers();
-							entity.setPosition(entity.getPosX(), 0, entity.getPosZ());
+							entity.ejectPassengers();
+							entity.setPos(entity.getX(), 0, entity.getZ());
 							entity.remove();
-							player.setHeldItem(Hand.MAIN_HAND, stack);
+							player.setItemInHand(Hand.MAIN_HAND, stack);
 							event.setCanceled(true);
 							event.setCancellationResult(ActionResultType.FAIL);
 						}
@@ -146,15 +146,15 @@ public class ItemEntityEvents
 			{
 				Entity entityHeld = ItemCarryonEntity.getEntity(main, world);
 
-				if (entity.hurtResistantTime == 0 && entityHeld instanceof LivingEntity)
+				if (entity.invulnerableTime == 0 && entityHeld instanceof LivingEntity)
 				{
 
-					if (!world.isRemote && entityHeld.getUniqueID() != entity.getUniqueID() && entity.isAlive())
+					if (!world.isClientSide && entityHeld.getUUID() != entity.getUUID() && entity.isAlive())
 					{
 
-						double sizeHeldEntity = entityHeld.getHeight() * entityHeld.getWidth();
-						double distance = pos.distanceSq(player.getPosition());
-						Entity lowestEntity = entity.getLowestRidingEntity();
+						double sizeHeldEntity = entityHeld.getBbHeight() * entityHeld.getBbWidth();
+						double distance = pos.distSqr(player.blockPosition());
+						Entity lowestEntity = entity.getRootVehicle();
 						int numPassengers = getAllPassengers(lowestEntity);
 						if (numPassengers < Settings.maxEntityStackLimit.get() - 1)
 						{
@@ -162,46 +162,46 @@ public class ItemEntityEvents
 
 							if (Settings.useWhitelistStacking.get() ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
 							{
-								double sizeEntity = topEntity.getHeight() * topEntity.getWidth();
+								double sizeEntity = topEntity.getBbHeight() * topEntity.getBbWidth();
 								if ((Settings.entitySizeMattersStacking.get() && sizeHeldEntity <= sizeEntity) || !Settings.entitySizeMattersStacking.get())
 								{
 									if (topEntity instanceof HorseEntity)
 									{
 										HorseEntity horse = (HorseEntity) topEntity;
-										horse.setHorseTamed(true);
+										horse.setTamed(true);
 									}
 
 									if (distance < 6)
 									{
-										double tempX = entity.getPosX();
-										double tempY = entity.getPosY();
-										double tempZ = entity.getPosZ();
-										entityHeld.setPosition(tempX, tempY + 2.6, tempZ);
-										world.addEntity(entityHeld);
+										double tempX = entity.getX();
+										double tempY = entity.getY();
+										double tempZ = entity.getZ();
+										entityHeld.setPos(tempX, tempY + 2.6, tempZ);
+										world.addFreshEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
-										entityHeld.setPositionAndUpdate(tempX, tempY, tempZ);
+										entityHeld.teleportTo(tempX, tempY, tempZ);
 									} else
 									{
-										entityHeld.setPosition(entity.getPosX(), entity.getPosY(), entity.getPosZ());
-										world.addEntity(entityHeld);
+										entityHeld.setPos(entity.getX(), entity.getY(), entity.getZ());
+										world.addFreshEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 									}
 
 									ItemCarryonEntity.clearEntityData(main);
-									player.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
+									player.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
 									ItemEvents.sendPacket(player, 9, 0);
 									event.setCanceled(true);
 									event.setCancellationResult(ActionResultType.FAIL);
-									world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 								} else
 								{
-									world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 									return;
 								}
 							}
 						} else
 						{
-							world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 							return;
 						}
 					}
@@ -216,7 +216,7 @@ public class ItemEntityEvents
 	public static int getAllPassengers(Entity entity)
 	{
 		int passengers = 0;
-		while (entity.isBeingRidden())
+		while (entity.isVehicle())
 		{
 			List<Entity> pass = entity.getPassengers();
 			if (!pass.isEmpty())
@@ -232,7 +232,7 @@ public class ItemEntityEvents
 	public static Entity getTopPassenger(Entity entity)
 	{
 		Entity top = entity;
-		while (entity.isBeingRidden())
+		while (entity.isVehicle())
 		{
 			List<Entity> pass = entity.getPassengers();
 			if (!pass.isEmpty())
@@ -249,22 +249,22 @@ public class ItemEntityEvents
 	public void onLivingUpdate(LivingUpdateEvent event)
 	{
 		LivingEntity entity = event.getEntityLiving();
-		World world = entity.world;
-		ItemStack main = entity.getHeldItemMainhand();
+		World world = entity.level;
+		ItemStack main = entity.getMainHandItem();
 		if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main))
 		{
-			BlockPos pos = entity.getPosition();
-			BlockPos below = pos.offset(Direction.DOWN);
+			BlockPos pos = entity.blockPosition();
+			BlockPos below = pos.relative(Direction.DOWN);
 
 			if (world.getBlockState(pos).getMaterial() == Material.WATER || world.getBlockState(below).getMaterial() == Material.WATER)
 			{
 				Entity contained = ItemCarryonEntity.getEntity(main, world);
 				if (contained != null)
 				{
-					float height = contained.getWidth();
-					float width = contained.getWidth();
+					float height = contained.getBbWidth();
+					float width = contained.getBbWidth();
 
-					entity.addVelocity(0, -0.01 * height * width, 0);
+					entity.push(0, -0.01 * height * width, 0);
 				}
 			}
 		}
