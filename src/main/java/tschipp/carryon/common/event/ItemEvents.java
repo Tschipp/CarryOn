@@ -26,6 +26,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
@@ -104,6 +105,7 @@ public class ItemEvents
 		World world = event.getWorld();
 		if (e instanceof EntityItem)
 		{
+			System.out.println("Foo");
 			EntityItem eitem = (EntityItem) e;
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
@@ -112,23 +114,19 @@ public class ItemEvents
 				BlockPos pos = eitem.getPosition();
 				BlockPos finalPos = pos;
 				Block block = ItemTile.getBlock(stack);
-				if (!world.getBlockState(pos).getBlock().isReplaceable(world, pos) || !block.canPlaceBlockAt(world, pos))
+				boolean replaceable = world.getBlockState(pos).getBlock().isReplaceable(world, pos);
+				boolean placeable = block.canPlaceBlockAt(world, pos);
+				if (!replaceable || !placeable)
 				{
-					for (EnumFacing facing : EnumFacing.VALUES)
-					{
-						BlockPos offsetPos = pos.offset(facing);
-						if (world.getBlockState(offsetPos).getBlock().isReplaceable(world, offsetPos) && block.canPlaceBlockAt(world, offsetPos))
-						{
-							finalPos = offsetPos;
-							break;
-						}
-					}
+					finalPos = getBestPosForPlacement(block, pos, world);
 				}
 				world.setBlockState(finalPos, ItemTile.getBlockState(stack));
 				TileEntity tile = world.getTileEntity(finalPos);
 				if (tile != null)
 				{
-					tile.readFromNBT(ItemTile.getTileData(stack));
+					NBTTagCompound nbt = ItemTile.getTileData(stack);
+					ItemTile.updateTileLocation(nbt, finalPos);
+					tile.readFromNBT(nbt);
 					tile.setPos(finalPos);
 				}
 				ItemTile.clearTileData(stack);
@@ -142,6 +140,28 @@ public class ItemEvents
 			}
 		}
 
+	}
+
+	private BlockPos getBestPosForPlacement(Block block, BlockPos pos, World world)
+	{
+		MutableBlockPos m = new MutableBlockPos(pos);
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+
+		for (int i = 0; i < 64; i++)
+		{
+			for (int k = 0; k < 64; k++)
+			{
+				for (int j = 0; j + y < 256; j++)
+				{
+					m.setPos(x + i, y + j, z + k);
+					if (world.getBlockState(m).getBlock().isReplaceable(world, m) && block.canPlaceBlockAt(world, m))
+						return m;
+				}
+			}
+		}
+		return m;
 	}
 
 	@SubscribeEvent
@@ -272,7 +292,7 @@ public class ItemEvents
 	public void onWorldTick(TickEvent.WorldTickEvent event)
 	{
 		Set<Entry<BlockPos, Integer>> set = new HashSet<Entry<BlockPos, Integer>>(positions.entrySet());
-		
+
 		for (Entry<BlockPos, Integer> entry : set)
 		{
 			entry.setValue(entry.getValue() + 1);
@@ -474,13 +494,15 @@ public class ItemEvents
 				getSlots(player, RegistrationHandler.itemEntity, itemSlots);
 				ItemStack inHand = player.getHeldItemMainhand();
 
-				if (itemSlots.size() > 1 || (itemSlots.size() > 0
-						&& (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)))
+				if (itemSlots.size() > 1 || (itemSlots.size() > 0 && (inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity)))
 				{
-					// if there is only one item, and it's in the hotbar, just force the selection there
-					// this is necessary, because when switching dimensions, Minecraft will reset selection to 0 for one tick
+					// if there is only one item, and it's in the hotbar, just
+					// force the selection there
+					// this is necessary, because when switching dimensions,
+					// Minecraft will reset selection to 0 for one tick
 					// and completely reset it to 0 when returning from the end
-					// if there are multiple, drop all of them, as it's likely a player trying to exploit a bug
+					// if there are multiple, drop all of them, as it's likely a
+					// player trying to exploit a bug
 					if (itemSlots.size() == 1 && InventoryPlayer.isHotbar(itemSlots.get(0)))
 					{
 						player.inventory.currentItem = itemSlots.get(0);
