@@ -105,7 +105,6 @@ public class ItemEvents
 		World world = event.getWorld();
 		if (e instanceof EntityItem)
 		{
-			System.out.println("Foo");
 			EntityItem eitem = (EntityItem) e;
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
