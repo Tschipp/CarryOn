@@ -1,5 +1,7 @@
 package tschipp.carryon.common.scripting;
 
+import java.util.Objects;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -64,7 +66,7 @@ public class CarryOnOverride
 	public CarryOnOverride(JsonElement jsonElem, ResourceLocation loc)
 	{
 		boolean errored = false;
-		resourceLocation = loc.toString();
+		this.resourceLocation = loc.toString();
 
 		if (jsonElem != null && jsonElem.isJsonObject())
 		{
@@ -76,19 +78,19 @@ public class CarryOnOverride
 				JsonObject render = (JsonObject) json.get("render");
 				JsonObject effects = (JsonObject) json.get("effects");
 
-				if ((object != null && conditions != null) || (object != null && render != null) || (object != null && effects != null))
+				if (object != null && (conditions != null || render != null || effects != null))
 				{
 					JsonObject block = (JsonObject) object.get("block");
 					JsonObject entity = (JsonObject) object.get("entity");
 
-					if ((block == null && entity == null) || (block != null && entity != null))
+					if (block == null && entity == null || block != null && entity != null)
 						errored = true;
 
 					if (!errored)
 					{
 						if (block != null)
 						{
-							setBlock(true);
+							this.setBlock(true);
 							JsonElement name = block.get("name");
 							JsonElement material = block.get("material");
 							JsonElement hardness = block.get("hardness");
@@ -96,19 +98,19 @@ public class CarryOnOverride
 							JsonObject nbt = (JsonObject) block.get("nbt");
 
 							if (name != null)
-								setTypeNameBlock(name.getAsString());
+								this.setTypeNameBlock(name.getAsString());
 							if (material != null)
-								setTypeMaterial(material.getAsString());
+								this.setTypeMaterial(material.getAsString());
 							if (hardness != null)
-								setTypeHardness(hardness.getAsString());
+								this.setTypeHardness(hardness.getAsString());
 							if (resistance != null)
-								setTypeResistance(resistance.getAsString());
+								this.setTypeResistance(resistance.getAsString());
 							if (nbt != null)
-								setTypeBlockTag(TagParser.parseTag(nbt.toString()));
+								this.setTypeBlockTag(TagParser.parseTag(nbt.toString()));
 						}
 						else
 						{
-							setEntity(true);
+							this.setEntity(true);
 							JsonElement name = entity.get("name");
 							JsonElement health = entity.get("health");
 							JsonElement height = entity.get("height");
@@ -116,15 +118,15 @@ public class CarryOnOverride
 							JsonObject nbt = (JsonObject) entity.get("nbt");
 
 							if (name != null)
-								setTypeNameEntity(name.getAsString());
+								this.setTypeNameEntity(name.getAsString());
 							if (health != null)
-								setTypeHealth(health.getAsString());
+								this.setTypeHealth(health.getAsString());
 							if (height != null)
-								setTypeHeight(height.getAsString());
+								this.setTypeHeight(height.getAsString());
 							if (width != null)
-								setTypeWidth(width.getAsString());
+								this.setTypeWidth(width.getAsString());
 							if (nbt != null)
-								setTypeEntityTag(TagParser.parseTag(nbt.toString()));
+								this.setTypeEntityTag(TagParser.parseTag(nbt.toString()));
 						}
 
 						if (conditions != null)
@@ -138,19 +140,19 @@ public class CarryOnOverride
 							JsonElement potionEffects = conditions.get("effects");
 
 							if (gamestage != null)
-								setConditionGamestage(gamestage.getAsString());
+								this.setConditionGamestage(gamestage.getAsString());
 							if (achievement != null)
-								setConditionAchievement(achievement.getAsString());
+								this.setConditionAchievement(achievement.getAsString());
 							if (xp != null)
-								setConditionXp(xp.getAsString());
+								this.setConditionXp(xp.getAsString());
 							if (gamemode != null)
-								setConditionGamemode(gamemode.getAsString());
+								this.setConditionGamemode(gamemode.getAsString());
 							if (scoreboard != null)
-								setConditionScoreboard(scoreboard.getAsString());
+								this.setConditionScoreboard(scoreboard.getAsString());
 							if (position != null)
-								setConditionPosition(position.getAsString());
+								this.setConditionPosition(position.getAsString());
 							if (potionEffects != null)
-								setConditionEffects(potionEffects.getAsString());
+								this.setConditionEffects(potionEffects.getAsString());
 						}
 
 						if (render != null)
@@ -167,25 +169,25 @@ public class CarryOnOverride
 							JsonElement renderRightArm = render.get("render_right_arm");
 
 							if (name_block != null)
-								setRenderNameBlock(name_block.getAsString());
+								this.setRenderNameBlock(name_block.getAsString());
 							if (name_entity != null)
-								setRenderNameEntity(name_entity.getAsString());
+								this.setRenderNameEntity(name_entity.getAsString());
 							if (translation != null)
-								setRenderTranslation(translation.getAsString());
+								this.setRenderTranslation(translation.getAsString());
 							if (rotation != null)
-								setRenderRotation(rotation.getAsString());
+								this.setRenderRotation(rotation.getAsString());
 							if (scaled != null)
-								setRenderscaled(scaled.getAsString());
+								this.setRenderscaled(scaled.getAsString());
 							if (nbt != null)
-								setRenderNBT(TagParser.parseTag(nbt.toString()));
+								this.setRenderNBT(TagParser.parseTag(nbt.toString()));
 							if (rotationLeftArm != null)
-								setRenderRotationLeftArm(rotationLeftArm.getAsString());
+								this.setRenderRotationLeftArm(rotationLeftArm.getAsString());
 							if (rotationRightArm != null)
-								setRenderRotationRightArm(rotationRightArm.getAsString());
+								this.setRenderRotationRightArm(rotationRightArm.getAsString());
 							if (renderLeftArm != null)
-								setRenderLeftArm(renderLeftArm.getAsBoolean());
+								this.setRenderLeftArm(renderLeftArm.getAsBoolean());
 							if (renderRightArm != null)
-								setRenderRightArm(renderRightArm.getAsBoolean());
+								this.setRenderRightArm(renderRightArm.getAsBoolean());
 						}
 
 						if (effects != null)
@@ -195,35 +197,35 @@ public class CarryOnOverride
 							JsonElement commandPlace = effects.get("commandPlace");
 
 							if (commandInit != null)
-								setCommandInit(commandInit.getAsString());
+								this.setCommandInit(commandInit.getAsString());
 							if (commandLoop != null)
-								setCommandLoop(commandLoop.getAsString());
+								this.setCommandLoop(commandLoop.getAsString());
 							if (commandPlace != null)
-								setCommandPlace(commandPlace.getAsString());
+								this.setCommandPlace(commandPlace.getAsString());
 						}
 					}
 					else
-						isInvalid = true;
+						this.isInvalid = true;
 				}
 			}
 			catch (Exception e)
 			{
-				isInvalid = true;
+				this.isInvalid = true;
 			}
 		}
 		else
-			isInvalid = true;
-		
-		if(!isBlock && !isEntity)
-			isInvalid = true;
-		
-		if(isInvalid)
-			new InvalidConfigException("The script parsing for " + resourceLocation + " has failed! Please double check!").printException();
+			this.isInvalid = true;
+
+		if (!this.isBlock && !this.isEntity)
+			this.isInvalid = true;
+
+		if (this.isInvalid)
+			new InvalidConfigException("The script parsing for " + this.resourceLocation + " has failed! Please double check!").printException();
 	}
 
 	public String getCommandInit()
 	{
-		return commandInit;
+		return this.commandInit;
 	}
 
 	public void setCommandInit(String commandInit)
@@ -233,7 +235,7 @@ public class CarryOnOverride
 
 	public String getCommandLoop()
 	{
-		return commandLoop;
+		return this.commandLoop;
 	}
 
 	public void setCommandLoop(String commandLoop)
@@ -243,7 +245,7 @@ public class CarryOnOverride
 
 	public String getConditionEffects()
 	{
-		return conditionEffects;
+		return this.conditionEffects;
 	}
 
 	public void setConditionEffects(String conditionEffects)
@@ -253,7 +255,7 @@ public class CarryOnOverride
 
 	public String getRenderRotationLeftArm()
 	{
-		return renderRotationLeftArm;
+		return this.renderRotationLeftArm;
 	}
 
 	public void setRenderRotationLeftArm(String renderRotationLeftArm)
@@ -263,7 +265,7 @@ public class CarryOnOverride
 
 	public String getRenderRotationRightArm()
 	{
-		return renderRotationRightArm;
+		return this.renderRotationRightArm;
 	}
 
 	public void setRenderRotationRightArm(String renderRotationRightArm)
@@ -273,7 +275,7 @@ public class CarryOnOverride
 
 	public boolean isRenderLeftArm()
 	{
-		return renderLeftArm;
+		return this.renderLeftArm;
 	}
 
 	public void setRenderLeftArm(boolean renderLeftArm)
@@ -283,7 +285,7 @@ public class CarryOnOverride
 
 	public boolean isRenderRightArm()
 	{
-		return renderRightArm;
+		return this.renderRightArm;
 	}
 
 	public void setRenderRightArm(boolean renderRightArm)
@@ -296,8 +298,7 @@ public class CarryOnOverride
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((resourceLocation == null) ? 0 : resourceLocation.hashCode());
-		return result;
+		return prime * result + (this.resourceLocation == null ? 0 : this.resourceLocation.hashCode());
 	}
 
 	@Override
@@ -311,228 +312,115 @@ public class CarryOnOverride
 	{
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
+		if (obj == null || this.getClass() != obj.getClass())
 			return false;
 		CarryOnOverride other = (CarryOnOverride) obj;
-		if (commandInit == null)
+		if (!Objects.equals(this.commandInit, other.commandInit) || !Objects.equals(this.commandLoop, other.commandLoop) || !Objects.equals(this.commandPlace, other.commandPlace) || !Objects.equals(this.conditionAchievement, other.conditionAchievement))
 		{
-			if (other.commandInit != null)
-				return false;
-		}
-		else if (!commandInit.equals(other.commandInit))
 			return false;
-		if (commandLoop == null)
+		}
+		if (!Objects.equals(this.conditionEffects, other.conditionEffects) || !Objects.equals(this.conditionGamemode, other.conditionGamemode) || !Objects.equals(this.conditionGamestage, other.conditionGamestage) || !Objects.equals(this.conditionPosition, other.conditionPosition))
 		{
-			if (other.commandLoop != null)
-				return false;
-		}
-		else if (!commandLoop.equals(other.commandLoop))
 			return false;
-		if (commandPlace == null)
+		}
+		if (!Objects.equals(this.conditionScoreboard, other.conditionScoreboard))
 		{
-			if (other.commandPlace != null)
-				return false;
-		}
-		else if (!commandPlace.equals(other.commandPlace))
 			return false;
-		if (conditionAchievement == null)
+		}
+		if (!Objects.equals(this.conditionXp, other.conditionXp))
 		{
-			if (other.conditionAchievement != null)
-				return false;
-		}
-		else if (!conditionAchievement.equals(other.conditionAchievement))
 			return false;
-		if (conditionEffects == null)
+		}
+		if (this.isBlock != other.isBlock)
+			return false;
+		if (this.isEntity != other.isEntity)
+			return false;
+		if (!Objects.equals(this.resourceLocation, other.resourceLocation))
 		{
-			if (other.conditionEffects != null)
-				return false;
-		}
-		else if (!conditionEffects.equals(other.conditionEffects))
 			return false;
-		if (conditionGamemode == null)
+		}
+		if (this.renderLeftArm != other.renderLeftArm)
+			return false;
+		if (!Objects.equals(this.renderNBT, other.renderNBT))
 		{
-			if (other.conditionGamemode != null)
-				return false;
-		}
-		else if (!conditionGamemode.equals(other.conditionGamemode))
 			return false;
-		if (conditionGamestage == null)
+		}
+		if (!Objects.equals(this.renderNameBlock, other.renderNameBlock))
 		{
-			if (other.conditionGamestage != null)
-				return false;
-		}
-		else if (!conditionGamestage.equals(other.conditionGamestage))
 			return false;
-		if (conditionPosition == null)
+		}
+		if (!Objects.equals(this.renderNameEntity, other.renderNameEntity))
 		{
-			if (other.conditionPosition != null)
-				return false;
-		}
-		else if (!conditionPosition.equals(other.conditionPosition))
 			return false;
-		if (conditionScoreboard == null)
+		}
+		if (this.renderRightArm != other.renderRightArm)
+			return false;
+		if (!Objects.equals(this.renderRotation, other.renderRotation))
 		{
-			if (other.conditionScoreboard != null)
-				return false;
-		}
-		else if (!conditionScoreboard.equals(other.conditionScoreboard))
 			return false;
-		if (conditionXp == null)
+		}
+		if (!Objects.equals(this.renderRotationLeftArm, other.renderRotationLeftArm))
 		{
-			if (other.conditionXp != null)
-				return false;
+			return false;
 		}
-		else if (!conditionXp.equals(other.conditionXp))
-			return false;
-		if (isBlock != other.isBlock)
-			return false;
-		if (isEntity != other.isEntity)
-			return false;
-		if (resourceLocation == null)
+		if (!Objects.equals(this.renderRotationRightArm, other.renderRotationRightArm))
 		{
-			if (other.resourceLocation != null)
-				return false;
+			return false;
 		}
-		else if (!resourceLocation.equals(other.resourceLocation))
-			return false;
-		if (renderLeftArm != other.renderLeftArm)
-			return false;
-		if (renderNBT == null)
+		if (!Objects.equals(this.renderscaled, other.renderscaled))
 		{
-			if (other.renderNBT != null)
-				return false;
-		}
-		else if (!renderNBT.equals(other.renderNBT))
 			return false;
-		if (renderNameBlock == null)
+		}
+		if (!Objects.equals(this.renderTranslation, other.renderTranslation))
 		{
-			if (other.renderNameBlock != null)
-				return false;
-		}
-		else if (!renderNameBlock.equals(other.renderNameBlock))
 			return false;
-		if (renderNameEntity == null)
+		}
+		if (!Objects.equals(this.typeBlockTag, other.typeBlockTag))
 		{
-			if (other.renderNameEntity != null)
-				return false;
+			return false;
 		}
-		else if (!renderNameEntity.equals(other.renderNameEntity))
-			return false;
-		if (renderRightArm != other.renderRightArm)
-			return false;
-		if (renderRotation == null)
+		if (!Objects.equals(this.typeEntityTag, other.typeEntityTag))
 		{
-			if (other.renderRotation != null)
-				return false;
-		}
-		else if (!renderRotation.equals(other.renderRotation))
 			return false;
-		if (renderRotationLeftArm == null)
+		}
+		if (!Objects.equals(this.typeHardness, other.typeHardness))
 		{
-			if (other.renderRotationLeftArm != null)
-				return false;
-		}
-		else if (!renderRotationLeftArm.equals(other.renderRotationLeftArm))
 			return false;
-		if (renderRotationRightArm == null)
+		}
+		if (!Objects.equals(this.typeHealth, other.typeHealth))
 		{
-			if (other.renderRotationRightArm != null)
-				return false;
-		}
-		else if (!renderRotationRightArm.equals(other.renderRotationRightArm))
 			return false;
-		if (renderscaled == null)
+		}
+		if (!Objects.equals(this.typeHeight, other.typeHeight))
 		{
-			if (other.renderscaled != null)
-				return false;
-		}
-		else if (!renderscaled.equals(other.renderscaled))
 			return false;
-		if (renderTranslation == null)
+		}
+		if (!Objects.equals(this.typeMaterial, other.typeMaterial))
 		{
-			if (other.renderTranslation != null)
-				return false;
-		}
-		else if (!renderTranslation.equals(other.renderTranslation))
 			return false;
-		if (typeBlockTag == null)
+		}
+		if (!Objects.equals(this.typeNameBlock, other.typeNameBlock))
 		{
-			if (other.typeBlockTag != null)
-				return false;
-		}
-		else if (!typeBlockTag.equals(other.typeBlockTag))
 			return false;
-		if (typeEntityTag == null)
+		}
+		if (!Objects.equals(this.typeNameEntity, other.typeNameEntity))
 		{
-			if (other.typeEntityTag != null)
-				return false;
-		}
-		else if (!typeEntityTag.equals(other.typeEntityTag))
 			return false;
-		if (typeHardness == null)
+		}
+		if (!Objects.equals(this.typeResistance, other.typeResistance))
 		{
-			if (other.typeHardness != null)
-				return false;
-		}
-		else if (!typeHardness.equals(other.typeHardness))
 			return false;
-		if (typeHealth == null)
+		}
+		if (!Objects.equals(this.typeWidth, other.typeWidth))
 		{
-			if (other.typeHealth != null)
-				return false;
-		}
-		else if (!typeHealth.equals(other.typeHealth))
 			return false;
-		if (typeHeight == null)
-		{
-			if (other.typeHeight != null)
-				return false;
 		}
-		else if (!typeHeight.equals(other.typeHeight))
-			return false;
-		if (typeMaterial == null)
-		{
-			if (other.typeMaterial != null)
-				return false;
-		}
-		else if (!typeMaterial.equals(other.typeMaterial))
-			return false;
-		if (typeNameBlock == null)
-		{
-			if (other.typeNameBlock != null)
-				return false;
-		}
-		else if (!typeNameBlock.equals(other.typeNameBlock))
-			return false;
-		if (typeNameEntity == null)
-		{
-			if (other.typeNameEntity != null)
-				return false;
-		}
-		else if (!typeNameEntity.equals(other.typeNameEntity))
-			return false;
-		if (typeResistance == null)
-		{
-			if (other.typeResistance != null)
-				return false;
-		}
-		else if (!typeResistance.equals(other.typeResistance))
-			return false;
-		if (typeWidth == null)
-		{
-			if (other.typeWidth != null)
-				return false;
-		}
-		else if (!typeWidth.equals(other.typeWidth))
-			return false;
 		return true;
 	}
 
 	public boolean isBlock()
 	{
-		return isBlock;
+		return this.isBlock;
 	}
 
 	public void setBlock(boolean isBlock)
@@ -542,7 +430,7 @@ public class CarryOnOverride
 
 	public boolean isEntity()
 	{
-		return isEntity;
+		return this.isEntity;
 	}
 
 	public void setEntity(boolean isEntity)
@@ -552,112 +440,112 @@ public class CarryOnOverride
 
 	public CompoundTag getTypeBlockTag()
 	{
-		return typeBlockTag;
+		return this.typeBlockTag;
 	}
 
 	public String getTypeNameBlock()
 	{
-		return typeNameBlock;
+		return this.typeNameBlock;
 	}
 
 	public String getTypeMaterial()
 	{
-		return typeMaterial;
+		return this.typeMaterial;
 	}
 
 	public String getTypeHardness()
 	{
-		return typeHardness;
+		return this.typeHardness;
 	}
 
 	public String getTypeResistance()
 	{
-		return typeResistance;
+		return this.typeResistance;
 	}
 
 	public CompoundTag getTypeEntityTag()
 	{
-		return typeEntityTag;
+		return this.typeEntityTag;
 	}
 
 	public String getTypeNameEntity()
 	{
-		return typeNameEntity;
+		return this.typeNameEntity;
 	}
 
 	public String getTypeHeight()
 	{
-		return typeHeight;
+		return this.typeHeight;
 	}
 
 	public String getTypeWidth()
 	{
-		return typeWidth;
+		return this.typeWidth;
 	}
 
 	public String getTypeHealth()
 	{
-		return typeHealth;
+		return this.typeHealth;
 	}
 
 	public String getConditionGamestage()
 	{
-		return conditionGamestage;
+		return this.conditionGamestage;
 	}
 
 	public String getConditionAchievement()
 	{
-		return conditionAchievement;
+		return this.conditionAchievement;
 	}
 
 	public String getConditionXp()
 	{
-		return conditionXp;
+		return this.conditionXp;
 	}
 
 	public String getConditionGamemode()
 	{
-		return conditionGamemode;
+		return this.conditionGamemode;
 	}
 
 	public String getConditionScoreboard()
 	{
-		return conditionScoreboard;
+		return this.conditionScoreboard;
 	}
 
 	public String getConditionPosition()
 	{
-		return conditionPosition;
+		return this.conditionPosition;
 	}
 
 	public String getRenderNameBlock()
 	{
-		return renderNameBlock;
+		return this.renderNameBlock;
 	}
 
 	public String getRenderNameEntity()
 	{
-		return renderNameEntity;
+		return this.renderNameEntity;
 	}
 
 	public CompoundTag getRenderNBT()
 	{
-		return renderNBT;
+		return this.renderNBT;
 	}
 
 	public String getRenderTranslation()
 	{
-		return renderTranslation;
+		return this.renderTranslation;
 	}
 
 	public String getRenderRotation()
 	{
-		return renderRotation;
+		return this.renderRotation;
 	}
 
 	public String getRenderScaled()
 	{
-		return renderscaled;
+		return this.renderscaled;
 	}
 
 	public void setTypeBlockTag(CompoundTag typeBlockTag)
@@ -772,7 +660,7 @@ public class CarryOnOverride
 
 	public String getCommandPlace()
 	{
-		return commandPlace;
+		return this.commandPlace;
 	}
 
 	public void setCommandPlace(String commandPlace)
@@ -783,48 +671,48 @@ public class CarryOnOverride
 	public void serialize(FriendlyByteBuf buf)
 	{
 		// BLOCKS
-		buf.writeNbt(typeBlockTag);
-		buf.writeUtf(typeNameBlock);
-		buf.writeUtf(typeMaterial);
-		buf.writeUtf(typeHardness);
-		buf.writeUtf(typeResistance);
+		buf.writeNbt(this.typeBlockTag);
+		buf.writeUtf(this.typeNameBlock);
+		buf.writeUtf(this.typeMaterial);
+		buf.writeUtf(this.typeHardness);
+		buf.writeUtf(this.typeResistance);
 
 		// ENTITIES
-		buf.writeNbt(typeEntityTag);
-		buf.writeUtf(typeNameEntity);
-		buf.writeUtf(typeHeight);
-		buf.writeUtf(typeWidth);
-		buf.writeUtf(typeHealth);
+		buf.writeNbt(this.typeEntityTag);
+		buf.writeUtf(this.typeNameEntity);
+		buf.writeUtf(this.typeHeight);
+		buf.writeUtf(this.typeWidth);
+		buf.writeUtf(this.typeHealth);
 
 		// CONDITIONS
-		buf.writeUtf(conditionGamestage);
-		buf.writeUtf(conditionAchievement);
-		buf.writeUtf(conditionXp);
-		buf.writeUtf(conditionGamemode);
-		buf.writeUtf(conditionScoreboard);
-		buf.writeUtf(conditionPosition);
-		buf.writeUtf(conditionEffects);
+		buf.writeUtf(this.conditionGamestage);
+		buf.writeUtf(this.conditionAchievement);
+		buf.writeUtf(this.conditionXp);
+		buf.writeUtf(this.conditionGamemode);
+		buf.writeUtf(this.conditionScoreboard);
+		buf.writeUtf(this.conditionPosition);
+		buf.writeUtf(this.conditionEffects);
 
 		// RENDER
-		buf.writeUtf(renderNameBlock);
-		buf.writeUtf(renderNameEntity);
-		buf.writeNbt(renderNBT);
-		buf.writeUtf(renderTranslation);
-		buf.writeUtf(renderRotation);
-		buf.writeUtf(renderscaled);
-		buf.writeUtf(renderRotationLeftArm);
-		buf.writeUtf(renderRotationRightArm);
-		buf.writeBoolean(renderLeftArm);
-		buf.writeBoolean(renderRightArm);
+		buf.writeUtf(this.renderNameBlock);
+		buf.writeUtf(this.renderNameEntity);
+		buf.writeNbt(this.renderNBT);
+		buf.writeUtf(this.renderTranslation);
+		buf.writeUtf(this.renderRotation);
+		buf.writeUtf(this.renderscaled);
+		buf.writeUtf(this.renderRotationLeftArm);
+		buf.writeUtf(this.renderRotationRightArm);
+		buf.writeBoolean(this.renderLeftArm);
+		buf.writeBoolean(this.renderRightArm);
 
 		// EFFECTS
-		buf.writeUtf(commandInit);
-		buf.writeUtf(commandLoop);
-		buf.writeUtf(commandPlace);
+		buf.writeUtf(this.commandInit);
+		buf.writeUtf(this.commandLoop);
+		buf.writeUtf(this.commandPlace);
 
-		buf.writeBoolean(isBlock);
-		buf.writeBoolean(isEntity);
-		buf.writeUtf(resourceLocation);
+		buf.writeBoolean(this.isBlock);
+		buf.writeBoolean(this.isEntity);
+		buf.writeUtf(this.resourceLocation);
 	}
 
 	public static CarryOnOverride deserialize(FriendlyByteBuf buf)

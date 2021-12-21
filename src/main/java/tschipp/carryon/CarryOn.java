@@ -66,10 +66,10 @@ public class CarryOn
 
 		// CLIENT PACKETS
 		CarryOn.network.registerMessage(0, CarrySlotPacket.class, CarrySlotPacket::toBytes, CarrySlotPacket::new, CarrySlotPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-		CarryOn.network.registerMessage(1, ScriptReloadPacket.class, ScriptReloadPacket::toBytes, ScriptReloadPacket::new, ScriptReloadPacket::handle,  Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+		CarryOn.network.registerMessage(1, ScriptReloadPacket.class, ScriptReloadPacket::toBytes, ScriptReloadPacket::new, ScriptReloadPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
 		// SERVER PACKETS
-		CarryOn.network.registerMessage(2, SyncKeybindPacket.class, SyncKeybindPacket::toBytes, SyncKeybindPacket::new, SyncKeybindPacket::handle,  Optional.of(NetworkDirection.PLAY_TO_SERVER));
+		CarryOn.network.registerMessage(2, SyncKeybindPacket.class, SyncKeybindPacket::toBytes, SyncKeybindPacket::new, SyncKeybindPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
 		RegistrationHandler.regCommonEvents();
 

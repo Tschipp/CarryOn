@@ -38,9 +38,9 @@ public class CarrySlotPacket
 
 	public void toBytes(ByteBuf buf)
 	{
-		buf.writeInt(slot);
-		buf.writeInt(carryOverride);
-		buf.writeInt(entityid);
+		buf.writeInt(this.slot);
+		buf.writeInt(this.carryOverride);
+		buf.writeInt(this.entityid);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx)
@@ -53,15 +53,13 @@ public class CarrySlotPacket
 
 				if (world != null)
 				{
-					Entity e = world.getEntity(entityid);
+					Entity e = world.getEntity(this.entityid);
 
-					if (e != null && e instanceof Player)
+					if (e instanceof Player player)
 					{
-						Player player = (Player) e;
-
 						ctx.get().setPacketHandled(true);
 
-						if (slot >= 9)
+						if (this.slot >= 9)
 						{
 							player.getPersistentData().remove("carrySlot");
 							player.getPersistentData().remove("overrideKey");
@@ -69,9 +67,9 @@ public class CarrySlotPacket
 						else
 						{
 
-							player.getPersistentData().putInt("carrySlot", slot);
-							if (carryOverride != 0)
-								ScriptChecker.setCarryOnOverride(player, carryOverride);
+							player.getPersistentData().putInt("carrySlot", this.slot);
+							if (this.carryOverride != 0)
+								ScriptChecker.setCarryOnOverride(player, this.carryOverride);
 						}
 					}
 

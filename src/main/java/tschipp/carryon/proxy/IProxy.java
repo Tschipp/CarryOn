@@ -6,10 +6,10 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public interface IProxy
 {
-	
+
 	public void setup(final FMLCommonSetupEvent event);
-	
+
 	public Player getPlayer();
-	
+
 	public Level getWorld();
 }

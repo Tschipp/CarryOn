@@ -44,11 +44,8 @@ public class ScriptChecker
 		{
 			for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
 			{
-				if (override.isBlock())
-				{
-					if (matchesAll(override, block, material, hardness, resistance, nbt))
-						return override;
-				}
+				if (override.isBlock() && matchesAll(override, block, material, hardness, resistance, nbt))
+					return override;
 			}
 		}
 
@@ -66,7 +63,6 @@ public class ScriptChecker
 		float width = entity.getBbWidth();
 		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;
 		CompoundTag tag = entity.serializeNBT();
-		
 
 		boolean isAllowed = Settings.useWhitelistEntities.get() ? ListHandler.isAllowed(entity) : !ListHandler.isForbidden(entity);
 
@@ -74,11 +70,8 @@ public class ScriptChecker
 		{
 			for (CarryOnOverride override : ScriptReader.OVERRIDES.values())
 			{
-				if (override.isEntity())
-				{
-					if (matchesAll(override, name, height, width, health, tag))
-						return override;
-				}
+				if (override.isEntity() && matchesAll(override, name, height, width, health, tag))
+					return override;
 			}
 		}
 
@@ -93,7 +86,7 @@ public class ScriptChecker
 		boolean matchhealth = ScriptParseHelper.matches(health, override.getTypeHealth());
 		boolean matchnbt = ScriptParseHelper.matches(tag, override.getTypeEntityTag());
 
-		return (matchname && matchheight && matchwidth && matchhealth && matchnbt);
+		return matchname && matchheight && matchwidth && matchhealth && matchnbt;
 	}
 
 	public static boolean matchesAll(CarryOnOverride override, Block block, Material material, float hardness, float resistance, CompoundTag nbt)
@@ -104,54 +97,51 @@ public class ScriptChecker
 		boolean matchhardness = ScriptParseHelper.matches(hardness, override.getTypeHardness());
 		boolean matchresistance = ScriptParseHelper.matches(resistance, override.getTypeResistance());
 
-		return (matchnbt && matchblock && matchmaterial && matchhardness && matchresistance);
+		return matchnbt && matchblock && matchmaterial && matchhardness && matchresistance;
 	}
 
 	public static boolean fulfillsConditions(CarryOnOverride override, Player player)
 	{
 		ServerAdvancementManager manager = ((ServerPlayer) player).server.getAdvancements();
-		Advancement adv = manager.getAdvancement(new ResourceLocation((override.getConditionAchievement()).isEmpty() ? "" : override.getConditionAchievement()));
+		Advancement adv = manager.getAdvancement(new ResourceLocation(override.getConditionAchievement().isEmpty() ? "" : override.getConditionAchievement()));
 
 		boolean achievement = adv == null ? true : ((ServerPlayer) player).getAdvancements().getOrStartProgress(adv).isDone();
 		boolean gamemode = ScriptParseHelper.matches(((ServerPlayer) player).gameMode.getGameModeForPlayer().getId(), override.getConditionGamemode());
 		boolean gamestage = true;
-		if (ModList.get().isLoaded("gamestages"))
+		if (ModList.get().isLoaded("gamestages") && !override.getConditionGamestage().isEmpty())
 		{
-			if (!override.getConditionGamestage().isEmpty())
+			try
+			{
+				Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
+				Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+
+				Method getPlayerData = ObfuscationReflectionHelper.findMethod(gameStageHelper, "getPlayerData", Player.class);
+				Method hasStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasStage", String.class);
+
+				Object stageData = getPlayerData.invoke(null, player);
+				String condition = override.getConditionGamestage();
+				gamestage = (boolean) hasStage.invoke(stageData, condition);
+			}
+			catch (Exception e)
 			{
 				try
 				{
-					Class<?> gameStageHelper = Class.forName("net.darkhax.gamestages.GameStageHelper");
-					Class<?> iStageData = Class.forName("net.darkhax.gamestages.data.IStageData");
+					Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
+					Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
 
-					Method getPlayerData = ObfuscationReflectionHelper.findMethod(gameStageHelper, "getPlayerData", Player.class);
-					Method hasStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasStage", String.class);
+					Method getStageData = ObfuscationReflectionHelper.findMethod(playerDataHandler, "getStageData", Player.class);
+					Method hasUnlockedStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasUnlockedStage", String.class);
 
-					Object stageData = getPlayerData.invoke(null, player);
+					Object stageData = getStageData.invoke(null, player);
 					String condition = override.getConditionGamestage();
-					gamestage = (boolean) hasStage.invoke(stageData, condition);
+					gamestage = (boolean) hasUnlockedStage.invoke(stageData, condition);
+
 				}
-				catch (Exception e)
+				catch (Exception ex)
 				{
-					try
-					{
-						Class<?> playerDataHandler = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler");
-						Class<?> iStageData = Class.forName("net.darkhax.gamestages.capabilities.PlayerDataHandler$IStageData");
-
-						Method getStageData = ObfuscationReflectionHelper.findMethod(playerDataHandler, "getStageData", Player.class);
-						Method hasUnlockedStage = ObfuscationReflectionHelper.findMethod(iStageData, "hasUnlockedStage",  String.class);
-
-						Object stageData = getStageData.invoke(null, player);
-						String condition = override.getConditionGamestage();
-						gamestage = (boolean) hasUnlockedStage.invoke(stageData, condition);
-
-					}
-					catch (Exception ex)
-					{
-					}
 				}
-
 			}
+
 		}
 
 		boolean position = ScriptParseHelper.matches(player.blockPosition(), override.getConditionPosition());
@@ -159,7 +149,7 @@ public class ScriptChecker
 		boolean scoreboard = ScriptParseHelper.matchesScore(player, override.getConditionScoreboard());
 		boolean effects = ScriptParseHelper.hasEffects(player, override.getConditionEffects());
 
-		return (achievement && gamemode && gamestage && position && xp && scoreboard && effects);
+		return achievement && gamemode && gamestage && position && xp && scoreboard && effects;
 	}
 
 	@Nullable

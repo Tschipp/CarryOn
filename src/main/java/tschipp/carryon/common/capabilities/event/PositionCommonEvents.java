@@ -35,27 +35,16 @@ public class PositionCommonEvents
 		Level world = event.getWorld();
 		Player player = event.getPlayer();
 
-		if (event.isCanceled())
-			return;
-
-		if (player == null)
-			return;
-
-		if (player instanceof FakePlayer)
+		if (event.isCanceled() || player == null || player instanceof FakePlayer)
 			return;
 
 		BlockEntity te = world.getBlockEntity(pos);
-		if (te != null)
+		if (te != null && player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
-			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
-			{
-				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
-				cap.setBlockActivated(true);
-				cap.setPos(pos);
-			}
+			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
+			cap.setBlockActivated(true);
+			cap.setPos(pos);
 		}
 	}
-
-	
 
 }

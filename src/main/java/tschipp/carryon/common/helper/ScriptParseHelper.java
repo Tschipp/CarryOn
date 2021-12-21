@@ -16,38 +16,50 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 
-public class ScriptParseHelper {
+public class ScriptParseHelper
+{
 
-	public static boolean matches(double number, String cond) {
+	public static boolean matches(double number, String cond)
+	{
 		if (cond == null || cond.isEmpty())
 			return true;
 
-		try {
-			if (cond.contains("<=")) {
+		try
+		{
+			if (cond.contains("<="))
+			{
 				return number <= Double.parseDouble(cond.replace("<=", ""));
 			}
-			if (cond.contains(">=")) {
+			if (cond.contains(">="))
+			{
 				return number >= Double.parseDouble(cond.replace(">=", ""));
 			}
-			if (cond.contains("<")) {
+			if (cond.contains("<"))
+			{
 				return number < Double.parseDouble(cond.replace("<", ""));
 			}
-			if (cond.contains(">")) {
+			if (cond.contains(">"))
+			{
 				return number > Double.parseDouble(cond.replace(">", ""));
 			}
-			if (cond.contains("=")) {
+			if (cond.contains("="))
+			{
 				return number == Double.parseDouble(cond.replace("=", ""));
-			} else
+			}
+			else
 				return number == Double.parseDouble(cond);
 
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			new InvalidConfigException(e.getMessage()).printException();
 		}
 
 		return false;
 	}
 
-	public static boolean matches(Block block, String cond) {
+	public static boolean matches(Block block, String cond)
+	{
 		if (cond == null || cond.isEmpty())
 			return true;
 
@@ -58,12 +70,14 @@ public class ScriptParseHelper {
 		return false;
 	}
 
-	public static boolean matches(CompoundTag toCheck, CompoundTag toMatch) {
+	public static boolean matches(CompoundTag toCheck, CompoundTag toMatch)
+	{
 		if (toCheck == null || toMatch == null || toMatch.isEmpty())
 			return true;
 
 		boolean matching = true;
-		for (String key : toMatch.getAllKeys()) {
+		for (String key : toMatch.getAllKeys())
+		{
 			Tag tag = toMatch.get(key);
 			key = key.replace("\"", "");
 			Tag tagToCheck = toCheck.get(key);
@@ -74,7 +88,8 @@ public class ScriptParseHelper {
 		return matching;
 	}
 
-	public static float[] getXYZArray(String s) {
+	public static float[] getXYZArray(String s)
+	{
 		float[] d = new float[3];
 		d[0] = getValueFromString(s, "x");
 		d[1] = getValueFromString(s, "y");
@@ -83,7 +98,8 @@ public class ScriptParseHelper {
 		return d;
 	}
 
-	public static float[] getScaled(String s) {
+	public static float[] getScaled(String s)
+	{
 		float[] d = new float[3];
 		d[0] = getScaledValueFromString(s, "x");
 		d[1] = getScaledValueFromString(s, "y");
@@ -92,19 +108,25 @@ public class ScriptParseHelper {
 		return d;
 	}
 
-	public static float getScaledValueFromString(String toGetFrom, String key) {
+	public static float getScaledValueFromString(String toGetFrom, String key)
+	{
 		if (toGetFrom == null || toGetFrom.isEmpty())
 			return 1;
 
 		String[] s = toGetFrom.split(",");
-		for (String string : s) {
-			if (string.contains(key) && string.contains("=")) {
+		for (String string : s)
+		{
+			if (string.contains(key) && string.contains("="))
+			{
 				float numb = 1;
 				string = string.replace(key + "=", "");
 
-				try {
+				try
+				{
 					numb = Float.parseFloat(string);
-				} catch (Exception e) {
+				}
+				catch (Exception e)
+				{
 				}
 
 				return numb;
@@ -114,7 +136,8 @@ public class ScriptParseHelper {
 		return 1;
 	}
 
-	public static boolean matchesScore(Player player, String cond) {
+	public static boolean matchesScore(Player player, String cond)
+	{
 		if (cond == null || cond.isEmpty())
 			return true;
 
@@ -134,9 +157,11 @@ public class ScriptParseHelper {
 
 		scorename = cond.replace(numb, "");
 		Map<Objective, Score> o = score.getPlayerScores(player.getGameProfile().getName());
-		if (o != null) {
+		if (o != null)
+		{
 			Score sc = o.get(score.getObjective(scorename));
-			if (sc != null) {
+			if (sc != null)
+			{
 				int points = sc.getScore();
 
 				return matches(points, numb);
@@ -146,36 +171,41 @@ public class ScriptParseHelper {
 		return false;
 	}
 
-	public static boolean matches(BlockPos pos, String cond) {
+	public static boolean matches(BlockPos pos, String cond)
+	{
 		if (cond == null || cond.isEmpty())
 			return true;
 
-		BlockPos blockpos = new BlockPos(getValueFromString(cond, "x"), getValueFromString(cond, "y"),
-				getValueFromString(cond, "z"));
-		BlockPos expand = new BlockPos(getValueFromString(cond, "dx"), getValueFromString(cond, "dy"),
-				getValueFromString(cond, "dz"));
+		BlockPos blockpos = new BlockPos(getValueFromString(cond, "x"), getValueFromString(cond, "y"), getValueFromString(cond, "z"));
+		BlockPos expand = new BlockPos(getValueFromString(cond, "dx"), getValueFromString(cond, "dy"), getValueFromString(cond, "dz"));
 		BlockPos expanded = blockpos.offset(expand);
 
-		boolean x = (pos.getX() >= blockpos.getX() && pos.getX() <= expanded.getX()) || blockpos.getX() == 0;
-		boolean y = (pos.getY() >= blockpos.getY() && pos.getY() <= expanded.getY()) || blockpos.getY() == 0;
-		boolean z = (pos.getZ() >= blockpos.getZ() && pos.getZ() <= expanded.getZ()) || blockpos.getZ() == 0;
+		boolean x = pos.getX() >= blockpos.getX() && pos.getX() <= expanded.getX() || blockpos.getX() == 0;
+		boolean y = pos.getY() >= blockpos.getY() && pos.getY() <= expanded.getY() || blockpos.getY() == 0;
+		boolean z = pos.getZ() >= blockpos.getZ() && pos.getZ() <= expanded.getZ() || blockpos.getZ() == 0;
 
 		return x && y && z;
 	}
 
-	public static float getValueFromString(String toGetFrom, String key) {
+	public static float getValueFromString(String toGetFrom, String key)
+	{
 		if (toGetFrom == null || toGetFrom.isEmpty())
 			return 0;
 
 		String[] s = toGetFrom.split(",");
-		for (String string : s) {
-			if (string.contains(key) && string.contains("=")) {
+		for (String string : s)
+		{
+			if (string.contains(key) && string.contains("="))
+			{
 				float numb = 0;
 				string = string.replace(key + "=", "");
 
-				try {
+				try
+				{
 					numb = Float.parseFloat(string);
-				} catch (Exception e) {
+				}
+				catch (Exception e)
+				{
 				}
 
 				return numb;
@@ -185,42 +215,51 @@ public class ScriptParseHelper {
 		return 0;
 	}
 
-	public static boolean hasEffects(Player player, String cond) {
+	public static boolean hasEffects(Player player, String cond)
+	{
 		if (cond == null || cond.isEmpty())
 			return true;
 
 		Collection<MobEffectInstance> effects = player.getActiveEffects();
 		String[] potions = cond.split(",");
 
-		List<String> names = new ArrayList<String>();
-		List<Integer> levels = new ArrayList<Integer>();
+		List<String> names = new ArrayList<>();
+		List<Integer> levels = new ArrayList<>();
 
-		for (int i = 0; i < potions.length; i++) {
-			String pot = potions[i];
-			if (pot.contains("#")) {
+		for (String pot : potions)
+		{
+			if (pot.contains("#"))
+			{
 				String level = pot.substring(pot.indexOf("#"));
 				String name = pot.substring(0, pot.indexOf("#"));
 				level = level.replace("#", "");
 				int lev = 0;
-				try {
+				try
+				{
 					lev = Integer.parseInt(level);
-				} catch (Exception e) {
+				}
+				catch (Exception e)
+				{
 				}
 
 				levels.add(lev);
 				names.add(name);
-			} else {
+			}
+			else
+			{
 				levels.add(0);
 				names.add(pot);
 			}
 		}
 
 		int matches = 0;
-		for (MobEffectInstance effect : effects) {
+		for (MobEffectInstance effect : effects)
+		{
 			int amp = effect.getAmplifier();
 			String name = effect.getEffect().getRegistryName().toString();
 
-			if (names.contains(name)) {
+			if (names.contains(name))
+			{
 				int idx = names.indexOf(name);
 				int lev = levels.get(idx);
 
@@ -232,11 +271,13 @@ public class ScriptParseHelper {
 		return matches == potions.length;
 	}
 
-	public static boolean matches(Material material, String cond) {
+	public static boolean matches(Material material, String cond)
+	{
 		if (cond == null || cond.isEmpty())
 			return true;
-		
-		switch (cond) {
+
+		switch (cond)
+		{
 		case "air":
 			return material == Material.AIR;
 		case "anvil":
@@ -306,6 +347,6 @@ public class ScriptParseHelper {
 		default:
 			return false;
 		}
-		
+
 	}
 }

@@ -45,13 +45,13 @@ public class CarryRenderHelper
 		float[] translation = ScriptParseHelper.getXYZArray(override.getRenderTranslation());
 		float[] rotation = ScriptParseHelper.getXYZArray(override.getRenderRotation());
 		float[] scaled = ScriptParseHelper.getScaled(override.getRenderScaled());
-			
+
 		Quaternion rot = Vector3f.XP.rotationDegrees(rotation[0]);
-		rot.mul(Vector3f.YP.rotationDegrees(rotation[1]));		
+		rot.mul(Vector3f.YP.rotationDegrees(rotation[1]));
 		rot.mul(Vector3f.ZP.rotationDegrees(rotation[2]));
 		matrix.mulPose(rot);
-		
-		matrix.translate(translation[0], translation[1], perspective == 1 && override.isBlock() ? -translation[2] : translation[2]);		
+
+		matrix.translate(translation[0], translation[1], perspective == 1 && override.isBlock() ? -translation[2] : translation[2]);
 
 		matrix.scale(scaled[0], scaled[1], scaled[2]);
 	}
@@ -64,7 +64,7 @@ public class CarryRenderHelper
 
 			if (override instanceof ItemStack)
 			{
-				Minecraft.getInstance().getItemRenderer().render((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model); 
+				Minecraft.getInstance().getItemRenderer().render((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
 				return;
 			}
 		}
@@ -75,7 +75,7 @@ public class CarryRenderHelper
 	@SuppressWarnings("resource")
 	public static int getPerspective()
 	{
-		boolean isThirdPerson = !Minecraft.getInstance().options.getCameraType().isFirstPerson(); //isThirdPerson
+		boolean isThirdPerson = !Minecraft.getInstance().options.getCameraType().isFirstPerson(); // isThirdPerson
 		boolean isThirdPersonReverse = Minecraft.getInstance().options.getCameraType().isMirrored();
 
 		if (!isThirdPerson && !isThirdPersonReverse)

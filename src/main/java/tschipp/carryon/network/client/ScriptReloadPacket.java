@@ -12,7 +12,7 @@ import tschipp.carryon.common.scripting.ScriptReader;
 
 public class ScriptReloadPacket
 {
-	private List<CarryOnOverride> overrides = new ArrayList<CarryOnOverride>();
+	private List<CarryOnOverride> overrides = new ArrayList<>();
 
 	public ScriptReloadPacket()
 	{
@@ -20,22 +20,22 @@ public class ScriptReloadPacket
 
 	public ScriptReloadPacket(Collection<CarryOnOverride> collection)
 	{
-		overrides.addAll(collection);
+		this.overrides.addAll(collection);
 	}
 
 	public ScriptReloadPacket(FriendlyByteBuf buf)
 	{
 		int size = buf.readInt();
-		for(int i = 0; i < size; i++)
+		for (int i = 0; i < size; i++)
 		{
-			overrides.add(CarryOnOverride.deserialize(buf));
-		}	
+			this.overrides.add(CarryOnOverride.deserialize(buf));
+		}
 	}
-	
+
 	public void toBytes(FriendlyByteBuf buf)
 	{
-		buf.writeInt(overrides.size());
-		overrides.forEach(override -> override.serialize(buf));
+		buf.writeInt(this.overrides.size());
+		this.overrides.forEach(override -> override.serialize(buf));
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx)
@@ -45,8 +45,8 @@ public class ScriptReloadPacket
 			ctx.get().enqueueWork(() -> {
 
 				ScriptReader.OVERRIDES.clear();
-				
-				overrides.forEach(override -> {
+
+				this.overrides.forEach(override -> {
 					ScriptReader.OVERRIDES.put(override.hashCode(), override);
 				});
 

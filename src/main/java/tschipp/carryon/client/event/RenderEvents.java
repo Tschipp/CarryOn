@@ -3,7 +3,6 @@ package tschipp.carryon.client.event;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -164,7 +163,7 @@ public class RenderEvents
 			{
 				ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-				if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
+				if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
 				{
 					Minecraft.getInstance().player.closeContainer();
 					Minecraft.getInstance().screen = null;
@@ -193,7 +192,7 @@ public class RenderEvents
 		{
 			ItemStack stack = Minecraft.getInstance().player.getMainHandItem();
 
-			if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
 			{
 				if (settings.keyDrop.matches(key, scancode))
 				{
@@ -268,7 +267,7 @@ public class RenderEvents
 				matrix.mulPose(Vector3f.XP.rotationDegrees(8));
 			}
 
-			BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, world, player, 0));
+			BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, world, player, 0);
 
 			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
@@ -333,7 +332,7 @@ public class RenderEvents
 			if (perspective == 0 && player == Minecraft.getInstance().player)
 				continue;
 
-			light = Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(player, partialticks);
+			light = manager.getPackedLightCoords(player, partialticks);
 			ItemStack stack = player.getMainHandItem();
 
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
@@ -345,7 +344,7 @@ public class RenderEvents
 
 				applyBlockTransformations(player, partialticks, matrix, block);
 
-				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player, 0));
+				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player, 0);
 
 				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
@@ -365,7 +364,7 @@ public class RenderEvents
 				}
 
 				RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-				//TODO: Fix block light
+				// TODO: Fix block light
 				RenderSystem.enableCull();
 
 				PoseStack.Pose p = matrix.last();
@@ -375,10 +374,10 @@ public class RenderEvents
 				drawArms(player, partialticks, matrix, buffer, light);
 
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-				
+
 				CarryRenderHelper.renderItem(state, tag, stack, tileItem, copy, buffer, light, model);
 				buffer.endBatch();
-				
+
 				matrix.popPose();
 			}
 			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
@@ -420,8 +419,8 @@ public class RenderEvents
 						}
 					}
 
-					if (entity instanceof LivingEntity)
-						((LivingEntity) entity).hurtTime = 0;
+					if (entity instanceof LivingEntity le)
+						le.hurtTime = 0;
 
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -492,7 +491,7 @@ public class RenderEvents
 
 		if (pose == Pose.FALL_FLYING)
 		{
-			float f1 = (float) player.getFallFlyingTicks() + partialticks;
+			float f1 = player.getFallFlyingTicks() + partialticks;
 			float f2 = Mth.clamp(f1 * f1 / 100.0F, 0.0F, 1.0F);
 			if (!player.isAutoSpinAttack())
 			{
@@ -537,11 +536,8 @@ public class RenderEvents
 				matrix.translate(0, 0, -0.4);
 			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 		}
-		else
-		{
-			if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
-				matrix.translate(0, 0, 0.4);
-		}
+		else if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
+			matrix.translate(0, 0, 0.4);
 	}
 
 	private void applyEntityTransformations(Player player, float partialticks, PoseStack matrix, Entity entity)
@@ -592,10 +588,7 @@ public class RenderEvents
 		int perspective = CarryRenderHelper.getPerspective();
 		Pose pose = player.getPose();
 
-		if (!Settings.renderArms.get())
-			return;
-
-		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
+		if (!Settings.renderArms.get() || pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
 			return;
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
@@ -631,32 +624,32 @@ public class RenderEvents
 
 					if (renderLeft && rotLeft != null)
 					{
-						renderArmPost(model.leftArm, (float) rotLeft[0], (float) rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.leftSleeve, (float) rotLeft[0], (float) rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftArm, rotLeft[0], rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftSleeve, rotLeft[0], rotLeft[2], false, doSneakCheck(player), light, matrix, builder);
 					}
 					else if (renderLeft)
 					{
-						renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
 					}
 
 					if (renderRight && rotRight != null)
 					{
-						renderArmPost(model.rightArm, (float) rotRight[0], (float) rotRight[2], true, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.rightSleeve, (float) rotRight[0], (float) rotRight[2], true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightArm, rotRight[0], rotRight[2], true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightSleeve, rotRight[0], rotRight[2], true, doSneakCheck(player), light, matrix, builder);
 					}
 					else if (renderRight)
 					{
-						renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
 					}
 				}
 				else
 				{
-					renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), false, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
 				}
 
 				if (buffer instanceof BufferSource)
@@ -731,9 +724,9 @@ public class RenderEvents
 		else
 			arm.y = 15;
 
-		arm.xRot = (float) x;
-		arm.yRot = (float) 0;
-		arm.zRot = (float) -z;
+		arm.xRot = x;
+		arm.yRot = 0;
+		arm.zRot = -z;
 		arm.render(matrix, builder, light, 655360);
 		arm.y = 2;
 		matrix.popPose();
@@ -766,7 +759,7 @@ public class RenderEvents
 		if (player.getAbilities().flying)
 			return false;
 
-		return (player.isShiftKeyDown() || player.isCrouching());
+		return player.isShiftKeyDown() || player.isCrouching();
 	}
 
 	public static boolean isChest(Block block)

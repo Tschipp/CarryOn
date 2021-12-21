@@ -77,7 +77,7 @@ public class ItemEvents
 		{
 			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
-			
+
 			if (!player.level.isClientSide)
 			{
 				CarryOnOverride override = ScriptChecker.getOverride(player);
@@ -92,15 +92,14 @@ public class ItemEvents
 		}
 
 	}
-	
+
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onItemDropped(EntityJoinWorldEvent event)
 	{
 		Entity e = event.getEntity();
 		Level world = event.getWorld();
-		if (e instanceof net.minecraft.world.entity.item.ItemEntity)
+		if (e instanceof net.minecraft.world.entity.item.ItemEntity eitem)
 		{
-			net.minecraft.world.entity.item.ItemEntity eitem = (net.minecraft.world.entity.item.ItemEntity) e;
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
 			if (item == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
@@ -134,21 +133,22 @@ public class ItemEvents
 				eitem.setItem(ItemStack.EMPTY);
 			}
 
-//			BlockPos pos = new BlockPos(Math.floor(eitem.getPosX()), Math.floor(eitem.getPosY()), Math.floor(eitem.getPosZ()));
-//			if (positions.containsKey(pos))
-//			{
-//				event.setCanceled(true);
-//			}
+			// BlockPos pos = new BlockPos(Math.floor(eitem.getPosX()),
+			// Math.floor(eitem.getPosY()), Math.floor(eitem.getPosZ()));
+			// if (positions.containsKey(pos))
+			// {
+			// event.setCanceled(true);
+			// }
 		}
 
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
 		if (event.getPlayer() instanceof Player)
 		{
-			Player player = (Player) event.getPlayer();
+			Player player = event.getPlayer();
 			Level world = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
@@ -161,7 +161,8 @@ public class ItemEvents
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId()));
-				} else
+				}
+				else
 				{
 					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, world));
 					if (override != null)
@@ -173,25 +174,24 @@ public class ItemEvents
 			}
 
 		}
-		if(event.getPlayer() instanceof ServerPlayer)
+		if (event.getPlayer() instanceof ServerPlayer)
 		{
-			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer)event.getPlayer()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
 		}
 	}
-
 
 	@SubscribeEvent
 	public void serverLoad(RegisterCommandsEvent event)
 	{
 		CommandCarryOn.register(event.getDispatcher());
 	}
-	
+
 	@SubscribeEvent
 	public void serverLoad(FMLServerStartingEvent event)
 	{
 		CustomPickupOverrideHandler.initPickupOverrides();
 	}
-	
+
 	@SubscribeEvent
 	public void reloadTags(TagsUpdatedEvent event)
 	{
@@ -204,9 +204,8 @@ public class ItemEvents
 		Entity e = event.getTarget();
 		Player tracker = event.getPlayer();
 
-		if (e instanceof Player && tracker instanceof ServerPlayer)
+		if (e instanceof Player player && tracker instanceof ServerPlayer)
 		{
-			Player player = (Player) e;
 			Level world = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
@@ -219,7 +218,8 @@ public class ItemEvents
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId()));
-				} else
+				}
+				else
 				{
 					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, world));
 					if (override != null)
@@ -271,19 +271,15 @@ public class ItemEvents
 	public void playerAttack(LivingAttackEvent event)
 	{
 		LivingEntity eliving = event.getEntityLiving();
-		if (eliving instanceof Player && Settings.dropCarriedWhenHit.get())
+		if (eliving instanceof Player player && Settings.dropCarriedWhenHit.get())
 		{
-			Player player = (Player) eliving;
 			ItemStack stack = player.getMainHandItem();
-			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity) && !player.level.isClientSide)
 			{
-				if (!player.level.isClientSide)
-				{
-					player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-					ItemEntity item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), stack);
-					sendPacket(player, 9, 0);
-					player.level.addFreshEntity(item);
-				}
+				player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+				ItemEntity item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), stack);
+				sendPacket(player, 9, 0);
+				player.level.addFreshEntity(item);
 			}
 
 		}
@@ -293,8 +289,8 @@ public class ItemEvents
 	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		Player player = event.getPlayer();
-		
-		if(event.isCanceled())
+
+		if (event.isCanceled())
 			return;
 
 		if (!player.level.isClientSide)
@@ -315,8 +311,7 @@ public class ItemEvents
 				if (PickupHandler.canPlayerPickUpBlock((ServerPlayer) player, te, world, pos))
 				{
 					player.closeContainer();
-		            world.levelEvent(1010, pos, 0);
-
+					world.levelEvent(1010, pos, 0);
 
 					if (ItemCarryonBlock.storeTileData(te, world, pos, state, stack))
 					{
@@ -342,19 +337,21 @@ public class ItemEvents
 							event.setUseItem(Result.DENY);
 							event.setCanceled(true);
 							success = true;
-						} catch (Exception e)
+						}
+						catch (Exception e)
 						{
 							try
 							{
 								sendPacket(player, player.getInventory().selected, overrideHash);
 								emptyTileEntity(te);
-								world.removeBlock(pos,false);
+								world.removeBlock(pos, false);
 								player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 								event.setUseBlock(Result.DENY);
 								event.setUseItem(Result.DENY);
 								event.setCanceled(true);
 								success = true;
-							} catch (Exception ex)
+							}
+							catch (Exception ex)
 							{
 								sendPacket(player, 9, 0);
 								world.setBlockAndUpdate(pos, statee);
@@ -393,7 +390,7 @@ public class ItemEvents
 			{
 				LazyOptional<IItemHandler> itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
 
-				itemHandler.ifPresent((handler) -> {
+				itemHandler.ifPresent(handler -> {
 
 					for (int i = 0; i < handler.getSlots(); i++)
 					{
@@ -406,7 +403,7 @@ public class ItemEvents
 
 			LazyOptional<IItemHandler> itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 
-			itemHandler.ifPresent((handler) -> {
+			itemHandler.ifPresent(handler -> {
 
 				for (int i = 0; i < handler.getSlots(); i++)
 				{
@@ -415,15 +412,13 @@ public class ItemEvents
 
 			});
 
-			if (te instanceof Container)
+			if (te instanceof Container inv)
 			{
-				Container inv = (Container) te;
 				inv.clearContent();
 			}
 
-			if (te instanceof IItemHandler)
+			if (te instanceof IItemHandler itemHandler1)
 			{
-				IItemHandler itemHandler1 = (IItemHandler) te;
 				for (int i = 0; i < itemHandler1.getSlots(); i++)
 				{
 					itemHandler1.extractItem(i, 64, false);
@@ -454,7 +449,7 @@ public class ItemEvents
 			ItemEntity item = new ItemEntity(world, 0, 0, 0, stack);
 			BlockPos pos = null;
 			Optional<BlockPos> bedpos = original.getSleepingPos();
-			if(bedpos.isPresent())
+			if (bedpos.isPresent())
 				pos = bedpos.get();
 			if (pos == null)
 				pos = player.blockPosition();
@@ -468,54 +463,44 @@ public class ItemEvents
 	public void dropNonHotbarItems(LivingUpdateEvent event)
 	{
 		LivingEntity entity = event.getEntityLiving();
-		if (entity instanceof Player)
+		if (entity instanceof Player player && !entity.level.isClientSide)
 		{
-			Player player = (Player) entity;
+			boolean hasCarried = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile)) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity));
+			ItemStack inHand = player.getMainHandItem();
 
-			if (!entity.level.isClientSide)
+			if (hasCarried && inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity && player.getDimensionChangingDelay() == 0)
 			{
-				boolean hasCarried = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile)) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity));
-				ItemStack inHand = player.getMainHandItem();
+				int slotBlock = this.getSlot(player, RegistrationHandler.itemTile);
+				int slotEntity = this.getSlot(player, RegistrationHandler.itemEntity);
 
-				if (hasCarried)
+				ItemEntity item = null;
+				if (slotBlock != -1)
 				{
-					if ((inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity) && player.getDimensionChangingDelay() == 0)
-					{
-						int slotBlock = getSlot(player, RegistrationHandler.itemTile);
-						int slotEntity = getSlot(player, RegistrationHandler.itemEntity);
-
-						
-						
-						ItemEntity item = null;
-						if (slotBlock != -1)
-						{
-							ItemStack dropped = player.getInventory().removeItemNoUpdate(slotBlock);
-							item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), dropped);
-						}
-						if (slotEntity != -1)
-						{
-							ItemStack dropped = player.getInventory().removeItemNoUpdate(slotEntity);
-							item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), dropped);
-						}
-						if (item != null)
-						{
-							player.level.addFreshEntity(item);
-							sendPacket(player, 9, 0);
-						}
-					}
+					ItemStack dropped = player.getInventory().removeItemNoUpdate(slotBlock);
+					item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), dropped);
 				}
-
-				CarryOnOverride override = ScriptChecker.getOverride(player);
-
-				if (override != null)
+				if (slotEntity != -1)
 				{
-					String command = override.getCommandLoop();
-
-					if (command != null)
-						player.getServer().getCommands().performCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + command);
+					ItemStack dropped = player.getInventory().removeItemNoUpdate(slotEntity);
+					item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), dropped);
 				}
-
+				if (item != null)
+				{
+					player.level.addFreshEntity(item);
+					sendPacket(player, 9, 0);
+				}
 			}
+
+			CarryOnOverride override = ScriptChecker.getOverride(player);
+
+			if (override != null)
+			{
+				String command = override.getCommandLoop();
+
+				if (command != null)
+					player.getServer().getCommands().performCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + command);
+			}
+
 		}
 	}
 
@@ -541,7 +526,8 @@ public class ItemEvents
 			{
 				player.getPersistentData().remove("carrySlot");
 				player.getPersistentData().remove("overrideKey");
-			} else
+			}
+			else
 			{
 				player.getPersistentData().putInt("carrySlot", currentItem);
 				if (hash != 0)

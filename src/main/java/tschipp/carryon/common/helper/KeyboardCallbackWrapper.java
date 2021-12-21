@@ -14,7 +14,7 @@ public class KeyboardCallbackWrapper
 
 	public void setup(Minecraft mc)
 	{
-		oldCallback = GLFW.glfwSetKeyCallback(mc.getWindow().getWindow(), this::keyCallback);
+		this.oldCallback = GLFW.glfwSetKeyCallback(mc.getWindow().getWindow(), this::keyCallback);
 	}
 
 	private void keyCallback(long window, int key, int scancode, int action, int mods)
@@ -25,21 +25,21 @@ public class KeyboardCallbackWrapper
 		if (event.isCanceled())
 			return;
 
-		if (oldCallback != null)
-			oldCallback.invoke(window, key, scancode, action, mods);
+		if (this.oldCallback != null)
+			this.oldCallback.invoke(window, key, scancode, action, mods);
 	}
-	
+
 	@Cancelable
 	public static class KeyPressedEvent extends Event
 	{
 		public int key;
 		public int scancode;
-		
+
 		public KeyPressedEvent(int key, int scancode)
 		{
 			this.key = key;
 			this.scancode = scancode;
 		}
-		
+
 	}
 }

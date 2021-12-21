@@ -14,17 +14,15 @@ public class PositionProvider implements ICapabilitySerializable<CompoundTag>
 	@CapabilityInject(IPosition.class)
 	public static final Capability<IPosition> POSITION_CAPABILITY = null;
 
-	private IPosition instance = new TEPosition();//POSITION_CAPABILITY.getDefaultInstance();
+	private IPosition instance = new TEPosition();// POSITION_CAPABILITY.getDefaultInstance();
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side)
 	{
 		if (cap == POSITION_CAPABILITY)
-			return (LazyOptional<T>) LazyOptional.of(() -> {
-				return new TEPosition();
-			});
-		
+			return (LazyOptional<T>) LazyOptional.of(TEPosition::new);
+
 		return LazyOptional.empty();
 	}
 
@@ -33,27 +31,27 @@ public class PositionProvider implements ICapabilitySerializable<CompoundTag>
 	{
 		CompoundTag tag = new CompoundTag();
 
-		tag.putBoolean("blockActivated", instance.isBlockActivated());
-		tag.putInt("x", instance.getPos().getX());
-		tag.putInt("y", instance.getPos().getY());
-		tag.putInt("z", instance.getPos().getZ());
-		
+		tag.putBoolean("blockActivated", this.instance.isBlockActivated());
+		tag.putInt("x", this.instance.getPos().getX());
+		tag.putInt("y", this.instance.getPos().getY());
+		tag.putInt("z", this.instance.getPos().getZ());
+
 		return tag;
 	}
 
 	@Override
 	public void deserializeNBT(CompoundTag nbt)
 	{
-		CompoundTag tag = (CompoundTag) nbt;
+		CompoundTag tag = nbt;
 
 		int x = tag.getInt("x");
 		int y = tag.getInt("y");
 		int z = tag.getInt("z");
-		
-		BlockPos pos = new BlockPos(x,y,z);
-		
-		instance.setPos(pos);
-		instance.setBlockActivated(tag.getBoolean("blockActivated"));
+
+		BlockPos pos = new BlockPos(x, y, z);
+
+		this.instance.setPos(pos);
+		this.instance.setBlockActivated(tag.getBoolean("blockActivated"));
 	}
 
 }

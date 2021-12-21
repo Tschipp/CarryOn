@@ -23,7 +23,7 @@ import tschipp.carryon.network.client.ScriptReloadPacket;
 @EventBusSubscriber(modid = CarryOn.MODID, bus = Bus.FORGE)
 public class ScriptReloadListener extends SimpleJsonResourceReloadListener
 {
-	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
 	public ScriptReloadListener()
 	{
@@ -37,7 +37,7 @@ public class ScriptReloadListener extends SimpleJsonResourceReloadListener
 
 		objects.forEach((path, jsonElem) -> {
 			CarryOnOverride override = new CarryOnOverride(jsonElem, path);
-			if(!override.isInvalid)
+			if (!override.isInvalid)
 				ScriptReader.OVERRIDES.put(override.hashCode(), override);
 		});
 
@@ -46,7 +46,7 @@ public class ScriptReloadListener extends SimpleJsonResourceReloadListener
 			CarryOn.network.send(PacketDistributor.ALL.noArg(), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
 		}
 	}
-	
+
 	@SubscribeEvent
 	public static void onDatapackRegister(AddReloadListenerEvent event)
 	{

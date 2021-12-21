@@ -17,8 +17,8 @@ import tschipp.carryon.common.helper.InvalidConfigException;
 public class CustomPickupOverrideHandler
 {
 
-	public static HashMap<String, String> PICKUP_CONDITIONS = new HashMap<String, String>();
-	public static HashMap<String, String> PICKUP_CONDITIONS_ENTITIES = new HashMap<String, String>();
+	public static HashMap<String, String> PICKUP_CONDITIONS = new HashMap<>();
+	public static HashMap<String, String> PICKUP_CONDITIONS_ENTITIES = new HashMap<>();
 
 	@SuppressWarnings("unchecked")
 	public static void initPickupOverrides()
@@ -78,13 +78,12 @@ public class CustomPickupOverrideHandler
 		}
 	}
 
-
 	public static boolean hasSpecialPickupConditions(BlockState state)
 	{
 		if (!ModList.get().isLoaded("gamestages"))
 			return false;
 
-		for(String cond : PICKUP_CONDITIONS.keySet())
+		for (String cond : PICKUP_CONDITIONS.keySet())
 		{
 			BlockStateParser parser = new BlockStateParser(new StringReader(cond), false);
 			try
@@ -94,16 +93,16 @@ public class CustomPickupOverrideHandler
 			catch (CommandSyntaxException e)
 			{
 			}
-			if(parser.getState() == state)
+			if (parser.getState() == state)
 				return true;
 		}
-		
+
 		return false;
 	}
 
 	public static String getPickupCondition(BlockState state)
 	{
-		for(String cond : PICKUP_CONDITIONS.keySet())
+		for (String cond : PICKUP_CONDITIONS.keySet())
 		{
 			BlockStateParser parser = new BlockStateParser(new StringReader(cond), false);
 			try
@@ -113,7 +112,7 @@ public class CustomPickupOverrideHandler
 			catch (CommandSyntaxException e)
 			{
 			}
-			if(parser.getState() == state)
+			if (parser.getState() == state)
 				return PICKUP_CONDITIONS.get(cond);
 		}
 		return null;
@@ -125,17 +124,13 @@ public class CustomPickupOverrideHandler
 			return false;
 
 		String name = entity.getType().getRegistryName().toString();
-		boolean condition = PICKUP_CONDITIONS_ENTITIES.containsKey(name);
-
-		return condition;
+		return PICKUP_CONDITIONS_ENTITIES.containsKey(name);
 	}
 
 	public static String getPickupCondition(Entity entity)
 	{
 		String name = entity.getType().getRegistryName().toString();
-		String condition = PICKUP_CONDITIONS_ENTITIES.get(name);
-
-		return condition;
+		return PICKUP_CONDITIONS_ENTITIES.get(name);
 	}
 
 }

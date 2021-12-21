@@ -19,15 +19,15 @@ public class InvalidConfigException extends Exception
 		{
 			StackTraceElement element = this.getStackTrace()[i];
 			CarryOn.LOGGER.error(element.toString());
-			
-			if(i >= 10)
+
+			if (i >= 10)
 			{
-				CarryOn.LOGGER.error((this.getStackTrace().length - 10) + " more...");
+				CarryOn.LOGGER.error(this.getStackTrace().length - 10 + " more...");
 				break;
 			}
 		}
-		
+
 		CarryOn.LOGGER.info("");
 	}
-	
+
 }

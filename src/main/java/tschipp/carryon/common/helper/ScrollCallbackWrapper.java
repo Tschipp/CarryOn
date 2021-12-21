@@ -15,7 +15,7 @@ public class ScrollCallbackWrapper
 
 	public void setup(Minecraft mc)
 	{
-		oldCallback = GLFW.glfwSetScrollCallback(mc.getWindow().getWindow(), this::scrollCallback);
+		this.oldCallback = GLFW.glfwSetScrollCallback(mc.getWindow().getWindow(), this::scrollCallback);
 	}
 
 	private void scrollCallback(long window, double xoffset, double yoffset)
@@ -26,10 +26,10 @@ public class ScrollCallbackWrapper
 		if (event.isCanceled())
 			return;
 
-		if (oldCallback != null)
-			oldCallback.invoke(window, xoffset, yoffset);
+		if (this.oldCallback != null)
+			this.oldCallback.invoke(window, xoffset, yoffset);
 	}
-	
+
 	@Cancelable
 	public static class MouseScrolledEvent extends Event
 	{

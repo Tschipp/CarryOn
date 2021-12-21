@@ -23,7 +23,7 @@ public class SyncKeybindPacket
 
 	public void toBytes(ByteBuf buf)
 	{
-		buf.writeBoolean(pressed);
+		buf.writeBoolean(this.pressed);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx)
@@ -34,7 +34,7 @@ public class SyncKeybindPacket
 
 				ServerPlayer player = ctx.get().getSender();
 
-				CarryOnKeybinds.setKeyPressed(player, pressed);
+				CarryOnKeybinds.setKeyPressed(player, this.pressed);
 
 				ctx.get().setPacketHandled(true);
 			});

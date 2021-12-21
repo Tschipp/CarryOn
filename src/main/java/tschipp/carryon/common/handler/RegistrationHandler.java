@@ -19,10 +19,10 @@ import tschipp.carryon.common.item.ItemCarryonEntity;
 
 @EventBusSubscriber(modid = CarryOn.MODID)
 public class RegistrationHandler
-{	
+{
 	@ObjectHolder("carryon:tile_item")
 	public static Item itemTile;
-	
+
 	@ObjectHolder("carryon:entity_item")
 	public static Item itemEntity;
 
@@ -31,7 +31,7 @@ public class RegistrationHandler
 		itemTile = new ItemCarryonBlock();
 		itemEntity = new ItemCarryonEntity();
 	}
-	
+
 	public static void regCommonEvents()
 	{
 		MinecraftForge.EVENT_BUS.register(new ItemEvents());
@@ -39,32 +39,28 @@ public class RegistrationHandler
 		MinecraftForge.EVENT_BUS.register(new PositionCommonEvents());
 		MinecraftForge.EVENT_BUS.register(new IMCEvents());
 	}
-	
+
 	public static void regClientEvents()
 	{
 		MinecraftForge.EVENT_BUS.register(new RenderEvents());
 		MinecraftForge.EVENT_BUS.register(new RenderEntityEvents());
 		MinecraftForge.EVENT_BUS.register(new PositionClientEvents());
-		
-		
-//		if(ModList.get().isLoaded("obfuscate"))
-//			MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
+
+		// if(ModList.get().isLoaded("obfuscate"))
+		// MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
 
 	}
-	
+
 	public static void regOverrideList()
 	{
 		ModelOverridesHandler.initOverrides();
 		CustomPickupOverrideHandler.initPickupOverrides();
-//		ListHandler.initConfigLists();
+		// ListHandler.initConfigLists();
 	}
-	
+
 	public static void regCaps()
 	{
 		CapabilityManager.INSTANCE.register(IPosition.class);
 	}
-	
-	
 
-	
 }

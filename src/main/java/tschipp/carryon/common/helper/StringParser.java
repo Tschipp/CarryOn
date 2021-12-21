@@ -20,19 +20,18 @@ public class StringParser
 	public static Block getBlock(String string)
 	{
 		BlockState state = getBlockState(string);
-		if(state != null)
+		if (state != null)
 			return state.getBlock();
-				
+
 		return null;
 	}
-
 
 	@Nullable
 	public static BlockState getBlockState(String string)
 	{
-		if(string == null)
+		if (string == null)
 			return null;
-				
+
 		BlockStateParser parser = new BlockStateParser(new StringReader(string), false);
 
 		try
@@ -50,11 +49,11 @@ public class StringParser
 	@Nullable
 	public static Item getItem(String string)
 	{
-		if(string == null)
+		if (string == null)
 			return null;
-	
+
 		ItemParser parser = new ItemParser(new StringReader(string), false);
-	
+
 		try
 		{
 			parser.parse();
@@ -69,32 +68,32 @@ public class StringParser
 
 	public static ItemStack getItemStack(String string)
 	{
-		if(string == null)
+		if (string == null)
 			return null;
-		
+
 		ItemParser parser = new ItemParser(new StringReader(string), false);
-		
+
 		try
 		{
 			parser.parse();
-			Item item =  parser.getItem();
+			Item item = parser.getItem();
 			CompoundTag nbt = parser.getNbt();
-			
+
 			ItemStack stack = new ItemStack(item, 1);
-			
-			if(nbt != null)
+
+			if (nbt != null)
 			{
 				stack.setTag(nbt);
 			}
-			
+
 			return stack;
 		}
 		catch (Exception e)
 		{
 			new InvalidConfigException("Item parsing Exception at: " + string + " : " + e.getMessage()).printException();
 			return ItemStack.EMPTY;
-			
-		}		
+
+		}
 
 	}
 
@@ -102,9 +101,9 @@ public class StringParser
 	public static CompoundTag getTagCompound(String string)
 	{
 		CompoundTag tag = null;
-		if(string == null)
+		if (string == null)
 			return null;
-		
+
 		if (string.contains("{"))
 		{
 			if (!string.contains("}"))

@@ -19,16 +19,14 @@ public class IMCEvents
 	{
 		Stream<IMCMessage> messages = InterModComms.getMessages(CarryOn.MODID);
 
-		messages.forEach((msg) -> {
+		messages.forEach(msg -> {
 
 			String method = msg.method();
 			Object obj = msg.messageSupplier().get();
 
-			if(!(obj instanceof String))
+			if (!(obj instanceof String str))
 				return;
-			
-			String str = (String)obj;
-			
+
 			switch (method)
 			{
 			case "blacklistBlock":
@@ -57,5 +55,5 @@ public class IMCEvents
 		});
 
 	}
-	
+
 }

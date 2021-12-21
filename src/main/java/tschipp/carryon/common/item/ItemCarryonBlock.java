@@ -46,7 +46,7 @@ public class ItemCarryonBlock extends Item
 {
 
 	public static final String TILE_DATA_KEY = "tileData";
-	public static final String[] FACING_KEYS = new String[] { "rotation", "rot", "facing", "face", "direction", "dir", "front", "forward" };
+	public static final String[] FACING_KEYS = { "rotation", "rot", "facing", "face", "direction", "dir", "front", "forward" };
 
 	public ItemCarryonBlock()
 	{
@@ -89,11 +89,8 @@ public class ItemCarryonBlock extends Item
 		BlockPos pos = context.getClickedPos();
 		ItemStack stack = context.getItemInHand();
 
-		if (ModList.get().isLoaded("betterplacement"))
-		{
-			if (CarryOnKeybinds.isKeyPressed(player))
-				return InteractionResult.FAIL;
-		}
+		if (ModList.get().isLoaded("betterplacement") && CarryOnKeybinds.isKeyPressed(player))
+			return InteractionResult.FAIL;
 
 		if (hasTileData(stack))
 		{
@@ -113,92 +110,92 @@ public class ItemCarryonBlock extends Item
 				{
 					boolean canPlace = containedstate.canSurvive(world, pos2);
 
-					if (canPlace)
+					if (canPlace && player.mayUseItemAt(pos, facing, stack) && world.mayInteract(player, pos2))
 					{
-						if (player.mayUseItemAt(pos, facing, stack) && world.mayInteract(player, pos2))
+
+						BlockState placementState = containedblock.getStateForPlacement(new BlockPlaceContext(context));
+
+						BlockState actualState = placementState == null ? containedstate : placementState;
+
+						// Attempted fix for #287
+						// for (IProperty<?> prop :
+						// placementState.getValues().keySet())
+						// {
+						// if (prop instanceof DirectionProperty)
+						// actualState = actualState.with((DirectionProperty)
+						// prop, placementState.get((DirectionProperty) prop));
+						// else if (prop == BlockStateProperties.WATERLOGGED)
+						// actualState = actualState.with((BooleanProperty)
+						// prop, placementState.get((BooleanProperty) prop));
+						// else if(prop instanceof EnumProperty<?>)
+						// {
+						// Object value = placementState.get(prop);
+						// if(value instanceof Direction.Axis)
+						// {
+						// actualState = actualState.with((EnumProperty)prop,
+						// (Direction.Axis)value);
+						// }
+						// }
+						// }
+
+						BlockSnapshot snapshot = BlockSnapshot.create(world.dimension(), world, pos2);
+						EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
+						MinecraftForge.EVENT_BUS.post(event);
+
+						if (!event.isCanceled())
 						{
+							world.setBlockAndUpdate(pos2, actualState);
 
-							BlockState placementState = containedblock.getStateForPlacement(new BlockPlaceContext(context));
-							
-							BlockState actualState = placementState == null ? containedstate : placementState;
-
-							//Attempted fix for #287
-//							for (IProperty<?> prop : placementState.getValues().keySet())
-//							{
-//								if (prop instanceof DirectionProperty)
-//									actualState = actualState.with((DirectionProperty) prop, placementState.get((DirectionProperty) prop));
-//								else if (prop == BlockStateProperties.WATERLOGGED)
-//									actualState = actualState.with((BooleanProperty) prop, placementState.get((BooleanProperty) prop));
-//								else if(prop instanceof EnumProperty<?>)
-//								{
-//									Object value = placementState.get(prop);
-//									if(value instanceof Direction.Axis)
-//									{
-//										actualState = actualState.with((EnumProperty)prop, (Direction.Axis)value);
-//									}
-//								}
-//							}
-
-							BlockSnapshot snapshot = BlockSnapshot.create(world.dimension(), world, pos2);
-							EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
-							MinecraftForge.EVENT_BUS.post(event);
-
-							if (!event.isCanceled())
+							// If the blockstate doesn't handle rotation,
+							// try to
+							// change rotation via NBT
+							if (!getTileData(stack).isEmpty())
 							{
-								world.setBlockAndUpdate(pos2, actualState);
-
-								// If the blockstate doesn't handle rotation,
-								// try to
-								// change rotation via NBT
-								if (!getTileData(stack).isEmpty())
+								CompoundTag tag = getTileData(stack);
+								Set<String> keys = tag.getAllKeys();
+								keytester: for (String key : keys)
 								{
-									CompoundTag tag = getTileData(stack);
-									Set<String> keys = tag.getAllKeys();
-									keytester: for (String key : keys)
+									for (String facingKey : FACING_KEYS)
 									{
-										for (String facingKey : FACING_KEYS)
+										if (key.toLowerCase().equals(facingKey))
 										{
-											if (key.toLowerCase().equals(facingKey))
+											byte type = tag.getTagType(key);
+											switch (type)
 											{
-												byte type = tag.getTagType(key);
-												switch (type)
-												{
-												case 8:
-													tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
-													break;
-												case 3:
-													tag.putInt(key, facing2.getOpposite().get3DDataValue());
-													break;
-												case 1:
-													tag.putByte(key, (byte) facing2.getOpposite().get3DDataValue());
-													break;
-												default:
-													break;
-												}
-
-												break keytester;
+											case 8:
+												tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
+												break;
+											case 3:
+												tag.putInt(key, facing2.getOpposite().get3DDataValue());
+												break;
+											case 1:
+												tag.putByte(key, (byte) facing2.getOpposite().get3DDataValue());
+												break;
+											default:
+												break;
 											}
+
+											break keytester;
 										}
 									}
 								}
-
-								BlockEntity tile = world.getBlockEntity(pos2);
-								if (tile != null)
-								{
-									CompoundTag data = getTileData(stack);
-									updateTileLocation(data, pos2);
-									tile.load(data);
-								}
-								clearTileData(stack);
-								player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
-								player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-								player.getPersistentData().remove("overrideKey");
-								ItemEvents.sendPacket(player, 9, 0);
-								return InteractionResult.SUCCESS;
-
 							}
-						}
 
+							BlockEntity tile = world.getBlockEntity(pos2);
+							if (tile != null)
+							{
+								CompoundTag data = getTileData(stack);
+								updateTileLocation(data, pos2);
+								tile.load(data);
+							}
+							clearTileData(stack);
+							player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
+							player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+							player.getPersistentData().remove("overrideKey");
+							ItemEvents.sendPacket(player, 9, 0);
+							return InteractionResult.SUCCESS;
+
+						}
 					}
 				}
 			}
@@ -286,7 +283,7 @@ public class ItemCarryonBlock extends Item
 		stack.setTag(tag);
 		return true;
 	}
-	
+
 	public static void updateTileLocation(CompoundTag tag, BlockPos pos)
 	{
 		tag.putInt("x", pos.getX());

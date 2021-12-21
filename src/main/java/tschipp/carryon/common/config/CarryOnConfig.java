@@ -13,5 +13,4 @@ public class CarryOnConfig
 
 	public static Configs.CustomPickupConditions customPickupConditions = new Configs.CustomPickupConditions();
 
-
 }

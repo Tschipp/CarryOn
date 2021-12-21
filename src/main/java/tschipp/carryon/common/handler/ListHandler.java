@@ -22,11 +22,11 @@ public class ListHandler
 	public static List<String> ALLOWED_ENTITIES = new ArrayList<>();
 	public static List<String> ALLOWED_TILES = new ArrayList<>();
 	public static List<String> FORBIDDEN_STACKING = new ArrayList<>();
-	public static List<String> ALLOWED_STACKING  = new ArrayList<>();
+	public static List<String> ALLOWED_STACKING = new ArrayList<>();
 
 	public static List<Tag<Block>> FORBIDDEN_TILES_TAGS = new ArrayList<>();
 	public static List<Tag<EntityType<?>>> FORBIDDEN_ENTITIES_TAGS = new ArrayList<>();
-	public static List<Tag<EntityType<?>>> ALLOWED_ENTITIES_TAGS = new ArrayList<>(); 
+	public static List<Tag<EntityType<?>>> ALLOWED_ENTITIES_TAGS = new ArrayList<>();
 	public static List<Tag<Block>> ALLOWED_TILES_TAGS = new ArrayList<>();
 	public static List<Tag<EntityType<?>>> FORBIDDEN_STACKING_TAGS = new ArrayList<>();
 	public static List<Tag<EntityType<?>>> ALLOWED_STACKING_TAGS = new ArrayList<>();
@@ -48,10 +48,10 @@ public class ListHandler
 						contains = true;
 				}
 			}
-			
-			for(Tag<Block> tag : FORBIDDEN_TILES_TAGS)
+
+			for (Tag<Block> tag : FORBIDDEN_TILES_TAGS)
 			{
-				if(tag.contains(block))
+				if (tag.contains(block))
 					return true;
 			}
 
@@ -63,13 +63,13 @@ public class ListHandler
 	{
 		String name = entity.getType().getRegistryName().toString();
 		boolean contains = FORBIDDEN_ENTITIES.contains(name);
-		
-		for(Tag<EntityType<?>> tag : FORBIDDEN_ENTITIES_TAGS)
+
+		for (Tag<EntityType<?>> tag : FORBIDDEN_ENTITIES_TAGS)
 		{
-			if(tag.contains(entity.getType()))
+			if (tag.contains(entity.getType()))
 				return true;
 		}
-		
+
 		return contains;
 	}
 
@@ -77,13 +77,13 @@ public class ListHandler
 	{
 		String name = entity.getType().getRegistryName().toString();
 		boolean contains = ALLOWED_ENTITIES.contains(name);
-		
-		for(Tag<EntityType<?>> tag : ALLOWED_ENTITIES_TAGS)
+
+		for (Tag<EntityType<?>> tag : ALLOWED_ENTITIES_TAGS)
 		{
-			if(tag.contains(entity.getType()))
+			if (tag.contains(entity.getType()))
 				return true;
 		}
-		
+
 		return contains;
 	}
 
@@ -91,13 +91,13 @@ public class ListHandler
 	{
 		String name = entity.getType().getRegistryName().toString();
 		boolean contains = FORBIDDEN_STACKING.contains(name);
-		
-		for(Tag<EntityType<?>> tag : FORBIDDEN_STACKING_TAGS)
+
+		for (Tag<EntityType<?>> tag : FORBIDDEN_STACKING_TAGS)
 		{
-			if(tag.contains(entity.getType()))
+			if (tag.contains(entity.getType()))
 				return true;
 		}
-		
+
 		return contains;
 	}
 
@@ -105,13 +105,13 @@ public class ListHandler
 	{
 		String name = entity.getType().getRegistryName().toString();
 		boolean contains = ALLOWED_STACKING.contains(name);
-		
-		for(Tag<EntityType<?>> tag : ALLOWED_STACKING_TAGS)
+
+		for (Tag<EntityType<?>> tag : ALLOWED_STACKING_TAGS)
 		{
-			if(tag.contains(entity.getType()))
+			if (tag.contains(entity.getType()))
 				return true;
 		}
-		
+
 		return contains;
 	}
 
@@ -132,10 +132,10 @@ public class ListHandler
 						contains = true;
 				}
 			}
-			
-			for(Tag<Block> tag : ALLOWED_TILES_TAGS)
+
+			for (Tag<Block> tag : ALLOWED_TILES_TAGS)
 			{
-				if(tag.contains(block))
+				if (tag.contains(block))
 					return true;
 			}
 
@@ -145,7 +145,7 @@ public class ListHandler
 	}
 
 	public static void initConfigLists()
-	{		
+	{
 		FORBIDDEN_ENTITIES.clear();
 		FORBIDDEN_ENTITIES_TAGS.clear();
 		FORBIDDEN_STACKING.clear();
@@ -158,10 +158,10 @@ public class ListHandler
 		ALLOWED_STACKING_TAGS.clear();
 		ALLOWED_TILES.clear();
 		ALLOWED_TILES_TAGS.clear();
-		
+
 		List<String> forbidden = new ArrayList<>(Blacklist.forbiddenTiles.get());
 		forbidden.add("#carryon:block_blacklist");
-		FORBIDDEN_TILES = new ArrayList<String>();
+		FORBIDDEN_TILES = new ArrayList<>();
 
 		for (int i = 0; i < forbidden.size(); i++)
 		{
@@ -171,7 +171,7 @@ public class ListHandler
 
 		List<String> forbiddenEntity = new ArrayList<>(Blacklist.forbiddenEntities.get());
 		forbiddenEntity.add("#carryon:entity_blacklist");
-		FORBIDDEN_ENTITIES = new ArrayList<String>();
+		FORBIDDEN_ENTITIES = new ArrayList<>();
 
 		for (int i = 0; i < forbiddenEntity.size(); i++)
 		{
@@ -196,7 +196,7 @@ public class ListHandler
 
 		List<String> allowedEntities = new ArrayList<>(WhiteList.allowedEntities.get());
 		allowedEntities.add("#carryon:entity_whitelist");
-		ALLOWED_ENTITIES = new ArrayList<String>();
+		ALLOWED_ENTITIES = new ArrayList<>();
 		for (int i = 0; i < allowedEntities.size(); i++)
 		{
 			if (!allowedEntities.get(i).startsWith("#"))
@@ -220,7 +220,7 @@ public class ListHandler
 
 		List<String> allowedBlocks = new ArrayList<>(WhiteList.allowedBlocks.get());
 		allowedBlocks.add("#carryon:block_whitelist");
-		ALLOWED_TILES = new ArrayList<String>();
+		ALLOWED_TILES = new ArrayList<>();
 		for (int i = 0; i < allowedBlocks.size(); i++)
 		{
 			if (!allowedBlocks.get(i).startsWith("#"))
@@ -229,7 +229,7 @@ public class ListHandler
 
 		List<String> forbiddenStacking = new ArrayList<>(Blacklist.forbiddenStacking.get());
 		forbiddenStacking.add("#carryon:stacking_blacklist");
-		FORBIDDEN_STACKING = new ArrayList<String>();
+		FORBIDDEN_STACKING = new ArrayList<>();
 
 		for (int i = 0; i < forbiddenStacking.size(); i++)
 		{
@@ -254,7 +254,7 @@ public class ListHandler
 
 		List<String> allowedStacking = new ArrayList<>(WhiteList.allowedStacking.get());
 		allowedStacking.add("#carryon:stacking_whitelist");
-		ALLOWED_STACKING = new ArrayList<String>();
+		ALLOWED_STACKING = new ArrayList<>();
 		for (int i = 0; i < allowedStacking.size(); i++)
 		{
 			if (!allowedStacking.get(i).startsWith("#"))
@@ -280,63 +280,63 @@ public class ListHandler
 		TagCollection<EntityType<?>> entitytags = EntityTypeTags.getAllTags();
 
 		System.out.println(blocktags.getAvailableTags());
-		
+
 		for (String s : forbidden)
 		{
 			if (s.startsWith("#"))
 			{
-				String sub = s.substring(1, s.length());
+				String sub = s.substring(1);
 				Tag<Block> tag = blocktags.getTag(new ResourceLocation(sub));
 				if (tag != null)
 					FORBIDDEN_TILES_TAGS.add(tag);
 			}
 		}
-		
+
 		for (String s : allowedBlocks)
 		{
 			if (s.startsWith("#"))
 			{
-				Tag<Block> tag = blocktags.getTag(new ResourceLocation(s.substring(1, s.length())));
+				Tag<Block> tag = blocktags.getTag(new ResourceLocation(s.substring(1)));
 				if (tag != null)
 					ALLOWED_TILES_TAGS.add(tag);
 			}
 		}
-		
+
 		for (String s : forbiddenEntity)
 		{
 			if (s.startsWith("#"))
 			{
-				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
+				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1)));
 				if (tag != null)
 					FORBIDDEN_ENTITIES_TAGS.add(tag);
 			}
 		}
-		
+
 		for (String s : allowedEntities)
 		{
 			if (s.startsWith("#"))
 			{
-				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
+				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1)));
 				if (tag != null)
 					ALLOWED_ENTITIES_TAGS.add(tag);
 			}
 		}
-		
+
 		for (String s : forbiddenStacking)
 		{
 			if (s.startsWith("#"))
 			{
-				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
+				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1)));
 				if (tag != null)
 					FORBIDDEN_STACKING_TAGS.add(tag);
 			}
 		}
-		
+
 		for (String s : allowedStacking)
 		{
 			if (s.startsWith("#"))
 			{
-				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1, s.length())));
+				Tag<EntityType<?>> tag = entitytags.getTag(new ResourceLocation(s.substring(1)));
 				if (tag != null)
 					ALLOWED_STACKING_TAGS.add(tag);
 			}

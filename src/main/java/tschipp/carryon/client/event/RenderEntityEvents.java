@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 
@@ -34,31 +32,30 @@ import tschipp.carryon.common.scripting.ScriptChecker;
 
 public class RenderEntityEvents
 {
-	
+
 	public static final Map<String, Entity> nbtEntityMap = new HashMap<>();
-	
+
 	public static Entity getEntity(ItemStack carried, Level world)
 	{
 		String nbt = ItemCarryonEntity.getPersistentData(carried).toString();
-		if(nbtEntityMap.containsKey(nbt))
+		if (nbtEntityMap.containsKey(nbt))
 		{
 			return nbtEntityMap.get(nbt);
 		}
-		
+
 		Entity entity = ItemCarryonEntity.getEntity(carried, world);
 		nbtEntityMap.put(nbt, entity);
-		
+
 		return entity;
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
 		nbtEntityMap.clear();
 	}
-	
-	
+
 	/*
 	 * Renders the Entity in First Person
 	 */
@@ -75,52 +72,52 @@ public class RenderEntityEvents
 		int light = event.getLight();
 		MultiBufferSource buffer = event.getBuffers();
 		EntityRenderDispatcher manager = Minecraft.getInstance().getEntityRenderDispatcher();
-		
+
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
-			if(ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
+			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
 				return;
-			
+
 			Entity entity = getEntity(stack, world);
 
 			if (entity != null)
 			{
 				Vec3 playerpos = CarryRenderHelper.getExactPos(player, partialticks);
-				
+
 				entity.setPos(playerpos.x, playerpos.y, playerpos.z);
 				entity.xRotO = 0.0f;
 				entity.yRotO = 0.0f;
 				entity.setYHeadRot(0.0f);
-				
+
 				float height = entity.getBbHeight();
 				float width = entity.getBbWidth();
-				
+
 				matrix.pushPose();
 				matrix.scale(0.8f, 0.8f, 0.8f);
 				matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 				matrix.translate(0.0, -height - .1, width + 0.1);
-				
-//				RenderSystem.enableAlphaTest();
+
+				// RenderSystem.enableAlphaTest();
 
 				if (perspective == 0)
 				{
-//					Lighting.en
+					// Lighting.en
 					manager.setRenderShadow(false);
 
 					CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 					if (carryOverride != null)
 					{
 						CarryRenderHelper.performOverrideTransformation(matrix, carryOverride);
-						
+
 						String entityname = carryOverride.getRenderNameEntity();
 						if (entityname != null)
 						{
 							Entity newEntity = null;
 
 							Optional<EntityType<?>> type = EntityType.byString(entityname);
-							if(type.isPresent())
+							if (type.isPresent())
 								newEntity = type.get().create(world);
-							
+
 							if (newEntity != null)
 							{
 								CompoundTag nbttag = carryOverride.getRenderNBT();
@@ -135,19 +132,19 @@ public class RenderEntityEvents
 						}
 					}
 
-					if(entity instanceof LivingEntity)
+					if (entity instanceof LivingEntity)
 						((LivingEntity) entity).hurtTime = 0;
-										
+
 					manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
 					manager.setRenderShadow(true);
 				}
 
-//				RenderSystem.disableAlphaTest();
+				// RenderSystem.disableAlphaTest();
 				matrix.popPose();
 
-//				Lighting.turnOff();
-//				 TODO
-//				RenderSystem.disableRescaleNormal();
+				// Lighting.turnOff();
+				// TODO
+				// RenderSystem.disableRescaleNormal();
 
 				if (perspective == 0)
 				{

@@ -28,17 +28,11 @@ public class CommandCarryOn
 	{
 		LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("carryon")
 
-				.then(Commands.literal("debug").executes((cmd) -> {
-					return handleDebug(cmd.getSource());
-				}))
+				.then(Commands.literal("debug").executes(cmd -> handleDebug(cmd.getSource())))
 
-				.then(Commands.literal("clear").executes((cmd) -> {
-					return handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().getPlayerOrException()));
-				}))
+				.then(Commands.literal("clear").executes(cmd -> handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().getPlayerOrException()))))
 
-				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermission(2)).executes((cmd) -> {
-					return handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target"));
-				})))
+				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermission(2)).executes(cmd -> handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target")))))
 
 		;
 
@@ -100,7 +94,6 @@ public class CommandCarryOn
 		}
 		catch (CommandSyntaxException e)
 		{
-			return 0;
 		}
 
 		return 0;
@@ -114,7 +107,7 @@ public class CommandCarryOn
 			cleared += player.getInventory().clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64, player.inventoryMenu.getCraftSlots()); // TODO
 			cleared += player.getInventory().clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64, player.inventoryMenu.getCraftSlots());
 
-			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(9, player.getId()));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> player), new CarrySlotPacket(9, player.getId()));
 
 			if (cleared != 1)
 				source.sendSuccess(new TextComponent("Cleared " + cleared + " Items!"), true);

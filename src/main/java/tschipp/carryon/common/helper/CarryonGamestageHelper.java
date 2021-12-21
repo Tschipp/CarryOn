@@ -7,7 +7,7 @@ public class CarryonGamestageHelper
 {
 	public static boolean hasGamestage(String stage, Player player)
 	{
-//		return GameStageHelper.hasStage(player, stage);
+		// return GameStageHelper.hasStage(player, stage);
 		return true;
 	}
 }

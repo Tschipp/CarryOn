@@ -28,48 +28,44 @@ public class PositionClientEvents
 		{
 			Player player = Minecraft.getInstance().player;
 			boolean inventory = event.getGui() instanceof AbstractContainerScreen;
-			
-			if (player != null && inventory)
+
+			if (player != null && inventory && player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{
-				if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
+				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
+				if (cap.isBlockActivated())
 				{
-					IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
-					if(cap.isBlockActivated())
+					Level world = player.level;
+					BlockPos pos = cap.getPos();
+					if (world != null)
 					{
-						Level world = player.level;
-						BlockPos pos = cap.getPos();
-						if(world != null)
+						BlockEntity te = world.getBlockEntity(pos);
+						if (te == null)
 						{
-							BlockEntity te = world.getBlockEntity(pos);
-							if(te == null)
-							{
-//								player.openContainer = null;
-								Minecraft.getInstance().screen = null;
-//								Minecraft.getInstance().fo;
-								cap.setBlockActivated(false);
-								cap.setPos(new BlockPos(0,0,0));
-							}
+							// player.openContainer = null;
+							Minecraft.getInstance().screen = null;
+							// Minecraft.getInstance().fo;
+							cap.setBlockActivated(false);
+							cap.setPos(new BlockPos(0, 0, 0));
 						}
 					}
 				}
 			}
 		}
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void onGuiClose(PlayerContainerEvent.Close event)
 	{
 		Player player = event.getPlayer();
-		if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
+		if (player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
 			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
 			cap.setBlockActivated(false);
-			cap.setPos(new BlockPos(0,0,0));
+			cap.setPos(new BlockPos(0, 0, 0));
 		}
 	}
-	
-	
+
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void onPlayerTick(PlayerTickEvent event)
@@ -77,7 +73,7 @@ public class PositionClientEvents
 		if (event.side == LogicalSide.CLIENT)
 		{
 			Player player = event.player;
-			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
+			if (player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{
 				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
 				if (cap.isBlockActivated() && Minecraft.getInstance().screen == null)
@@ -88,6 +84,5 @@ public class PositionClientEvents
 			}
 		}
 	}
-	
-	
+
 }

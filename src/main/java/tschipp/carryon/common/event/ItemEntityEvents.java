@@ -55,7 +55,7 @@ public class ItemEntityEvents
 				if (override != null)
 				{
 					String command = override.getCommandPlace();
-					
+
 					if (command != null)
 						player.getServer().getCommands().performCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
@@ -69,9 +69,8 @@ public class ItemEntityEvents
 	{
 		Entity e = event.getEntity();
 		Level world = event.getWorld();
-		if (e instanceof net.minecraft.world.entity.item.ItemEntity)
+		if (e instanceof net.minecraft.world.entity.item.ItemEntity eitem)
 		{
-			net.minecraft.world.entity.item.ItemEntity eitem = (net.minecraft.world.entity.item.ItemEntity) e;
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
 			if (item == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
@@ -109,40 +108,38 @@ public class ItemEntityEvents
 					if (entity instanceof Animal)
 						((Animal) entity).dropLeash(true, true);
 
-					if (PickupHandler.canPlayerPickUpEntity((ServerPlayer) player, entity))
+					if (PickupHandler.canPlayerPickUpEntity((ServerPlayer) player, entity) && ItemCarryonEntity.storeEntityData(entity, world, stack))
 					{
-						if (ItemCarryonEntity.storeEntityData(entity, world, stack))
-						{
-							LazyOptional<IItemHandler> handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+						LazyOptional<IItemHandler> handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
 
-							handler.ifPresent((hand) -> {
-								for (int i = 0; i < hand.getSlots(); i++)
-								{
-									hand.extractItem(i, 64, false);
-								}
-							});
+						handler.ifPresent(hand -> {
+							for (int i = 0; i < hand.getSlots(); i++)
+							{
+								hand.extractItem(i, 64, false);
+							}
+						});
 
-							CarryOnOverride override = ScriptChecker.inspectEntity(entity);
-							int overrideHash = 0;
-							if (override != null)
-								overrideHash = override.hashCode();
+						CarryOnOverride override = ScriptChecker.inspectEntity(entity);
+						int overrideHash = 0;
+						if (override != null)
+							overrideHash = override.hashCode();
 
-							ItemEvents.sendPacket(player, player.getInventory().selected, overrideHash);
+						ItemEvents.sendPacket(player, player.getInventory().selected, overrideHash);
 
-							if (entity instanceof LivingEntity)
-								((LivingEntity) entity).setHealth(0);
+						if (entity instanceof LivingEntity)
+							((LivingEntity) entity).setHealth(0);
 
-							entity.ejectPassengers();
-							entity.setPos(entity.getX(), 0, entity.getZ());
-							entity.discard();
-							player.setItemInHand(InteractionHand.MAIN_HAND, stack);
-							event.setCanceled(true);
-							event.setCancellationResult(InteractionResult.FAIL);
-						}
+						entity.ejectPassengers();
+						entity.setPos(entity.getX(), 0, entity.getZ());
+						entity.discard();
+						player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+						event.setCanceled(true);
+						event.setCancellationResult(InteractionResult.FAIL);
 					}
 				}
 
-			} else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
+			}
+			else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
 			{
 				Entity entityHeld = ItemCarryonEntity.getEntity(main, world);
 
@@ -163,11 +160,10 @@ public class ItemEntityEvents
 							if (Settings.useWhitelistStacking.get() ? ListHandler.isStackingAllowed(topEntity) : !ListHandler.isStackingForbidden(topEntity))
 							{
 								double sizeEntity = topEntity.getBbHeight() * topEntity.getBbWidth();
-								if ((Settings.entitySizeMattersStacking.get() && sizeHeldEntity <= sizeEntity) || !Settings.entitySizeMattersStacking.get())
+								if (Settings.entitySizeMattersStacking.get() && sizeHeldEntity <= sizeEntity || !Settings.entitySizeMattersStacking.get())
 								{
-									if (topEntity instanceof Horse)
+									if (topEntity instanceof Horse horse)
 									{
-										Horse horse = (Horse) topEntity;
 										horse.setTamed(true);
 									}
 
@@ -180,7 +176,8 @@ public class ItemEntityEvents
 										world.addFreshEntity(entityHeld);
 										entityHeld.startRiding(topEntity, false);
 										entityHeld.teleportTo(tempX, tempY, tempZ);
-									} else
+									}
+									else
 									{
 										entityHeld.setPos(entity.getX(), entity.getY(), entity.getZ());
 										world.addFreshEntity(entityHeld);
@@ -193,16 +190,16 @@ public class ItemEntityEvents
 									event.setCanceled(true);
 									event.setCancellationResult(InteractionResult.FAIL);
 									world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.HORSE_SADDLE, SoundSource.PLAYERS, 0.5F, 1.5F);
-								} else
+								}
+								else
 								{
 									world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 0.5F, 1.5F);
-									return;
 								}
 							}
-						} else
+						}
+						else
 						{
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 0.5F, 1.5F);
-							return;
 						}
 					}
 

@@ -33,19 +33,21 @@ import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.event.ItemEvents;
 
-public class ItemCarryonEntity extends Item {
+public class ItemCarryonEntity extends Item
+{
 
 	private static final Method initGoals;
-	
+
 	static
 	{
-		initGoals =  ObfuscationReflectionHelper.findMethod(Mob.class, "m_8099_");
+		initGoals = ObfuscationReflectionHelper.findMethod(Mob.class, "m_8099_");
 		initGoals.setAccessible(true);
 	}
-	
+
 	public static final String ENTITY_DATA_KEY = "entityData";
 
-	public ItemCarryonEntity() {
+	public ItemCarryonEntity()
+	{
 		super(new Item.Properties().stacksTo(1));
 		this.setRegistryName(CarryOn.MODID, "entity_item");
 	}
@@ -53,27 +55,28 @@ public class ItemCarryonEntity extends Item {
 	@Override
 	public Component getName(ItemStack stack)
 	{
-		if (hasEntityData(stack)) {
-			
+		if (hasEntityData(stack))
+		{
+
 			return new TranslatableComponent(getEntityType(stack).getDescriptionId());
 		}
 
 		return new TextComponent("");
 	}
 
-	public static boolean hasEntityData(ItemStack stack) {
-		if (stack.hasTag()) {
+	public static boolean hasEntityData(ItemStack stack)
+	{
+		if (stack.hasTag())
+		{
 			CompoundTag tag = stack.getTag();
 			return tag.contains(ENTITY_DATA_KEY) && tag.contains("entity");
 		}
 		return false;
 	}
 
-	public static boolean storeEntityData(@Nonnull Entity entity, Level world, ItemStack stack) {
-		if (entity == null)
-			return false;
-
-		if (stack.isEmpty())
+	public static boolean storeEntityData(@Nonnull Entity entity, Level world, ItemStack stack)
+	{
+		if (entity == null || stack.isEmpty())
 			return false;
 
 		CompoundTag entityData = new CompoundTag();
@@ -92,7 +95,8 @@ public class ItemCarryonEntity extends Item {
 	}
 
 	@Override
-	public InteractionResult useOn(UseOnContext context) {
+	public InteractionResult useOn(UseOnContext context)
+	{
 		Player player = context.getPlayer();
 		Level world = context.getLevel();
 		BlockPos pos = context.getClickedPos();
@@ -102,25 +106,27 @@ public class ItemCarryonEntity extends Item {
 
 		BlockState state = world.getBlockState(pos);
 
-		if (ModList.get().isLoaded("betterplacement")) {
-			if (CarryOnKeybinds.isKeyPressed(player))
-				return InteractionResult.FAIL;
-		}
+		if (ModList.get().isLoaded("betterplacement") && CarryOnKeybinds.isKeyPressed(player))
+			return InteractionResult.FAIL;
 
-		if (hasEntityData(stack)) {
+		if (hasEntityData(stack))
+		{
 			BlockPos finalPos = pos;
 
-			if (!state.canBeReplaced(new BlockPlaceContext(context))) {
+			if (!state.canBeReplaced(new BlockPlaceContext(context)))
+			{
 				finalPos = pos.relative(facing);
 			}
 
 			Entity entity = getEntity(stack, world);
-			if (entity != null) {
-				if (!world.isClientSide) {
-					entity.absMoveTo(finalPos.getX() + 0.5, finalPos.getY(), finalPos.getZ() + 0.5,
-							180 + player.yHeadRot, 0.0f);
+			if (entity != null)
+			{
+				if (!world.isClientSide)
+				{
+					entity.absMoveTo(finalPos.getX() + 0.5, finalPos.getY(), finalPos.getZ() + 0.5, 180 + player.yHeadRot, 0.0f);
 					world.addFreshEntity(entity);
-					if (entity instanceof Mob) {
+					if (entity instanceof Mob)
+					{
 						((Mob) entity).playAmbientSound();
 					}
 					clearEntityData(stack);
@@ -137,42 +143,50 @@ public class ItemCarryonEntity extends Item {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected) {
-		if (hasEntityData(stack)) {
+	public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected)
+	{
+		if (hasEntityData(stack))
+		{
 			if (getEntity(stack, world) == null)
 				stack = ItemStack.EMPTY;
 
-			if (entity instanceof LivingEntity) {
-				if (entity instanceof Player && Settings.slownessInCreative.get() ? false
-						: ((Player) entity).isCreative())
+			if (entity instanceof LivingEntity)
+			{
+				if (entity instanceof Player && Settings.slownessInCreative.get() ? false : ((Player) entity).isCreative())
 					return;
 
-				((LivingEntity) entity).addEffect(
-						new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack, world), false, false));
+				((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, this.potionLevel(stack, world), false, false));
 			}
 
-		} else {
+		}
+		else
+		{
 			stack = ItemStack.EMPTY;
 		}
 	}
 
-	public static void clearEntityData(ItemStack stack) {
-		if (stack.hasTag()) {
+	public static void clearEntityData(ItemStack stack)
+	{
+		if (stack.hasTag())
+		{
 			CompoundTag tag = stack.getTag();
 			tag.remove(ENTITY_DATA_KEY);
 			tag.remove("entity");
 		}
 	}
 
-	public static CompoundTag getPersistentData(ItemStack stack) {
-		if (stack.hasTag()) {
+	public static CompoundTag getPersistentData(ItemStack stack)
+	{
+		if (stack.hasTag())
+		{
 			CompoundTag tag = stack.getTag();
 			return tag.getCompound(ENTITY_DATA_KEY);
 		}
 		return null;
 	}
 
-	public static Entity getEntity(ItemStack stack, Level world) {
+	public static Entity getEntity(ItemStack stack, Level world)
+	{
 		if (world == null)
 			return null;
 
@@ -182,7 +196,8 @@ public class ItemCarryonEntity extends Item {
 		Optional<EntityType<?>> type = EntityType.byString(name);
 		Entity entity = null;
 
-		if (type.isPresent()) {
+		if (type.isPresent())
+		{
 			entity = type.get().create(world);
 		}
 
@@ -201,28 +216,37 @@ public class ItemCarryonEntity extends Item {
 		return entity;
 	}
 
-	public static String getEntityName(ItemStack stack) {
-		if (stack.hasTag()) {
+	public static String getEntityName(ItemStack stack)
+	{
+		if (stack.hasTag())
+		{
 			CompoundTag tag = stack.getTag();
 			return tag.getString("entity");
 		}
 		return null;
 	}
 
-	public static String getCustomName(ItemStack stack) {
-		if (stack.hasTag()) {
+	public static String getCustomName(ItemStack stack)
+	{
+		if (stack.hasTag())
+		{
 			CompoundTag tag = stack.getTag();
-			if (tag.contains("CustomName") && !tag.getString("CustomName").isEmpty()) {
+			if (tag.contains("CustomName") && !tag.getString("CustomName").isEmpty())
+			{
 				return tag.toString();
-			} else {
+			}
+			else
+			{
 				return tag.toString();
 			}
 		}
 		return null;
 	}
 
-	public static EntityType<?> getEntityType(ItemStack stack) {
-		if (stack.hasTag()) {
+	public static EntityType<?> getEntityType(ItemStack stack)
+	{
+		if (stack.hasTag())
+		{
 			CompoundTag tag = stack.getTag();
 			String name = tag.getString("entity");
 			Optional<EntityType<?>> type = EntityType.byString(name);
@@ -232,7 +256,8 @@ public class ItemCarryonEntity extends Item {
 		return null;
 	}
 
-	private int potionLevel(ItemStack stack, Level world) {
+	private int potionLevel(ItemStack stack, Level world)
+	{
 		Entity e = getEntity(stack, world);
 		if (e == null)
 			return 1;

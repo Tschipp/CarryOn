@@ -25,12 +25,12 @@ import tschipp.carryon.common.helper.StringParser;
 
 public class ModelOverridesHandler
 {
-	public static HashMap<CompoundTag, Object> OVERRIDE_OBJECTS = new HashMap<CompoundTag, Object>();
+	public static HashMap<CompoundTag, Object> OVERRIDE_OBJECTS = new HashMap<>();
 
 	/*
 	 * This class is really ugly, will probably be replaced by something else -
 	 * Tschipp
-	 */	
+	 */
 	public static void parseOverride(String overrideString, int i)
 	{
 		boolean errored = false;
@@ -94,7 +94,7 @@ public class ModelOverridesHandler
 			}
 
 			overridetype = override.substring(0, override.indexOf(")") + 1);
-			override =override.replace(overridetype, "");
+			override = override.replace(overridetype, "");
 			overridetype = overridetype.replace("(", "");
 			overridetype = overridetype.replace(")", "");
 
@@ -116,7 +116,7 @@ public class ModelOverridesHandler
 
 		if ((ModList.get().isLoaded(modidOverride) || modidOverride.equals("minecraft")) && (ModList.get().isLoaded(modidToOverride) || modidToOverride.equals("minecraft")) && !errored)
 		{
-				toOverrideObject = StringParser.getBlockState(toOverride);
+			toOverrideObject = StringParser.getBlockState(toOverride);
 
 			if (toOverrideObject != null)
 			{
@@ -143,8 +143,7 @@ public class ModelOverridesHandler
 			}
 		}
 	}
-	
-	
+
 	public static void initOverrides()
 	{
 		@SuppressWarnings("unchecked")
@@ -233,7 +232,7 @@ public class ModelOverridesHandler
 		return null;
 
 	}
-	
+
 	public static Object getOverrideObject(BlockState state, CompoundTag tag)
 	{
 		int stateid = Block.getId(state);
@@ -259,8 +258,7 @@ public class ModelOverridesHandler
 					}
 					if (flag)
 					{
-						Object override = OVERRIDE_OBJECTS.get(key);
-						return override;
+						return OVERRIDE_OBJECTS.get(key);
 					}
 				}
 			}
