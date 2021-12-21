@@ -14,7 +14,7 @@ import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.ListHandler;
 
@@ -40,7 +40,7 @@ public class Configs {
 	}
 	
 	@SubscribeEvent
-	public static void onLoad(final ModConfig.Loading event)
+	public static void onLoad(final ModConfigEvent.Loading event)
 	{
 		if (event.getConfig().getModId().equals(CarryOn.MODID))
 		{
@@ -54,7 +54,7 @@ public class Configs {
 	}
 	
 	@SubscribeEvent
-	public static void onConfigChanged(ModConfig.Reloading event)
+	public static void onConfigChanged(ModConfigEvent.Reloading event)
 	{
 		if (event.getConfig().getModId().equals(CarryOn.MODID))
 		{

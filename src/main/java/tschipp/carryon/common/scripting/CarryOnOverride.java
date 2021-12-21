@@ -3,23 +3,23 @@ package tschipp.carryon.common.scripting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import tschipp.carryon.common.helper.InvalidConfigException;
 
 public class CarryOnOverride
 {
 	// BLOCKS
-	private CompoundNBT typeBlockTag = new CompoundNBT();
+	private CompoundTag typeBlockTag = new CompoundTag();
 	private String typeNameBlock = "";
 	private String typeMaterial = "";
 	private String typeHardness = "";
 	private String typeResistance = "";
 
 	// ENTITIES
-	private CompoundNBT typeEntityTag;
+	private CompoundTag typeEntityTag;
 	private String typeNameEntity = "";
 	private String typeHeight = "";
 	private String typeWidth = "";
@@ -37,7 +37,7 @@ public class CarryOnOverride
 	// RENDER
 	private String renderNameBlock = "";
 	private String renderNameEntity = "";
-	private CompoundNBT renderNBT = new CompoundNBT();
+	private CompoundTag renderNBT = new CompoundTag();
 	private String renderTranslation = "";
 	private String renderRotation = "";
 	private String renderscaled = "";
@@ -104,7 +104,7 @@ public class CarryOnOverride
 							if (resistance != null)
 								setTypeResistance(resistance.getAsString());
 							if (nbt != null)
-								setTypeBlockTag(JsonToNBT.parseTag(nbt.toString()));
+								setTypeBlockTag(TagParser.parseTag(nbt.toString()));
 						}
 						else
 						{
@@ -124,7 +124,7 @@ public class CarryOnOverride
 							if (width != null)
 								setTypeWidth(width.getAsString());
 							if (nbt != null)
-								setTypeEntityTag(JsonToNBT.parseTag(nbt.toString()));
+								setTypeEntityTag(TagParser.parseTag(nbt.toString()));
 						}
 
 						if (conditions != null)
@@ -177,7 +177,7 @@ public class CarryOnOverride
 							if (scaled != null)
 								setRenderscaled(scaled.getAsString());
 							if (nbt != null)
-								setRenderNBT(JsonToNBT.parseTag(nbt.toString()));
+								setRenderNBT(TagParser.parseTag(nbt.toString()));
 							if (rotationLeftArm != null)
 								setRenderRotationLeftArm(rotationLeftArm.getAsString());
 							if (rotationRightArm != null)
@@ -550,7 +550,7 @@ public class CarryOnOverride
 		this.isEntity = isEntity;
 	}
 
-	public CompoundNBT getTypeBlockTag()
+	public CompoundTag getTypeBlockTag()
 	{
 		return typeBlockTag;
 	}
@@ -575,7 +575,7 @@ public class CarryOnOverride
 		return typeResistance;
 	}
 
-	public CompoundNBT getTypeEntityTag()
+	public CompoundTag getTypeEntityTag()
 	{
 		return typeEntityTag;
 	}
@@ -640,7 +640,7 @@ public class CarryOnOverride
 		return renderNameEntity;
 	}
 
-	public CompoundNBT getRenderNBT()
+	public CompoundTag getRenderNBT()
 	{
 		return renderNBT;
 	}
@@ -660,7 +660,7 @@ public class CarryOnOverride
 		return renderscaled;
 	}
 
-	public void setTypeBlockTag(CompoundNBT typeBlockTag)
+	public void setTypeBlockTag(CompoundTag typeBlockTag)
 	{
 		this.typeBlockTag = typeBlockTag;
 	}
@@ -685,7 +685,7 @@ public class CarryOnOverride
 		this.typeResistance = typeResistance;
 	}
 
-	public void setTypeEntityTag(CompoundNBT typeEntityTag)
+	public void setTypeEntityTag(CompoundTag typeEntityTag)
 	{
 		this.typeEntityTag = typeEntityTag;
 	}
@@ -750,7 +750,7 @@ public class CarryOnOverride
 		this.renderNameEntity = renderNameEntity;
 	}
 
-	public void setRenderNBT(CompoundNBT renderNBT)
+	public void setRenderNBT(CompoundTag renderNBT)
 	{
 		this.renderNBT = renderNBT;
 	}
@@ -780,7 +780,7 @@ public class CarryOnOverride
 		this.commandPlace = commandPlace;
 	}
 
-	public void serialize(PacketBuffer buf)
+	public void serialize(FriendlyByteBuf buf)
 	{
 		// BLOCKS
 		buf.writeNbt(typeBlockTag);
@@ -827,7 +827,7 @@ public class CarryOnOverride
 		buf.writeUtf(resourceLocation);
 	}
 
-	public static CarryOnOverride deserialize(PacketBuffer buf)
+	public static CarryOnOverride deserialize(FriendlyByteBuf buf)
 	{
 		CarryOnOverride override = new CarryOnOverride("");
 		override.typeBlockTag = buf.readNbt();

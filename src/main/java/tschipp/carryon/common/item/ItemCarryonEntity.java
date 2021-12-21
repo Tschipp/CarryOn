@@ -5,29 +5,29 @@ import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
@@ -39,7 +39,7 @@ public class ItemCarryonEntity extends Item {
 	
 	static
 	{
-		initGoals =  ObfuscationReflectionHelper.findMethod(MobEntity.class, "func_184651_r");
+		initGoals =  ObfuscationReflectionHelper.findMethod(Mob.class, "m_8099_");
 		initGoals.setAccessible(true);
 	}
 	
@@ -51,37 +51,37 @@ public class ItemCarryonEntity extends Item {
 	}
 
 	@Override
-	public ITextComponent getName(ItemStack stack)
+	public Component getName(ItemStack stack)
 	{
 		if (hasEntityData(stack)) {
 			
-			return new TranslationTextComponent(getEntityType(stack).getDescriptionId());
+			return new TranslatableComponent(getEntityType(stack).getDescriptionId());
 		}
 
-		return new StringTextComponent("");
+		return new TextComponent("");
 	}
 
 	public static boolean hasEntityData(ItemStack stack) {
 		if (stack.hasTag()) {
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			return tag.contains(ENTITY_DATA_KEY) && tag.contains("entity");
 		}
 		return false;
 	}
 
-	public static boolean storeEntityData(@Nonnull Entity entity, World world, ItemStack stack) {
+	public static boolean storeEntityData(@Nonnull Entity entity, Level world, ItemStack stack) {
 		if (entity == null)
 			return false;
 
 		if (stack.isEmpty())
 			return false;
 
-		CompoundNBT entityData = new CompoundNBT();
+		CompoundTag entityData = new CompoundTag();
 		entityData = entity.serializeNBT();
 
 		String name = EntityType.getKey(entity.getType()).toString();
 
-		CompoundNBT tag = stack.hasTag() ? stack.getTag() : new CompoundNBT();
+		CompoundTag tag = stack.hasTag() ? stack.getTag() : new CompoundTag();
 		if (tag.contains(ENTITY_DATA_KEY))
 			return false;
 
@@ -92,9 +92,9 @@ public class ItemCarryonEntity extends Item {
 	}
 
 	@Override
-	public ActionResultType useOn(ItemUseContext context) {
-		PlayerEntity player = context.getPlayer();
-		World world = context.getLevel();
+	public InteractionResult useOn(UseOnContext context) {
+		Player player = context.getPlayer();
+		Level world = context.getLevel();
 		BlockPos pos = context.getClickedPos();
 		Direction facing = context.getClickedFace();
 
@@ -104,13 +104,13 @@ public class ItemCarryonEntity extends Item {
 
 		if (ModList.get().isLoaded("betterplacement")) {
 			if (CarryOnKeybinds.isKeyPressed(player))
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 		}
 
 		if (hasEntityData(stack)) {
 			BlockPos finalPos = pos;
 
-			if (!state.canBeReplaced(new BlockItemUseContext(context))) {
+			if (!state.canBeReplaced(new BlockPlaceContext(context))) {
 				finalPos = pos.relative(facing);
 			}
 
@@ -120,35 +120,35 @@ public class ItemCarryonEntity extends Item {
 					entity.absMoveTo(finalPos.getX() + 0.5, finalPos.getY(), finalPos.getZ() + 0.5,
 							180 + player.yHeadRot, 0.0f);
 					world.addFreshEntity(entity);
-					if (entity instanceof MobEntity) {
-						((MobEntity) entity).playAmbientSound();
+					if (entity instanceof Mob) {
+						((Mob) entity).playAmbientSound();
 					}
 					clearEntityData(stack);
-					player.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+					player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 					ItemEvents.sendPacket(player, 9, 0);
 
 				}
 				player.getPersistentData().remove("overrideKey");
-				return ActionResultType.SUCCESS;
+				return InteractionResult.SUCCESS;
 			}
 		}
 
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
+	public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected) {
 		if (hasEntityData(stack)) {
 			if (getEntity(stack, world) == null)
 				stack = ItemStack.EMPTY;
 
 			if (entity instanceof LivingEntity) {
-				if (entity instanceof PlayerEntity && Settings.slownessInCreative.get() ? false
-						: ((PlayerEntity) entity).isCreative())
+				if (entity instanceof Player && Settings.slownessInCreative.get() ? false
+						: ((Player) entity).isCreative())
 					return;
 
 				((LivingEntity) entity).addEffect(
-						new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack, world), false, false));
+						new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack, world), false, false));
 			}
 
 		} else {
@@ -158,27 +158,27 @@ public class ItemCarryonEntity extends Item {
 
 	public static void clearEntityData(ItemStack stack) {
 		if (stack.hasTag()) {
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			tag.remove(ENTITY_DATA_KEY);
 			tag.remove("entity");
 		}
 	}
 
-	public static CompoundNBT getPersistentData(ItemStack stack) {
+	public static CompoundTag getPersistentData(ItemStack stack) {
 		if (stack.hasTag()) {
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			return tag.getCompound(ENTITY_DATA_KEY);
 		}
 		return null;
 	}
 
-	public static Entity getEntity(ItemStack stack, World world) {
+	public static Entity getEntity(ItemStack stack, Level world) {
 		if (world == null)
 			return null;
 
 		String name = getEntityName(stack);
 
-		CompoundNBT e = getPersistentData(stack);
+		CompoundTag e = getPersistentData(stack);
 		Optional<EntityType<?>> type = EntityType.byString(name);
 		Entity entity = null;
 
@@ -203,7 +203,7 @@ public class ItemCarryonEntity extends Item {
 
 	public static String getEntityName(ItemStack stack) {
 		if (stack.hasTag()) {
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			return tag.getString("entity");
 		}
 		return null;
@@ -211,7 +211,7 @@ public class ItemCarryonEntity extends Item {
 
 	public static String getCustomName(ItemStack stack) {
 		if (stack.hasTag()) {
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			if (tag.contains("CustomName") && !tag.getString("CustomName").isEmpty()) {
 				return tag.toString();
 			} else {
@@ -223,7 +223,7 @@ public class ItemCarryonEntity extends Item {
 
 	public static EntityType<?> getEntityType(ItemStack stack) {
 		if (stack.hasTag()) {
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			String name = tag.getString("entity");
 			Optional<EntityType<?>> type = EntityType.byString(name);
 			if (type.isPresent())
@@ -232,7 +232,7 @@ public class ItemCarryonEntity extends Item {
 		return null;
 	}
 
-	private int potionLevel(ItemStack stack, World world) {
+	private int potionLevel(ItemStack stack, Level world) {
 		Entity e = getEntity(stack, world);
 		if (e == null)
 			return 1;

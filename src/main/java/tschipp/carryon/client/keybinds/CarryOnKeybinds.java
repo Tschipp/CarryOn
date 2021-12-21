@@ -1,29 +1,29 @@
 package tschipp.carryon.client.keybinds;
 
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fmlclient.registry.ClientRegistry;
 
 public class CarryOnKeybinds
 {
 
 	public static final String KEYBIND_KEY = "carryOnKeyPressed";
-	public static KeyBinding carryKey;
+	public static KeyMapping carryKey;
 	
 	@OnlyIn(Dist.CLIENT)
 	public static void init()
 	{
-		carryKey = new KeyBinding("key.carry.desc", 340, "key.carry.category");
+		carryKey = new KeyMapping("key.carry.desc", 340, "key.carry.category");
 		
 		ClientRegistry.registerKeyBinding(carryKey);
 	}
 	
-	public static boolean isKeyPressed(PlayerEntity player)
+	public static boolean isKeyPressed(Player player)
 	{
-		CompoundNBT tag = player.getPersistentData();
+		CompoundTag tag = player.getPersistentData();
 		if(tag != null && tag.contains(KEYBIND_KEY))
 		{
 			return tag.getBoolean(KEYBIND_KEY);
@@ -31,9 +31,9 @@ public class CarryOnKeybinds
 		return false;
 	}
 	
-	public static void setKeyPressed(PlayerEntity player, boolean pressed)
+	public static void setKeyPressed(Player player, boolean pressed)
 	{
-		CompoundNBT tag = player.getPersistentData();
+		CompoundTag tag = player.getPersistentData();
 		tag.putBoolean(KEYBIND_KEY, pressed);
 	}
 	

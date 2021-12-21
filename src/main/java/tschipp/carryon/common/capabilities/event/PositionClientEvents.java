@@ -1,11 +1,11 @@
 package tschipp.carryon.common.capabilities.event;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -26,8 +26,8 @@ public class PositionClientEvents
 	{
 		if (event.getGui() != null)
 		{
-			PlayerEntity player = Minecraft.getInstance().player;
-			boolean inventory = event.getGui() instanceof ContainerScreen;
+			Player player = Minecraft.getInstance().player;
+			boolean inventory = event.getGui() instanceof AbstractContainerScreen;
 			
 			if (player != null && inventory)
 			{
@@ -36,11 +36,11 @@ public class PositionClientEvents
 					IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
 					if(cap.isBlockActivated())
 					{
-						World world = player.level;
+						Level world = player.level;
 						BlockPos pos = cap.getPos();
 						if(world != null)
 						{
-							TileEntity te = world.getBlockEntity(pos);
+							BlockEntity te = world.getBlockEntity(pos);
 							if(te == null)
 							{
 //								player.openContainer = null;
@@ -60,7 +60,7 @@ public class PositionClientEvents
 	@SubscribeEvent
 	public void onGuiClose(PlayerContainerEvent.Close event)
 	{
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
 			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
@@ -76,7 +76,7 @@ public class PositionClientEvents
 	{
 		if (event.side == LogicalSide.CLIENT)
 		{
-			PlayerEntity player = event.player;
+			Player player = event.player;
 			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{
 				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());

@@ -6,7 +6,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.InterModComms.IMCMessage;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
@@ -21,8 +21,8 @@ public class IMCEvents
 
 		messages.forEach((msg) -> {
 
-			String method = msg.getMethod();
-			Object obj = msg.getMessageSupplier().get();
+			String method = msg.method();
+			Object obj = msg.messageSupplier().get();
 
 			if(!(obj instanceof String))
 				return;

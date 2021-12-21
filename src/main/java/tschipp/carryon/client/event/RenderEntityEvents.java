@@ -4,22 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -37,7 +37,7 @@ public class RenderEntityEvents
 	
 	public static final Map<String, Entity> nbtEntityMap = new HashMap<>();
 	
-	public static Entity getEntity(ItemStack carried, World world)
+	public static Entity getEntity(ItemStack carried, Level world)
 	{
 		String nbt = ItemCarryonEntity.getPersistentData(carried).toString();
 		if(nbtEntityMap.containsKey(nbt))
@@ -66,15 +66,15 @@ public class RenderEntityEvents
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-		World world = Minecraft.getInstance().level;
-		PlayerEntity player = Minecraft.getInstance().player;
+		Level world = Minecraft.getInstance().level;
+		Player player = Minecraft.getInstance().player;
 		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
 		float partialticks = event.getPartialTicks();
-		MatrixStack matrix = event.getMatrixStack();
+		PoseStack matrix = event.getMatrixStack();
 		int light = event.getLight();
-		IRenderTypeBuffer buffer = event.getBuffers();
-		EntityRendererManager manager = Minecraft.getInstance().getEntityRenderDispatcher();
+		MultiBufferSource buffer = event.getBuffers();
+		EntityRenderDispatcher manager = Minecraft.getInstance().getEntityRenderDispatcher();
 		
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
@@ -85,10 +85,10 @@ public class RenderEntityEvents
 
 			if (entity != null)
 			{
-				Vector3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
+				Vec3 playerpos = CarryRenderHelper.getExactPos(player, partialticks);
 				
 				entity.setPos(playerpos.x, playerpos.y, playerpos.z);
-				entity.yRot = 0.0f;
+				entity.xRotO = 0.0f;
 				entity.yRotO = 0.0f;
 				entity.setYHeadRot(0.0f);
 				
@@ -100,11 +100,11 @@ public class RenderEntityEvents
 				matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 				matrix.translate(0.0, -height - .1, width + 0.1);
 				
-				RenderSystem.enableAlphaTest();
+//				RenderSystem.enableAlphaTest();
 
 				if (perspective == 0)
 				{
-					RenderHelper.turnBackOn();
+//					Lighting.en
 					manager.setRenderShadow(false);
 
 					CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
@@ -123,12 +123,12 @@ public class RenderEntityEvents
 							
 							if (newEntity != null)
 							{
-								CompoundNBT nbttag = carryOverride.getRenderNBT();
+								CompoundTag nbttag = carryOverride.getRenderNBT();
 								if (nbttag != null)
 									newEntity.deserializeNBT(nbttag);
 								entity = newEntity;
 								entity.setPos(playerpos.x, playerpos.y, playerpos.z);
-								entity.yRot = 0.0f;
+								entity.xRotO = 0.0f;
 								entity.yRotO = 0.0f;
 								entity.setYHeadRot(0.0f);
 							}
@@ -142,11 +142,12 @@ public class RenderEntityEvents
 					manager.setRenderShadow(true);
 				}
 
-				RenderSystem.disableAlphaTest();
+//				RenderSystem.disableAlphaTest();
 				matrix.popPose();
 
-				RenderHelper.turnOff();
-				RenderSystem.disableRescaleNormal();
+//				Lighting.turnOff();
+//				 TODO
+//				RenderSystem.disableRescaleNormal();
 
 				if (perspective == 0)
 				{

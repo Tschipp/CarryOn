@@ -3,8 +3,8 @@ package tschipp.carryon.network.server;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 
 public class SyncKeybindPacket
@@ -32,7 +32,7 @@ public class SyncKeybindPacket
 		{
 			ctx.get().enqueueWork(() -> {
 
-				ServerPlayerEntity player = ctx.get().getSender();
+				ServerPlayer player = ctx.get().getSender();
 
 				CarryOnKeybinds.setKeyPressed(player, pressed);
 

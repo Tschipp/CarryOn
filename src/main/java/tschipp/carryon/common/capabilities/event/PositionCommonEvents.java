@@ -1,11 +1,11 @@
 package tschipp.carryon.common.capabilities.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -21,7 +21,7 @@ public class PositionCommonEvents
 	@SubscribeEvent
 	public void onAttachCaps(AttachCapabilitiesEvent<Entity> event)
 	{
-		if (event.getObject() instanceof PlayerEntity)
+		if (event.getObject() instanceof Player)
 		{
 			event.addCapability(new ResourceLocation(CarryOn.MODID, "position"), new PositionProvider());
 		}
@@ -32,8 +32,8 @@ public class PositionCommonEvents
 	public void onBlockRight(PlayerInteractEvent.RightClickBlock event)
 	{
 		BlockPos pos = event.getPos();
-		World world = event.getWorld();
-		PlayerEntity player = event.getPlayer();
+		Level world = event.getWorld();
+		Player player = event.getPlayer();
 
 		if (event.isCanceled())
 			return;
@@ -44,7 +44,7 @@ public class PositionCommonEvents
 		if (player instanceof FakePlayer)
 			return;
 
-		TileEntity te = world.getBlockEntity(pos);
+		BlockEntity te = world.getBlockEntity(pos);
 		if (te != null)
 		{
 			if(player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())

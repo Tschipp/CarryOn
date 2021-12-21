@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 
 import javax.annotation.Nullable;
 
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 /**
  * Utility methods for reflection.

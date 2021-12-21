@@ -1,25 +1,21 @@
 package tschipp.carryon.common.handler;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.registries.ObjectHolder;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.event.RenderEntityEvents;
 import tschipp.carryon.client.event.RenderEvents;
 import tschipp.carryon.common.capabilities.IPosition;
-import tschipp.carryon.common.capabilities.PositionStorage;
-import tschipp.carryon.common.capabilities.TEPosition;
 import tschipp.carryon.common.capabilities.event.PositionClientEvents;
 import tschipp.carryon.common.capabilities.event.PositionCommonEvents;
 import tschipp.carryon.common.event.IMCEvents;
 import tschipp.carryon.common.event.ItemEntityEvents;
 import tschipp.carryon.common.event.ItemEvents;
-import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.item.ItemCarryonBlock;
-import tschipp.carryon.compat.obfuscate.ObfuscateEvents;
+import tschipp.carryon.common.item.ItemCarryonEntity;
 
 @EventBusSubscriber(modid = CarryOn.MODID)
 public class RegistrationHandler
@@ -51,8 +47,8 @@ public class RegistrationHandler
 		MinecraftForge.EVENT_BUS.register(new PositionClientEvents());
 		
 		
-		if(ModList.get().isLoaded("obfuscate"))
-			MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
+//		if(ModList.get().isLoaded("obfuscate"))
+//			MinecraftForge.EVENT_BUS.register(new ObfuscateEvents());
 
 	}
 	
@@ -65,7 +61,7 @@ public class RegistrationHandler
 	
 	public static void regCaps()
 	{
-		CapabilityManager.INSTANCE.register(IPosition.class, new PositionStorage(), TEPosition::new);
+		CapabilityManager.INSTANCE.register(IPosition.class);
 	}
 	
 	

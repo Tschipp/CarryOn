@@ -2,28 +2,28 @@ package tschipp.carryon.common.event;
 
 import java.util.Optional;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.DirectionalPlaceContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.ClickEvent.Action;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.ClickEvent.Action;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.DirectionalPlaceContext;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
@@ -41,9 +41,9 @@ import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.network.PacketDistributor.TargetPoint;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.PacketDistributor.TargetPoint;
+import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import tschipp.carryon.CarryOn;
@@ -71,7 +71,7 @@ public class ItemEvents
 		if (event.isCanceled())
 			return;
 
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
 		{
@@ -97,24 +97,24 @@ public class ItemEvents
 	public void onItemDropped(EntityJoinWorldEvent event)
 	{
 		Entity e = event.getEntity();
-		World world = event.getWorld();
-		if (e instanceof net.minecraft.entity.item.ItemEntity)
+		Level world = event.getWorld();
+		if (e instanceof net.minecraft.world.entity.item.ItemEntity)
 		{
-			net.minecraft.entity.item.ItemEntity eitem = (net.minecraft.entity.item.ItemEntity) e;
+			net.minecraft.world.entity.item.ItemEntity eitem = (net.minecraft.world.entity.item.ItemEntity) e;
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
 			if (item == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
 			{
 				BlockPos pos = eitem.blockPosition();
 				BlockPos finalPos = pos;
-				BlockItemUseContext context = new DirectionalPlaceContext(world, pos, Direction.DOWN, stack, Direction.UP);
+				BlockPlaceContext context = new DirectionalPlaceContext(world, pos, Direction.DOWN, stack, Direction.UP);
 
 				if (!world.getBlockState(pos).canBeReplaced(context) || !context.canPlace())
 				{
 					for (Direction facing : Direction.values())
 					{
 						BlockPos offsetPos = pos.relative(facing);
-						BlockItemUseContext newContext = new DirectionalPlaceContext(world, offsetPos, Direction.DOWN, stack, Direction.UP);
+						BlockPlaceContext newContext = new DirectionalPlaceContext(world, offsetPos, Direction.DOWN, stack, Direction.UP);
 						if (world.getBlockState(offsetPos).canBeReplaced(newContext) && newContext.canPlace())
 						{
 							finalPos = offsetPos;
@@ -123,11 +123,12 @@ public class ItemEvents
 					}
 				}
 				world.setBlockAndUpdate(finalPos, ItemCarryonBlock.getBlockState(stack));
-				TileEntity tile = world.getBlockEntity(finalPos);
+				BlockEntity tile = world.getBlockEntity(finalPos);
 				if (tile != null)
 				{
-					tile.deserializeNBT(ItemCarryonBlock.getTileData(stack));
-					tile.setPosition(finalPos);
+					var nbt = ItemCarryonBlock.getTileData(stack);
+					ItemCarryonBlock.updateTileLocation(nbt, finalPos);
+					tile.load(nbt);
 				}
 				ItemCarryonBlock.clearTileData(stack);
 				eitem.setItem(ItemStack.EMPTY);
@@ -145,10 +146,10 @@ public class ItemEvents
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
-		if (event.getPlayer() instanceof PlayerEntity)
+		if (event.getPlayer() instanceof Player)
 		{
-			PlayerEntity player = (PlayerEntity) event.getPlayer();
-			World world = player.getCommandSenderWorld();
+			Player player = (Player) event.getPlayer();
+			Level world = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
 			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
@@ -157,24 +158,24 @@ public class ItemEvents
 				{
 					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), world, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
 					if (override != null)
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(player.inventory.selected, player.getId(), override.hashCode()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(player.inventory.selected, player.getId()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId()));
 				} else
 				{
 					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, world));
 					if (override != null)
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(player.inventory.selected, player.getId(), override.hashCode()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(player.inventory.selected, player.getId()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId()));
 
 				}
 			}
 
 		}
-		if(event.getPlayer() instanceof ServerPlayerEntity)
+		if(event.getPlayer() instanceof ServerPlayer)
 		{
-			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity)event.getPlayer()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer)event.getPlayer()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
 		}
 	}
 
@@ -201,12 +202,12 @@ public class ItemEvents
 	public void onEntityStartTracking(StartTracking event)
 	{
 		Entity e = event.getTarget();
-		PlayerEntity tracker = event.getPlayer();
+		Player tracker = event.getPlayer();
 
-		if (e instanceof PlayerEntity && tracker instanceof ServerPlayerEntity)
+		if (e instanceof Player && tracker instanceof ServerPlayer)
 		{
-			PlayerEntity player = (PlayerEntity) e;
-			World world = player.getCommandSenderWorld();
+			Player player = (Player) e;
+			Level world = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
 			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
@@ -215,16 +216,16 @@ public class ItemEvents
 				{
 					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), world, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
 					if (override != null)
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) tracker), new CarrySlotPacket(player.inventory.selected, player.getId(), override.hashCode()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) tracker), new CarrySlotPacket(player.inventory.selected, player.getId()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId()));
 				} else
 				{
 					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, world));
 					if (override != null)
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) tracker), new CarrySlotPacket(player.inventory.selected, player.getId(), override.hashCode()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
-						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) tracker), new CarrySlotPacket(player.inventory.selected, player.getId()));
+						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId()));
 				}
 			}
 
@@ -234,7 +235,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void harvestSpeed(BreakSpeed event)
 	{
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getMainHandItem();
@@ -246,7 +247,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void attackEntity(AttackEntityEvent event)
 	{
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && !Settings.hitWhileCarrying.get() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 		{
@@ -257,7 +258,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void harvestSpeed(BreakEvent event)
 	{
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getMainHandItem();
@@ -270,15 +271,15 @@ public class ItemEvents
 	public void playerAttack(LivingAttackEvent event)
 	{
 		LivingEntity eliving = event.getEntityLiving();
-		if (eliving instanceof PlayerEntity && Settings.dropCarriedWhenHit.get())
+		if (eliving instanceof Player && Settings.dropCarriedWhenHit.get())
 		{
-			PlayerEntity player = (PlayerEntity) eliving;
+			Player player = (Player) eliving;
 			ItemStack stack = player.getMainHandItem();
 			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
 			{
 				if (!player.level.isClientSide)
 				{
-					player.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+					player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 					ItemEntity item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), stack);
 					sendPacket(player, 9, 0);
 					player.level.addFreshEntity(item);
@@ -291,7 +292,7 @@ public class ItemEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		
 		if(event.isCanceled())
 			return;
@@ -301,7 +302,7 @@ public class ItemEvents
 
 			ItemStack main = player.getMainHandItem();
 			ItemStack off = player.getOffhandItem();
-			World world = event.getWorld();
+			Level world = event.getWorld();
 			BlockPos pos = event.getPos();
 			BlockState state = world.getBlockState(pos);
 
@@ -310,8 +311,8 @@ public class ItemEvents
 
 				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
-				TileEntity te = world.getBlockEntity(pos);
-				if (PickupHandler.canPlayerPickUpBlock((ServerPlayerEntity) player, te, world, pos))
+				BlockEntity te = world.getBlockEntity(pos);
+				if (PickupHandler.canPlayerPickUpBlock((ServerPlayer) player, te, world, pos))
 				{
 					player.closeContainer();
 		            world.levelEvent(1010, pos, 0);
@@ -321,8 +322,8 @@ public class ItemEvents
 					{
 
 						BlockState statee = world.getBlockState(pos);
-						CompoundNBT tag = new CompoundNBT();
-						tag = world.getBlockEntity(pos) != null ? world.getBlockEntity(pos).save(tag) : new CompoundNBT();
+						CompoundTag tag = new CompoundTag();
+						tag = world.getBlockEntity(pos) != null ? world.getBlockEntity(pos).save(tag) : new CompoundTag();
 						CarryOnOverride override = ScriptChecker.inspectBlock(state, world, pos, tag);
 						int overrideHash = 0;
 						if (override != null)
@@ -332,11 +333,11 @@ public class ItemEvents
 
 						try
 						{
-							sendPacket(player, player.inventory.selected, overrideHash);
+							sendPacket(player, player.getInventory().selected, overrideHash);
 
 							world.removeBlockEntity(pos);
 							world.removeBlock(pos, false);
-							player.setItemInHand(Hand.MAIN_HAND, stack);
+							player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
 							event.setUseItem(Result.DENY);
 							event.setCanceled(true);
@@ -345,10 +346,10 @@ public class ItemEvents
 						{
 							try
 							{
-								sendPacket(player, player.inventory.selected, overrideHash);
+								sendPacket(player, player.getInventory().selected, overrideHash);
 								emptyTileEntity(te);
 								world.removeBlock(pos,false);
-								player.setItemInHand(Hand.MAIN_HAND, stack);
+								player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 								event.setUseBlock(Result.DENY);
 								event.setUseItem(Result.DENY);
 								event.setCanceled(true);
@@ -359,13 +360,13 @@ public class ItemEvents
 								world.setBlockAndUpdate(pos, statee);
 								if (!tag.isEmpty())
 								{
-									TileEntity.loadStatic(statee, tag);
+									BlockEntity.loadStatic(pos, statee, tag);
 								}
 
-								player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot pick up block."), false);
-								StringTextComponent s = new StringTextComponent(TextFormatting.GOLD + "here");
+								player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Error detected. Cannot pick up block."), false);
+								TextComponent s = new TextComponent(ChatFormatting.GOLD + "here");
 								s.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-								player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").append(s), false);
+								player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Please report this error ").append(s), false);
 							}
 
 						}
@@ -384,7 +385,7 @@ public class ItemEvents
 		}
 	}
 
-	public static void emptyTileEntity(TileEntity te)
+	public static void emptyTileEntity(BlockEntity te)
 	{
 		if (te != null)
 		{
@@ -414,9 +415,9 @@ public class ItemEvents
 
 			});
 
-			if (te instanceof IInventory)
+			if (te instanceof Container)
 			{
-				IInventory inv = (IInventory) te;
+				Container inv = (Container) te;
 				inv.clearContent();
 			}
 
@@ -436,22 +437,21 @@ public class ItemEvents
 	@SubscribeEvent
 	public void onRespawn(PlayerEvent.Clone event)
 	{
-		PlayerEntity original = event.getOriginal();
-		PlayerEntity player = event.getPlayer();
+		Player original = event.getOriginal();
+		Player player = event.getPlayer();
 		boolean wasDead = event.isWasDeath();
 		GameRules rules = player.level.getGameRules();
 		boolean keepInv = rules.getBoolean(GameRules.RULE_KEEPINVENTORY);
-		boolean wasCarrying = player.inventory.contains(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.contains(new ItemStack(RegistrationHandler.itemEntity));
+		boolean wasCarrying = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile)) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity));
 
 		if ((wasDead ? keepInv : true) && wasCarrying)
 		{
-			int carrySlot = original.inventory.selected;
+			int carrySlot = original.getInventory().selected;
 
-			ItemStack stack = player.inventory.removeItemNoUpdate(carrySlot);
-			World world = player.level;
+			ItemStack stack = player.getInventory().removeItemNoUpdate(carrySlot);
+			Level world = player.level;
 
-			ItemEntity item = new ItemEntity(world, 0, 0, 0);
-			item.setItem(stack);
+			ItemEntity item = new ItemEntity(world, 0, 0, 0, stack);
 			BlockPos pos = null;
 			Optional<BlockPos> bedpos = original.getSleepingPos();
 			if(bedpos.isPresent())
@@ -468,13 +468,13 @@ public class ItemEvents
 	public void dropNonHotbarItems(LivingUpdateEvent event)
 	{
 		LivingEntity entity = event.getEntityLiving();
-		if (entity instanceof PlayerEntity)
+		if (entity instanceof Player)
 		{
-			PlayerEntity player = (PlayerEntity) entity;
+			Player player = (Player) entity;
 
 			if (!entity.level.isClientSide)
 			{
-				boolean hasCarried = player.inventory.contains(new ItemStack(RegistrationHandler.itemTile)) || player.inventory.contains(new ItemStack(RegistrationHandler.itemEntity));
+				boolean hasCarried = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile)) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity));
 				ItemStack inHand = player.getMainHandItem();
 
 				if (hasCarried)
@@ -489,12 +489,12 @@ public class ItemEvents
 						ItemEntity item = null;
 						if (slotBlock != -1)
 						{
-							ItemStack dropped = player.inventory.removeItemNoUpdate(slotBlock);
+							ItemStack dropped = player.getInventory().removeItemNoUpdate(slotBlock);
 							item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), dropped);
 						}
 						if (slotEntity != -1)
 						{
-							ItemStack dropped = player.inventory.removeItemNoUpdate(slotEntity);
+							ItemStack dropped = player.getInventory().removeItemNoUpdate(slotEntity);
 							item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), dropped);
 						}
 						if (item != null)
@@ -519,23 +519,23 @@ public class ItemEvents
 		}
 	}
 
-	public int getSlot(PlayerEntity player, Item item)
+	public int getSlot(Player player, Item item)
 	{
-		for (int i = 0; i < player.inventory.getContainerSize(); i++)
+		for (int i = 0; i < player.getInventory().getContainerSize(); i++)
 		{
-			ItemStack stack = player.inventory.getItem(i);
+			ItemStack stack = player.getInventory().getItem(i);
 			if (stack.getItem() == item)
 				return i;
 		}
 		return -1;
 	}
 
-	public static void sendPacket(PlayerEntity player, int currentItem, int hash)
+	public static void sendPacket(Player player, int currentItem, int hash)
 	{
-		if (player instanceof ServerPlayerEntity)
+		if (player instanceof ServerPlayer)
 		{
 			CarryOn.network.send(PacketDistributor.NEAR.with(() -> new TargetPoint(player.getX(), player.getY(), player.getZ(), 128, player.level.dimension())), new CarrySlotPacket(currentItem, player.getId(), hash));
-			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new CarrySlotPacket(currentItem, player.getId(), hash));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(currentItem, player.getId(), hash));
 
 			if (currentItem >= 9)
 			{

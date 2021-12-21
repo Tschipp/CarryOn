@@ -1,65 +1,53 @@
-	package tschipp.carryon.common.helper;
+package tschipp.carryon.common.helper;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Scoreboard;
 
-public class ScriptParseHelper
-{
+public class ScriptParseHelper {
 
-	public static boolean matches(double number, String cond)
-	{
+	public static boolean matches(double number, String cond) {
 		if (cond == null || cond.isEmpty())
 			return true;
 
-		try
-		{
-			if (cond.contains("<="))
-			{
+		try {
+			if (cond.contains("<=")) {
 				return number <= Double.parseDouble(cond.replace("<=", ""));
 			}
-			if (cond.contains(">="))
-			{
+			if (cond.contains(">=")) {
 				return number >= Double.parseDouble(cond.replace(">=", ""));
 			}
-			if (cond.contains("<"))
-			{
+			if (cond.contains("<")) {
 				return number < Double.parseDouble(cond.replace("<", ""));
 			}
-			if (cond.contains(">"))
-			{
+			if (cond.contains(">")) {
 				return number > Double.parseDouble(cond.replace(">", ""));
 			}
-			if (cond.contains("="))
-			{
+			if (cond.contains("=")) {
 				return number == Double.parseDouble(cond.replace("=", ""));
-			}
-			else
+			} else
 				return number == Double.parseDouble(cond);
 
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			new InvalidConfigException(e.getMessage()).printException();
 		}
 
 		return false;
 	}
 
-	public static boolean matches(Block block, String cond)
-	{
+	public static boolean matches(Block block, String cond) {
 		if (cond == null || cond.isEmpty())
 			return true;
 
@@ -70,26 +58,23 @@ public class ScriptParseHelper
 		return false;
 	}
 
-	public static boolean matches(CompoundNBT toCheck, CompoundNBT toMatch)
-	{
+	public static boolean matches(CompoundTag toCheck, CompoundTag toMatch) {
 		if (toCheck == null || toMatch == null || toMatch.isEmpty())
 			return true;
 
 		boolean matching = true;
-		for (String key : toMatch.getAllKeys())
-		{
-			INBT tag = toMatch.get(key);
+		for (String key : toMatch.getAllKeys()) {
+			Tag tag = toMatch.get(key);
 			key = key.replace("\"", "");
-			INBT tagToCheck = toCheck.get(key);
+			Tag tagToCheck = toCheck.get(key);
 			if (!tag.equals(tagToCheck))
 				matching = false;
 		}
 
 		return matching;
 	}
-	
-	public static float[] getXYZArray(String s)
-	{
+
+	public static float[] getXYZArray(String s) {
 		float[] d = new float[3];
 		d[0] = getValueFromString(s, "x");
 		d[1] = getValueFromString(s, "y");
@@ -97,10 +82,8 @@ public class ScriptParseHelper
 
 		return d;
 	}
-	
 
-	public static float[] getScaled(String s)
-	{
+	public static float[] getScaled(String s) {
 		float[] d = new float[3];
 		d[0] = getScaledValueFromString(s, "x");
 		d[1] = getScaledValueFromString(s, "y");
@@ -109,25 +92,19 @@ public class ScriptParseHelper
 		return d;
 	}
 
-	public static float getScaledValueFromString(String toGetFrom, String key)
-	{
-		if(toGetFrom == null || toGetFrom.isEmpty())
+	public static float getScaledValueFromString(String toGetFrom, String key) {
+		if (toGetFrom == null || toGetFrom.isEmpty())
 			return 1;
-		
+
 		String[] s = toGetFrom.split(",");
-		for (String string : s)
-		{
-			if (string.contains(key) && string.contains("="))
-			{
+		for (String string : s) {
+			if (string.contains(key) && string.contains("=")) {
 				float numb = 1;
 				string = string.replace(key + "=", "");
 
-				try
-				{
+				try {
 					numb = Float.parseFloat(string);
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 				}
 
 				return numb;
@@ -137,8 +114,7 @@ public class ScriptParseHelper
 		return 1;
 	}
 
-	public static boolean matchesScore(PlayerEntity player, String cond)
-	{
+	public static boolean matchesScore(Player player, String cond) {
 		if (cond == null || cond.isEmpty())
 			return true;
 
@@ -149,20 +125,18 @@ public class ScriptParseHelper
 		int iG = cond.indexOf(">");
 		int iL = cond.indexOf("<");
 
-		if (iG == -1 ? true : iE < iG && iL == -1 ? true :  iE < iL && iE != -1)
+		if (iG == -1 ? true : iE < iG && iL == -1 ? true : iE < iL && iE != -1)
 			numb = cond.substring(iE);
-		else if (iE == -1 ? true : iG < iE && iL == -1 ? true :  iG < iL && iG != -1)
+		else if (iE == -1 ? true : iG < iE && iL == -1 ? true : iG < iL && iG != -1)
 			numb = cond.substring(iG);
 		else
 			numb = cond.substring(iL);
 
 		scorename = cond.replace(numb, "");
-		Map<ScoreObjective, Score> o = score.getPlayerScores(player.getGameProfile().getName());
-		if (o != null)
-		{
+		Map<Objective, Score> o = score.getPlayerScores(player.getGameProfile().getName());
+		if (o != null) {
 			Score sc = o.get(score.getObjective(scorename));
-			if (sc != null)
-			{
+			if (sc != null) {
 				int points = sc.getScore();
 
 				return matches(points, numb);
@@ -172,13 +146,14 @@ public class ScriptParseHelper
 		return false;
 	}
 
-	public static boolean matches(BlockPos pos, String cond)
-	{
+	public static boolean matches(BlockPos pos, String cond) {
 		if (cond == null || cond.isEmpty())
 			return true;
 
-		BlockPos blockpos = new BlockPos(getValueFromString(cond, "x"), getValueFromString(cond, "y"), getValueFromString(cond, "z"));
-		BlockPos expand = new BlockPos(getValueFromString(cond, "dx"), getValueFromString(cond, "dy"), getValueFromString(cond, "dz"));
+		BlockPos blockpos = new BlockPos(getValueFromString(cond, "x"), getValueFromString(cond, "y"),
+				getValueFromString(cond, "z"));
+		BlockPos expand = new BlockPos(getValueFromString(cond, "dx"), getValueFromString(cond, "dy"),
+				getValueFromString(cond, "dz"));
 		BlockPos expanded = blockpos.offset(expand);
 
 		boolean x = (pos.getX() >= blockpos.getX() && pos.getX() <= expanded.getX()) || blockpos.getX() == 0;
@@ -188,25 +163,19 @@ public class ScriptParseHelper
 		return x && y && z;
 	}
 
-	public static float getValueFromString(String toGetFrom, String key)
-	{
-		if(toGetFrom == null || toGetFrom.isEmpty())
+	public static float getValueFromString(String toGetFrom, String key) {
+		if (toGetFrom == null || toGetFrom.isEmpty())
 			return 0;
-		
+
 		String[] s = toGetFrom.split(",");
-		for (String string : s)
-		{
-			if (string.contains(key) && string.contains("="))
-			{
+		for (String string : s) {
+			if (string.contains(key) && string.contains("=")) {
 				float numb = 0;
 				string = string.replace(key + "=", "");
 
-				try
-				{
+				try {
 					numb = Float.parseFloat(string);
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 				}
 
 				return numb;
@@ -215,70 +184,59 @@ public class ScriptParseHelper
 
 		return 0;
 	}
-	
-	public static boolean hasEffects(PlayerEntity player, String cond)
-	{
-		if(cond == null || cond.isEmpty())
+
+	public static boolean hasEffects(Player player, String cond) {
+		if (cond == null || cond.isEmpty())
 			return true;
-		
-		Collection<EffectInstance> effects = player.getActiveEffects();
+
+		Collection<MobEffectInstance> effects = player.getActiveEffects();
 		String[] potions = cond.split(",");
-		
+
 		List<String> names = new ArrayList<String>();
 		List<Integer> levels = new ArrayList<Integer>();
-		
-		for(int i = 0; i < potions.length; i++)
-		{
+
+		for (int i = 0; i < potions.length; i++) {
 			String pot = potions[i];
-			if(pot.contains("#"))
-			{
+			if (pot.contains("#")) {
 				String level = pot.substring(pot.indexOf("#"));
 				String name = pot.substring(0, pot.indexOf("#"));
 				level = level.replace("#", "");
 				int lev = 0;
-				try
-				{
+				try {
 					lev = Integer.parseInt(level);
+				} catch (Exception e) {
 				}
-				catch(Exception e)
-				{}
-				
+
 				levels.add(lev);
 				names.add(name);
-			}
-			else
-			{
+			} else {
 				levels.add(0);
 				names.add(pot);
 			}
 		}
-		
+
 		int matches = 0;
-		for(EffectInstance effect : effects)
-		{
+		for (MobEffectInstance effect : effects) {
 			int amp = effect.getAmplifier();
 			String name = effect.getEffect().getRegistryName().toString();
-			
-			if(names.contains(name))
-			{
+
+			if (names.contains(name)) {
 				int idx = names.indexOf(name);
 				int lev = levels.get(idx);
-				
-				if(lev == amp)
+
+				if (lev == amp)
 					matches++;
 			}
 		}
-		
+
 		return matches == potions.length;
 	}
 
-	public static boolean matches(Material material, String cond)
-	{
+	public static boolean matches(Material material, String cond) {
 		if (cond == null || cond.isEmpty())
 			return true;
-
-		switch (cond)
-		{
+		
+		switch (cond) {
 		case "air":
 			return material == Material.AIR;
 		case "anvil":
@@ -295,8 +253,6 @@ public class ScriptParseHelper
 			return material == Material.CLAY;
 		case "cloth":
 			return material == Material.WOOL;
-		case "coral":
-			return material == Material.CORAL;
 		case "dragon_egg":
 			return material == Material.EGG;
 		case "fire":
@@ -347,8 +303,9 @@ public class ScriptParseHelper
 			return material == Material.WEB;
 		case "wood":
 			return material == Material.WOOD;
+		default:
+			return false;
 		}
-
-		return false;
+		
 	}
 }

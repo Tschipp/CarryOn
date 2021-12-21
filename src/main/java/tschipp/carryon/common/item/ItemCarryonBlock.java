@@ -6,31 +6,31 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.CharMatcher;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.ClickEvent.Action;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.ClickEvent.Action;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;
@@ -55,12 +55,12 @@ public class ItemCarryonBlock extends Item
 	}
 
 	@Override
-	public ITextComponent getName(ItemStack stack)
+	public Component getName(ItemStack stack)
 	{
 		if (hasTileData(stack))
 		{
 			BlockState state = getBlockState(stack);
-			CompoundNBT nbt = getTileData(stack);
+			CompoundTag nbt = getTileData(stack);
 
 			if (ModelOverridesHandler.hasCustomOverrideModel(state, nbt))
 			{
@@ -77,39 +77,39 @@ public class ItemCarryonBlock extends Item
 			return getItemStack(stack).getHoverName();
 		}
 
-		return new StringTextComponent("");
+		return new TextComponent("");
 	}
 
 	@Override
-	public ActionResultType useOn(ItemUseContext context)
+	public InteractionResult useOn(UseOnContext context)
 	{
 		Direction facing = context.getClickedFace();
-		PlayerEntity player = context.getPlayer();
-		World world = context.getLevel();
+		Player player = context.getPlayer();
+		Level world = context.getLevel();
 		BlockPos pos = context.getClickedPos();
 		ItemStack stack = context.getItemInHand();
 
 		if (ModList.get().isLoaded("betterplacement"))
 		{
 			if (CarryOnKeybinds.isKeyPressed(player))
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 		}
 
 		if (hasTileData(stack))
 		{
 			try
 			{
-				Vector3d vec = player.getLookAngle();
+				Vec3 vec = player.getLookAngle();
 				Direction facing2 = Direction.getNearest((float) vec.x, 0f, (float) vec.z);
 				BlockPos pos2 = pos;
 				Block containedblock = getBlock(stack);
 				BlockState containedstate = getBlockState(stack);
-				if (!world.getBlockState(pos2).canBeReplaced(new BlockItemUseContext(context)))
+				if (!world.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)))
 				{
 					pos2 = pos.relative(facing);
 				}
 
-				if (world.getBlockState(pos2).canBeReplaced(new BlockItemUseContext(context)) && containedblock != null)
+				if (world.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)) && containedblock != null)
 				{
 					boolean canPlace = containedstate.canSurvive(world, pos2);
 
@@ -118,7 +118,7 @@ public class ItemCarryonBlock extends Item
 						if (player.mayUseItemAt(pos, facing, stack) && world.mayInteract(player, pos2))
 						{
 
-							BlockState placementState = containedblock.getStateForPlacement(new BlockItemUseContext(context));
+							BlockState placementState = containedblock.getStateForPlacement(new BlockPlaceContext(context));
 							
 							BlockState actualState = placementState == null ? containedstate : placementState;
 
@@ -152,7 +152,7 @@ public class ItemCarryonBlock extends Item
 								// change rotation via NBT
 								if (!getTileData(stack).isEmpty())
 								{
-									CompoundNBT tag = getTileData(stack);
+									CompoundTag tag = getTileData(stack);
 									Set<String> keys = tag.getAllKeys();
 									keytester: for (String key : keys)
 									{
@@ -182,19 +182,19 @@ public class ItemCarryonBlock extends Item
 									}
 								}
 
-								TileEntity tile = world.getBlockEntity(pos2);
+								BlockEntity tile = world.getBlockEntity(pos2);
 								if (tile != null)
 								{
-									CompoundNBT data = getTileData(stack);
+									CompoundTag data = getTileData(stack);
 									updateTileLocation(data, pos2);
-									tile.load(actualState, data);
+									tile.load(data);
 								}
 								clearTileData(stack);
 								player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
-								player.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+								player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 								player.getPersistentData().remove("overrideKey");
 								ItemEvents.sendPacket(player, 9, 0);
-								return ActionResultType.SUCCESS;
+								return InteractionResult.SUCCESS;
 
 							}
 						}
@@ -219,30 +219,30 @@ public class ItemCarryonBlock extends Item
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(stack)))
 						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(stack)));
 
-					player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"), false);
-					StringTextComponent s = new StringTextComponent(TextFormatting.GOLD + "here");
+					player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"), false);
+					TextComponent s = new TextComponent(ChatFormatting.GOLD + "here");
 					s.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-					player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "Please report this error ").append(s), false);
+					player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Please report this error ").append(s), false);
 
 				}
 			}
 
 		}
 
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected)
+	public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected)
 	{
 		if (hasTileData(stack))
 		{
 			if (entity instanceof LivingEntity)
 			{
-				if (entity instanceof PlayerEntity && Settings.slownessInCreative.get() ? false : ((PlayerEntity) entity).isCreative())
+				if (entity instanceof Player && Settings.slownessInCreative.get() ? false : ((Player) entity).isCreative())
 					return;
 
-				((LivingEntity) entity).addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack), false, false));
+				((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack), false, false));
 			}
 		}
 		else
@@ -255,22 +255,22 @@ public class ItemCarryonBlock extends Item
 	{
 		if (stack.hasTag())
 		{
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			return tag.contains(TILE_DATA_KEY) && tag.contains("block") && tag.contains("stateid");
 		}
 		return false;
 	}
 
-	public static boolean storeTileData(@Nullable TileEntity tile, World world, BlockPos pos, BlockState state, ItemStack stack)
+	public static boolean storeTileData(@Nullable BlockEntity tile, Level world, BlockPos pos, BlockState state, ItemStack stack)
 	{
 		if (stack.isEmpty())
 			return false;
 
-		CompoundNBT tileTag = new CompoundNBT();
+		CompoundTag tileTag = new CompoundTag();
 		if (tile != null)
 			tileTag = tile.save(tileTag);
 
-		CompoundNBT tag = stack.hasTag() ? stack.getTag() : new CompoundNBT();
+		CompoundTag tag = stack.hasTag() ? stack.getTag() : new CompoundTag();
 		if (tag.contains(TILE_DATA_KEY))
 			return false;
 
@@ -287,7 +287,7 @@ public class ItemCarryonBlock extends Item
 		return true;
 	}
 	
-	public static void updateTileLocation(CompoundNBT tag, BlockPos pos)
+	public static void updateTileLocation(CompoundTag tag, BlockPos pos)
 	{
 		tag.putInt("x", pos.getX());
 		tag.putInt("y", pos.getY());
@@ -298,18 +298,18 @@ public class ItemCarryonBlock extends Item
 	{
 		if (stack.hasTag())
 		{
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			tag.remove(TILE_DATA_KEY);
 			tag.remove("block");
 			tag.remove("stateid");
 		}
 	}
 
-	public static CompoundNBT getTileData(ItemStack stack)
+	public static CompoundTag getTileData(ItemStack stack)
 	{
 		if (stack.hasTag())
 		{
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			return tag.getCompound(TILE_DATA_KEY);
 		}
 		return null;
@@ -319,7 +319,7 @@ public class ItemCarryonBlock extends Item
 	{
 		if (stack.hasTag())
 		{
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			int id = tag.getInt("stateid");
 			return Block.stateById(id).getBlock();
 		}
@@ -346,19 +346,19 @@ public class ItemCarryonBlock extends Item
 	{
 		if (stack.hasTag())
 		{
-			CompoundNBT tag = stack.getTag();
+			CompoundTag tag = stack.getTag();
 			int id = tag.getInt("stateid");
 			return Block.stateById(id);
 		}
 		return Blocks.AIR.defaultBlockState();
 	}
 
-	public static boolean isLocked(BlockPos pos, World world)
+	public static boolean isLocked(BlockPos pos, Level world)
 	{
-		TileEntity te = world.getBlockEntity(pos);
+		BlockEntity te = world.getBlockEntity(pos);
 		if (te != null)
 		{
-			CompoundNBT tag = new CompoundNBT();
+			CompoundTag tag = new CompoundTag();
 			te.save(tag);
 			return tag.contains("Lock") ? !tag.getString("Lock").equals("") : false;
 		}

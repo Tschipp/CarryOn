@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptReader;
 
@@ -23,7 +23,7 @@ public class ScriptReloadPacket
 		overrides.addAll(collection);
 	}
 
-	public ScriptReloadPacket(PacketBuffer buf)
+	public ScriptReloadPacket(FriendlyByteBuf buf)
 	{
 		int size = buf.readInt();
 		for(int i = 0; i < size; i++)
@@ -32,7 +32,7 @@ public class ScriptReloadPacket
 		}	
 	}
 	
-	public void toBytes(PacketBuffer buf)
+	public void toBytes(FriendlyByteBuf buf)
 	{
 		buf.writeInt(overrides.size());
 		overrides.forEach(override -> override.serialize(buf));

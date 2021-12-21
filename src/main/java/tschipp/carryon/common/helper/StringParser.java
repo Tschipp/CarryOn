@@ -4,14 +4,14 @@ import javax.annotation.Nullable;
 
 import com.mojang.brigadier.StringReader;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.command.arguments.BlockStateParser;
-import net.minecraft.command.arguments.ItemParser;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
+import net.minecraft.commands.arguments.item.ItemParser;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class StringParser
 {
@@ -78,7 +78,7 @@ public class StringParser
 		{
 			parser.parse();
 			Item item =  parser.getItem();
-			CompoundNBT nbt = parser.getNbt();
+			CompoundTag nbt = parser.getNbt();
 			
 			ItemStack stack = new ItemStack(item, 1);
 			
@@ -99,9 +99,9 @@ public class StringParser
 	}
 
 	@Nullable
-	public static CompoundNBT getTagCompound(String string)
+	public static CompoundTag getTagCompound(String string)
 	{
-		CompoundNBT tag = null;
+		CompoundTag tag = null;
 		if(string == null)
 			return null;
 		
@@ -114,7 +114,7 @@ public class StringParser
 			string = string.replace(nbt, "");
 			try
 			{
-				tag = JsonToNBT.parseTag(nbt);
+				tag = TagParser.parseTag(nbt);
 			}
 			catch (Exception e)
 			{

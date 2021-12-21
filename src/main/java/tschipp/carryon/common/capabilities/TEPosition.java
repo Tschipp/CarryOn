@@ -1,6 +1,6 @@
 package tschipp.carryon.common.capabilities;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public class TEPosition implements IPosition {
 	

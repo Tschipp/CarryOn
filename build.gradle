@@ -1,20 +1,25 @@
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://maven.minecraftforge.net' }
+		maven { url = 'https://maven.parchmentmc.org' }
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+		classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
+
 
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
+apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
-import net.minecraftforge.gradle.common.task.SignJar                      
+//import net.minecraftforge.gradle.common.task.SignJar                      
 import groovy.json.JsonSlurper                       
 import groovy.json.JsonOutput
 
@@ -26,15 +31,18 @@ version = "${version}"
 group = "tschipp.carryon"
 archivesBaseName = "carryon-${minecraft_version}"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+//sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.16'
 
 
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
 minecraft {
-    mappings channel: 'official', version: "1.16.5"
+	mappings channel: 'parchment', version: '2021.12.12-1.17.1'
    
     runs {
         client {
@@ -111,19 +119,19 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 	
-	implementation fg.deobf("net.darkhax.gamestages:GameStages-1.16.4:6.0.1")
-	implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.18")
-	implementation fg.deobf("curse.maven:obfuscate-289380:3169370")
+	//implementation fg.deobf("net.darkhax.gamestages:GameStages-1.16.4:6.0.1")
+	//implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.18")
+	//implementation fg.deobf("curse.maven:obfuscate-289380:3169370")
 	
-	fileTree("libs").matching {
-		include "*.jar"
-	}.each {
-		String filename = it.getName();
-		filename = filename.substring(0, filename.length() - 4);
-		int lastDash = filename.lastIndexOf("-");
-		filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
-		implementation fg.deobf("blank:${filename}")
-	}
+	//fileTree("libs").matching {
+	//	include "*.jar"
+	//}.each {
+	//	String filename = it.getName();
+	//	filename = filename.substring(0, filename.length() - 4);
+	//	int lastDash = filename.lastIndexOf("-");
+	//	filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
+	//	implementation fg.deobf("blank:${filename}")
+	//}
 
 }
 
@@ -215,22 +223,22 @@ publishing {
     }
 }
 
-task signJar(type: SignJar, dependsOn: jar) {
+//task signJar(type: SignJar, dependsOn: jar) {
     // Skips if the keyStore property is missing.
-    onlyIf {
-        project.hasProperty('modkeyStore')
-    }
+   // onlyIf {
+   //     project.hasProperty('modkeyStore')
+   // }
 
     // findProperty allows us to reference the property without it existing. 
     // Using project.propName would cause the script to fail validation if 
     // the property did not exist. 
-    keyStore = project.findProperty('modkeyStore')
-    alias = project.findProperty('modkeyStoreAlias')
-    storePass = project.findProperty('modkeyStorePass')
-    keyPass = project.findProperty('modkeyStoreKeyPass')
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
-}
+  //  keyStore = project.findProperty('modkeyStore')
+  //  alias = project.findProperty('modkeyStoreAlias')
+  //  storePass = project.findProperty('modkeyStorePass')
+  //  keyPass = project.findProperty('modkeyStoreKeyPass')
+  //  inputFile = jar.archivePath
+  //  outputFile = jar.archivePath
+//}
 
 // Runs this task automatically when build is ran. 
-build.dependsOn signJar
+//build.dependsOn signJar

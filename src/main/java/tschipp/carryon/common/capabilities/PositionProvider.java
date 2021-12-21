@@ -1,19 +1,20 @@
 package tschipp.carryon.common.capabilities;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
-public class PositionProvider implements ICapabilitySerializable<CompoundNBT>
+public class PositionProvider implements ICapabilitySerializable<CompoundTag>
 {
 
 	@CapabilityInject(IPosition.class)
 	public static final Capability<IPosition> POSITION_CAPABILITY = null;
 
-	private IPosition instance = POSITION_CAPABILITY.getDefaultInstance();
+	private IPosition instance = new TEPosition();//POSITION_CAPABILITY.getDefaultInstance();
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -23,19 +24,36 @@ public class PositionProvider implements ICapabilitySerializable<CompoundNBT>
 			return (LazyOptional<T>) LazyOptional.of(() -> {
 				return new TEPosition();
 			});
+		
 		return LazyOptional.empty();
 	}
 
 	@Override
-	public CompoundNBT serializeNBT()
+	public CompoundTag serializeNBT()
 	{
-		return (CompoundNBT) POSITION_CAPABILITY.getStorage().writeNBT(POSITION_CAPABILITY, instance, null);
+		CompoundTag tag = new CompoundTag();
+
+		tag.putBoolean("blockActivated", instance.isBlockActivated());
+		tag.putInt("x", instance.getPos().getX());
+		tag.putInt("y", instance.getPos().getY());
+		tag.putInt("z", instance.getPos().getZ());
+		
+		return tag;
 	}
 
 	@Override
-	public void deserializeNBT(CompoundNBT nbt)
+	public void deserializeNBT(CompoundTag nbt)
 	{
-		POSITION_CAPABILITY.getStorage().readNBT(POSITION_CAPABILITY, instance, null, nbt);
+		CompoundTag tag = (CompoundTag) nbt;
+
+		int x = tag.getInt("x");
+		int y = tag.getInt("y");
+		int z = tag.getInt("z");
+		
+		BlockPos pos = new BlockPos(x,y,z);
+		
+		instance.setPos(pos);
+		instance.setBlockActivated(tag.getBoolean("blockActivated"));
 	}
 
 }

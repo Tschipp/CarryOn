@@ -4,19 +4,19 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.AgeableEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.GameType;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -29,21 +29,21 @@ import tschipp.carryon.common.scripting.ScriptChecker;
 public class PickupHandler
 {
 
-	public static boolean canPlayerPickUpBlock(ServerPlayerEntity player, @Nullable TileEntity tile, World world, BlockPos pos)
+	public static boolean canPlayerPickUpBlock(ServerPlayer player, @Nullable BlockEntity tile, Level world, BlockPos pos)
 	{		
 		if(player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR || player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE)
 			return false;
 		
 		
 		BlockState state = world.getBlockState(pos);
-		CompoundNBT tag = new CompoundNBT();
+		CompoundTag tag = new CompoundTag();
 		if (tile != null)
 			tile.save(tag);
 		
 		CarryOnOverride override = ScriptChecker.inspectBlock(world.getBlockState(pos), world, pos, tag);
 		if (override != null)
 		{
-			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((ServerPlayerEntity) player, world, pos, state);
+			return (ScriptChecker.fulfillsConditions(override, player)) && handleProtections((ServerPlayer) player, world, pos, state);
 		}
 		else
 		{
@@ -64,7 +64,7 @@ public class PickupHandler
 
 			if ((state.getDestroySpeed(world, pos) != -1 || player.isCreative()))
 			{
-				double distance = Vector3d.atLowerCornerOf(pos).distanceTo(player.position());
+				double distance = Vec3.atLowerCornerOf(pos).distanceTo(player.position());
 				double maxDist = Settings.maxDistance.get();
 				
 				if (distance < maxDist)
@@ -75,7 +75,7 @@ public class PickupHandler
 
 						if (CustomPickupOverrideHandler.hasSpecialPickupConditions(state))
 						{
-							return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(state), player) && handleProtections((ServerPlayerEntity) player, world, pos, state);
+							return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(state), player) && handleProtections((ServerPlayer) player, world, pos, state);
 						}
 						else if (Settings.pickupAllBlocks.get() ? true : tile != null)
 						{
@@ -90,14 +90,14 @@ public class PickupHandler
 		return false;
 	}
 
-	public static boolean canPlayerPickUpEntity(ServerPlayerEntity player, Entity toPickUp)
+	public static boolean canPlayerPickUpEntity(ServerPlayer player, Entity toPickUp)
 	{
 		if(player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR || player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE)
 			return false;
 		
-		BlockPos pos = toPickUp.blockPosition();
+		Vec3 pos = toPickUp.position();
 
-		if (toPickUp instanceof PlayerEntity)
+		if (toPickUp instanceof Player)
 			return false;
 
 		CarryOnOverride override = ScriptChecker.inspectEntity(toPickUp);
@@ -107,29 +107,29 @@ public class PickupHandler
 		}
 		else
 		{
-			if (toPickUp instanceof AgeableEntity && Settings.allowBabies.get())
+			if (toPickUp instanceof AgeableMob && Settings.allowBabies.get())
 			{
-				AgeableEntity living = (AgeableEntity) toPickUp;
+				AgeableMob living = (AgeableMob) toPickUp;
 				if (living.getAge() < 0 || living.isBaby())
 				{
 
-					double distance = pos.distSqr(player.blockPosition());
-					if (distance < Math.pow(Settings.maxDistance.get(), 2))
+					double distance = pos.distanceToSqr(player.position());
+					if (distance <= Math.pow(Settings.maxDistance.get(), 2))
 					{
-						if (toPickUp instanceof TameableEntity)
+						if (toPickUp instanceof TamableAnimal)
 						{
-							TameableEntity tame = (TameableEntity) toPickUp;
-							if (tame.getOwnerUUID() != null && tame.getOwnerUUID() != PlayerEntity.createPlayerUUID(player.getGameProfile()))
+							TamableAnimal tame = (TamableAnimal) toPickUp;
+							if (tame.getOwnerUUID() != null && tame.getOwnerUUID() != Player.createPlayerUUID(player.getGameProfile()))
 								return false;
 						}
 					}
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 					{
-						return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(toPickUp), player) && handleProtections((ServerPlayerEntity) player, toPickUp);
+						return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(toPickUp), player) && handleProtections((ServerPlayer) player, toPickUp);
 					}
 					else
-						return handleProtections((ServerPlayerEntity) player, toPickUp);
+						return handleProtections((ServerPlayer) player, toPickUp);
 				}
 			}
 
@@ -148,30 +148,30 @@ public class PickupHandler
 				}
 			}
 
-			if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getCategory() != EntityClassification.MONSTER || player.isCreative()))
+			if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getCategory() != MobCategory.MONSTER || player.isCreative()))
 			{
-				if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getCategory() != EntityClassification.MONSTER  || player.isCreative()))
+				if ((Settings.pickupHostileMobs.get() ? true : toPickUp.getType().getCategory() != MobCategory.MONSTER  || player.isCreative()))
 				{
 					if ((toPickUp.getBbHeight() <= Settings.maxEntityHeight.get() && toPickUp.getBbWidth() <= Settings.maxEntityWidth.get() || player.isCreative()))
 					{
-						double distance = pos.distSqr(player.blockPosition());
+						double distance = pos.distanceToSqr(player.position());
 						if (distance < Math.pow(Settings.maxDistance.get(), 2))
 						{
-							if (toPickUp instanceof TameableEntity)
+							if (toPickUp instanceof TamableAnimal)
 							{
-								TameableEntity tame = (TameableEntity) toPickUp;
+								TamableAnimal tame = (TamableAnimal) toPickUp;
 								UUID owner = tame.getOwnerUUID();
-								UUID playerID = PlayerEntity.createPlayerUUID(player.getGameProfile());
+								UUID playerID = Player.createPlayerUUID(player.getGameProfile());
 								if (owner != null && !owner.equals(playerID))
 									return false;
 							}
 
 							if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
 							{
-								return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(toPickUp), player) && handleProtections((ServerPlayerEntity) player, toPickUp);
+								return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(toPickUp), player) && handleProtections((ServerPlayer) player, toPickUp);
 							}
 							else
-								return handleProtections((ServerPlayerEntity) player, toPickUp);
+								return handleProtections((ServerPlayer) player, toPickUp);
 						}
 						
 
@@ -186,7 +186,7 @@ public class PickupHandler
 
 	public static class PickUpBlockEvent extends BlockEvent.BreakEvent
 	{
-		public PickUpBlockEvent(World world, BlockPos pos, BlockState state, PlayerEntity player)
+		public PickUpBlockEvent(Level world, BlockPos pos, BlockState state, Player player)
 		{
 			super(world, pos, state, player);
 		}		
@@ -194,13 +194,13 @@ public class PickupHandler
 	
 	public static class PickUpEntityEvent extends AttackEntityEvent
 	{
-		public PickUpEntityEvent(PlayerEntity player, Entity target)
+		public PickUpEntityEvent(Player player, Entity target)
 		{
 			super(player, target);
 		}
 	}
 	
-	private static boolean handleProtections(ServerPlayerEntity player, World world, BlockPos pos, BlockState state)
+	private static boolean handleProtections(ServerPlayer player, Level world, BlockPos pos, BlockState state)
 	{
 		boolean breakable = true;
 
@@ -213,7 +213,7 @@ public class PickupHandler
 		return breakable;
 	}
 
-	private static boolean handleProtections(ServerPlayerEntity player, Entity entity)
+	private static boolean handleProtections(ServerPlayer player, Entity entity)
 	{
 		boolean canPickup = true;
 

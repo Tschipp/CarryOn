@@ -1,28 +1,28 @@
 package tschipp.carryon.client.helper;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 
 public class CarryRenderHelper
 {
-	public static Vector3d getExactPos(Entity entity, float partialticks)
+	public static Vec3 getExactPos(Entity entity, float partialticks)
 	{
-		return new Vector3d(entity.xOld + (entity.getX() - entity.xOld) * partialticks, entity.yOld + (entity.getY() - entity.yOld) * partialticks, entity.zOld + (entity.getZ() - entity.zOld) * partialticks);
+		return new Vec3(entity.xOld + (entity.getX() - entity.xOld) * partialticks, entity.yOld + (entity.getY() - entity.yOld) * partialticks, entity.zOld + (entity.getZ() - entity.zOld) * partialticks);
 	}
 
 	public static float getExactBodyRotationDegrees(LivingEntity entity, float partialticks)
@@ -38,7 +38,7 @@ public class CarryRenderHelper
 		return Vector3f.YP.rotationDegrees(getExactBodyRotationDegrees(entity, partialticks));
 	}
 
-	public static void performOverrideTransformation(MatrixStack matrix, CarryOnOverride override)
+	public static void performOverrideTransformation(PoseStack matrix, CarryOnOverride override)
 	{
 		int perspective = getPerspective();
 
@@ -56,7 +56,7 @@ public class CarryRenderHelper
 		matrix.scale(scaled[0], scaled[1], scaled[2]);
 	}
 
-	public static void renderItem(BlockState state, CompoundNBT tag, ItemStack stack, ItemStack tileStack, MatrixStack matrix, IRenderTypeBuffer buffer, int light, IBakedModel model)
+	public static void renderItem(BlockState state, CompoundTag tag, ItemStack stack, ItemStack tileStack, PoseStack matrix, MultiBufferSource buffer, int light, BakedModel model)
 	{
 		if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 		{
@@ -72,6 +72,7 @@ public class CarryRenderHelper
 		Minecraft.getInstance().getItemRenderer().render(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
 	}
 
+	@SuppressWarnings("resource")
 	public static int getPerspective()
 	{
 		boolean isThirdPerson = !Minecraft.getInstance().options.getCameraType().isFirstPerson(); //isThirdPerson

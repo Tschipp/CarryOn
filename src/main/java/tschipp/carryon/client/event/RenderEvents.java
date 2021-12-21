@@ -3,53 +3,53 @@ package tschipp.carryon.client.event;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.GameSettings;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.IRenderTypeBuffer.Impl;
+import net.minecraft.client.Options;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.entity.PlayerRenderer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Pose;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.ClickEvent.Action;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.ClickEvent.Action;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedInEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -60,7 +60,6 @@ import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.helper.CarryRenderHelper;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
-import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.helper.KeyboardCallbackWrapper.KeyPressedEvent;
@@ -82,7 +81,8 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onScroll(MouseScrolledEvent event)
 	{
-		PlayerEntity player = Minecraft.getInstance().player;
+		@SuppressWarnings("resource")
+		Player player = Minecraft.getInstance().player;
 
 		if (player != null)
 		{
@@ -103,7 +103,7 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	public void onPlayerTick(PlayerTickEvent event) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
-		PlayerEntity player = event.player;
+		Player player = event.player;
 
 		if (player != null && event.side == LogicalSide.CLIENT)
 		{
@@ -127,9 +127,9 @@ public class RenderEvents
 	@OnlyIn(Dist.CLIENT)
 	public void onJoinWorld(EntityJoinWorldEvent event)
 	{
-		if (event.getEntity() instanceof PlayerEntity)
+		if (event.getEntity() instanceof Player)
 		{
-			PlayerEntity player = (PlayerEntity) event.getEntity();
+			Player player = (Player) event.getEntity();
 			if (player.level.isClientSide)
 			{
 				CarryOnKeybinds.setKeyPressed(player, false);
@@ -137,10 +137,10 @@ public class RenderEvents
 
 				if (CarryOn.FINGERPRINT_VIOLATED)
 				{
-					StringTextComponent cf = new StringTextComponent(TextFormatting.AQUA + "Curseforge" + TextFormatting.RED);
+					TextComponent cf = new TextComponent(ChatFormatting.AQUA + "Curseforge" + ChatFormatting.RED);
 					cf.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
 
-					player.displayClientMessage(new StringTextComponent(TextFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).append(TextFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
+					player.displayClientMessage(new TextComponent(ChatFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).append(ChatFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
 				}
 			}
 
@@ -150,18 +150,19 @@ public class RenderEvents
 	/*
 	 * Prevents the Player from opening Guis
 	 */
+	@SuppressWarnings("resource")
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void onGuiInit(InitGuiEvent.Pre event)
 	{
 		if (event.getGui() != null)
 		{
-			boolean inventory = event.getGui() instanceof ContainerScreen;
-			PlayerEntity player = Minecraft.getInstance().player;
+			boolean inventory = event.getGui() instanceof AbstractContainerScreen;
+			Player player = Minecraft.getInstance().player;
 
 			if (player != null && inventory)
 			{
-				ItemStack stack = player.getItemInHand(Hand.MAIN_HAND);
+				ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
 				if (!stack.isEmpty() && ((stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) || (stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))))
 				{
@@ -178,14 +179,15 @@ public class RenderEvents
 	/*
 	 * Prevents the Player from switching Slots
 	 */
+	@SuppressWarnings("resource")
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void inputEvent(KeyPressedEvent event) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
-		GameSettings settings = Minecraft.getInstance().options;
+		Options settings = Minecraft.getInstance().options;
 		int key = event.key;
 		int scancode = event.scancode;
-		PlayerEntity player = Minecraft.getInstance().player;
+		Player player = Minecraft.getInstance().player;
 
 		if (player != null)
 		{
@@ -205,7 +207,7 @@ public class RenderEvents
 				{
 					event.setCanceled(true);
 				}
-				for (KeyBinding keyBind : settings.keyHotbarSlots)
+				for (KeyMapping keyBind : settings.keyHotbarSlots)
 				{
 					if (keyBind.matches(key, scancode))
 					{
@@ -214,11 +216,11 @@ public class RenderEvents
 				}
 			}
 
-			int current = player.inventory.selected;
+			int current = player.getInventory().selected;
 
 			if (player.getPersistentData().contains("carrySlot") ? player.getPersistentData().getInt("carrySlot") != current : false)
 			{
-				player.inventory.selected = player.getPersistentData().getInt("carrySlot");
+				player.getInventory().selected = player.getPersistentData().getInt("carrySlot");
 			}
 		}
 	}
@@ -226,18 +228,18 @@ public class RenderEvents
 	/*
 	 * Renders the Block in First Person
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "resource", "deprecation" })
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-		World world = Minecraft.getInstance().level;
-		PlayerEntity player = Minecraft.getInstance().player;
+		Level world = Minecraft.getInstance().level;
+		Player player = Minecraft.getInstance().player;
 		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
 		boolean f1 = Minecraft.getInstance().options.hideGui;
-		IRenderTypeBuffer buffer = event.getBuffers();
-		MatrixStack matrix = event.getMatrixStack();
+		MultiBufferSource buffer = event.getBuffers();
+		PoseStack matrix = event.getMatrixStack();
 		int light = event.getLight();
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) && perspective == 0 && !f1)
@@ -246,7 +248,7 @@ public class RenderEvents
 				return;
 
 			Block block = ItemCarryonBlock.getBlock(stack);
-			CompoundNBT tag = ItemCarryonBlock.getTileData(stack);
+			CompoundTag tag = ItemCarryonBlock.getTileData(stack);
 			BlockState state = ItemCarryonBlock.getBlockState(stack);
 			ItemStack tileStack = ItemCarryonBlock.getItemStack(stack);
 
@@ -266,7 +268,7 @@ public class RenderEvents
 				matrix.mulPose(Vector3f.XP.rotationDegrees(8));
 			}
 
-			IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, world, player));
+			BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, world, player, 0));
 
 			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
@@ -280,12 +282,12 @@ public class RenderEvents
 					{
 						ItemStack s = new ItemStack(b, 1);
 						s.setTag(carryOverride.getRenderNBT());
-						model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player);
+						model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player, 0);
 					}
 				}
 			}
 
-			Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+			RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
 
 			CarryRenderHelper.renderItem(state, tag, stack, tileStack, matrix, buffer, light, model);
 
@@ -299,35 +301,34 @@ public class RenderEvents
 			matrix.popPose();
 		}
 	}
-	
-//	@SubscribeEvent
-//	public void onJoinServer(LoggedInEvent event)
-//	{
-//		ListHandler.initConfigLists();
-//	}
-	
+
+	// @SubscribeEvent
+	// public void onJoinServer(LoggedInEvent event)
+	// {
+	// ListHandler.initConfigLists();
+	// }
 
 	/*
 	 * Render blocks and entities in third person
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "resource" })
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event)
 	{
-		World world = Minecraft.getInstance().level;
+		Level world = Minecraft.getInstance().level;
 		float partialticks = event.getPartialTicks();
-		Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
-		MatrixStack matrix = event.getMatrixStack();
+		BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+		PoseStack matrix = event.getMatrixStack();
 		int light = 0;
 		int perspective = CarryRenderHelper.getPerspective();
-		EntityRendererManager manager = Minecraft.getInstance().getEntityRenderDispatcher();
-		
+		EntityRenderDispatcher manager = Minecraft.getInstance().getEntityRenderDispatcher();
+
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();
 
-		for (PlayerEntity player : world.players())
+		for (Player player : world.players())
 		{
 			if (perspective == 0 && player == Minecraft.getInstance().player)
 				continue;
@@ -339,12 +340,12 @@ public class RenderEvents
 			{
 				Block block = ItemCarryonBlock.getBlock(stack);
 				BlockState state = ItemCarryonBlock.getBlockState(stack);
-				CompoundNBT tag = ItemCarryonBlock.getTileData(stack);
+				CompoundTag tag = ItemCarryonBlock.getTileData(stack);
 				ItemStack tileItem = ItemCarryonBlock.getItemStack(stack);
 
 				applyBlockTransformations(player, partialticks, matrix, block);
 
-				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player));
+				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player, 0));
 
 				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
@@ -358,19 +359,26 @@ public class RenderEvents
 						{
 							ItemStack s = new ItemStack(b, 1);
 							s.setTag(carryOverride.getRenderNBT());
-							model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player);
+							model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player, 0);
 						}
 					}
 				}
 
-				Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
-				CarryRenderHelper.renderItem(state, tag, stack, tileItem, matrix, buffer, light, model);
-				buffer.endBatch();
+				RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+				//TODO: Fix block light
+				RenderSystem.enableCull();
 
+				PoseStack.Pose p = matrix.last();
+				PoseStack copy = new PoseStack();
+				copy.mulPoseMatrix(p.pose());
 				matrix.popPose();
-
 				drawArms(player, partialticks, matrix, buffer, light);
 
+				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+				
+				CarryRenderHelper.renderItem(state, tag, stack, tileItem, copy, buffer, light, model);
+				buffer.endBatch();
+				
 				matrix.popPose();
 			}
 			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
@@ -399,14 +407,14 @@ public class RenderEvents
 
 							if (newEntity != null)
 							{
-								CompoundNBT nbttag = carryOverride.getRenderNBT();
+								CompoundTag nbttag = carryOverride.getRenderNBT();
 								if (nbttag != null)
 									newEntity.deserializeNBT(nbttag);
 								entity = newEntity;
-								entity.yRot = 0.0f;
+								entity.yo = 0.0f;
 								entity.yRotO = 0.0f;
 								entity.setYHeadRot(0.0f);
-								entity.xRot = 0.0f;
+								entity.xo = 0.0f;
 								entity.xRotO = 0.0f;
 							}
 						}
@@ -414,6 +422,8 @@ public class RenderEvents
 
 					if (entity instanceof LivingEntity)
 						((LivingEntity) entity).hurtTime = 0;
+
+					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 					manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
 					buffer.endBatch();
@@ -434,13 +444,14 @@ public class RenderEvents
 		RenderSystem.disableBlend();
 	}
 
-	private void applyGeneralTransformations(PlayerEntity player, float partialticks, MatrixStack matrix)
+	@SuppressWarnings("resource")
+	private void applyGeneralTransformations(Player player, float partialticks, PoseStack matrix)
 	{
 		int perspective = CarryRenderHelper.getPerspective();
 		Quaternion playerrot = CarryRenderHelper.getExactBodyRotation(player, partialticks);
-		Vector3d playerpos = CarryRenderHelper.getExactPos(player, partialticks);
-		Vector3d cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-		Vector3d offset = playerpos.subtract(cameraPos);
+		Vec3 playerpos = CarryRenderHelper.getExactPos(player, partialticks);
+		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		Vec3 offset = playerpos.subtract(cameraPos);
 		Pose pose = player.getPose();
 
 		matrix.pushPose();
@@ -464,8 +475,8 @@ public class RenderEvents
 		if (pose == Pose.SWIMMING)
 		{
 			float f = player.getSwimAmount(partialticks);
-			float f3 = player.isInWater() ? -90.0F - player.xRot : -90.0F;
-			float f4 = MathHelper.lerp(f, 0.0F, f3);
+			float f3 = player.isInWater() ? -90.0F - player.xRotO : -90.0F;
+			float f4 = Mth.lerp(f, 0.0F, f3);
 			if (perspective == 2)
 			{
 				matrix.translate(0, 0, 1.35);
@@ -482,22 +493,22 @@ public class RenderEvents
 		if (pose == Pose.FALL_FLYING)
 		{
 			float f1 = (float) player.getFallFlyingTicks() + partialticks;
-			float f2 = MathHelper.clamp(f1 * f1 / 100.0F, 0.0F, 1.0F);
+			float f2 = Mth.clamp(f1 * f1 / 100.0F, 0.0F, 1.0F);
 			if (!player.isAutoSpinAttack())
 			{
 				if (perspective == 2)
 					matrix.translate(0, 0, 1.35);
 
 				if (perspective == 2)
-					matrix.mulPose(Vector3f.XP.rotationDegrees(f2 * (-90.0F - player.xRot)));
+					matrix.mulPose(Vector3f.XP.rotationDegrees(f2 * (-90.0F - player.xRotO)));
 				else
-					matrix.mulPose(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.xRot)));
+					matrix.mulPose(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.xRotO)));
 			}
 
-			Vector3d Vector3d = player.getViewVector(partialticks);
-			Vector3d Vector3d1 = player.getDeltaMovement();
-			double d0 = Entity.getHorizontalDistanceSqr(Vector3d1);
-			double d1 = Entity.getHorizontalDistanceSqr(Vector3d);
+			Vec3 Vector3d = player.getViewVector(partialticks);
+			Vec3 Vector3d1 = player.getDeltaMovement();
+			double d0 = Vector3d1.horizontalDistanceSqr();
+			double d1 = Vector3d1.horizontalDistanceSqr();
 			if (d0 > 0.0D && d1 > 0.0D)
 			{
 				double d2 = (Vector3d1.x * Vector3d.x + Vector3d1.z * Vector3d.z) / (Math.sqrt(d0) * Math.sqrt(d1));
@@ -514,7 +525,7 @@ public class RenderEvents
 		matrix.translate(0, 1.6, 0.65);
 	}
 
-	private void applyBlockTransformations(PlayerEntity player, float partialticks, MatrixStack matrix, Block block)
+	private void applyBlockTransformations(Player player, float partialticks, PoseStack matrix, Block block)
 	{
 		int perspective = CarryRenderHelper.getPerspective();
 
@@ -533,7 +544,7 @@ public class RenderEvents
 		}
 	}
 
-	private void applyEntityTransformations(PlayerEntity player, float partialticks, MatrixStack matrix, Entity entity)
+	private void applyEntityTransformations(Player player, float partialticks, PoseStack matrix, Entity entity)
 	{
 		int perspective = CarryRenderHelper.getPerspective();
 		Pose pose = player.getPose();
@@ -549,10 +560,10 @@ public class RenderEvents
 		float height = entity.getBbHeight();
 		float width = entity.getBbWidth();
 		float multiplier = height * width;
-		entity.yRot = 0.0f;
+		entity.yo = 0.0f;
 		entity.yRotO = 0.0f;
 		entity.setYHeadRot(0.0f);
-		entity.xRot = 0.0f;
+		entity.xo = 0.0f;
 		entity.xRotO = 0.0f;
 
 		if (perspective == 2)
@@ -576,7 +587,7 @@ public class RenderEvents
 	 * Renders correct arm rotation
 	 */
 	@OnlyIn(Dist.CLIENT)
-	public void drawArms(PlayerEntity player, float partialticks, MatrixStack matrix, IRenderTypeBuffer buffer, int light)
+	public void drawArms(Player player, float partialticks, PoseStack matrix, MultiBufferSource buffer, int light)
 	{
 		int perspective = CarryRenderHelper.getPerspective();
 		Pose pose = player.getPose();
@@ -592,19 +603,19 @@ public class RenderEvents
 			ItemStack stack = player.getMainHandItem();
 			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
-				PlayerModel<AbstractClientPlayerEntity> model = getPlayerModel((AbstractClientPlayerEntity) player);
+				PlayerModel<AbstractClientPlayer> model = getPlayerModel((AbstractClientPlayer) player);
 
-				AbstractClientPlayerEntity aplayer = (AbstractClientPlayerEntity) player;
+				AbstractClientPlayer aplayer = (AbstractClientPlayer) player;
 				ResourceLocation skinLoc = aplayer.getSkinTextureLocation();
 
 				matrix.pushPose();
 				if (perspective == 2)
 					matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 
-				Minecraft.getInstance().getTextureManager().bind(skinLoc);
+				RenderSystem.setShaderTexture(0, skinLoc);
 
 				CarryOnOverride overrider = ScriptChecker.getOverride(player);
-				IVertexBuilder builder = buffer.getBuffer(RenderType.entityCutout(skinLoc));
+				VertexConsumer builder = buffer.getBuffer(RenderType.entityCutout(skinLoc));
 
 				if (overrider != null)
 				{
@@ -648,8 +659,8 @@ public class RenderEvents
 					renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), true, doSneakCheck(player), light, matrix, builder);
 				}
 
-				if (buffer instanceof Impl)
-					((Impl) buffer).endBatch();
+				if (buffer instanceof BufferSource)
+					((BufferSource) buffer).endBatch();
 
 				matrix.popPose();
 			}
@@ -668,12 +679,12 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			PlayerEntity player = event.getPlayer();
+			Player player = event.getPlayer();
 			Pose pose = player.getPose();
 			ItemStack stack = player.getMainHandItem();
 			if (pose != Pose.SWIMMING && pose != Pose.FALL_FLYING && !stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
 			{
-				PlayerModel<AbstractClientPlayerEntity> model = event.getRenderer().getModel();
+				PlayerModel<AbstractClientPlayer> model = event.getRenderer().getModel();
 
 				CarryOnOverride overrider = ScriptChecker.getOverride(player);
 				if (overrider != null)
@@ -706,7 +717,7 @@ public class RenderEvents
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private void renderArmPost(ModelRenderer arm, float x, float z, boolean right, boolean sneaking, int light, MatrixStack matrix, IVertexBuilder builder)
+	private void renderArmPost(ModelPart arm, float x, float z, boolean right, boolean sneaking, int light, PoseStack matrix, VertexConsumer builder)
 	{
 		matrix.pushPose();
 		arm.visible = true;
@@ -729,7 +740,7 @@ public class RenderEvents
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private void renderArmPre(ModelRenderer arm)
+	private void renderArmPre(ModelPart arm)
 	{
 		arm.visible = false;
 	}
@@ -750,9 +761,9 @@ public class RenderEvents
 		return true;
 	}
 
-	public static boolean doSneakCheck(PlayerEntity player)
+	public static boolean doSneakCheck(Player player)
 	{
-		if (player.abilities.flying)
+		if (player.getAbilities().flying)
 			return false;
 
 		return (player.isShiftKeyDown() || player.isCrouching());
@@ -764,15 +775,15 @@ public class RenderEvents
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private static PlayerRenderer getRenderPlayer(AbstractClientPlayerEntity player)
+	private static PlayerRenderer getRenderPlayer(AbstractClientPlayer player)
 	{
 		Minecraft mc = Minecraft.getInstance();
-		EntityRendererManager manager = mc.getEntityRenderDispatcher();
-		return manager.getSkinMap().get(player.getModelName());
+		EntityRenderDispatcher manager = mc.getEntityRenderDispatcher();
+		return (PlayerRenderer) manager.getSkinMap().get(player.getModelName());
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private static PlayerModel<AbstractClientPlayerEntity> getPlayerModel(AbstractClientPlayerEntity player)
+	private static PlayerModel<AbstractClientPlayer> getPlayerModel(AbstractClientPlayer player)
 	{
 		return getRenderPlayer(player).getModel();
 	}

@@ -6,9 +6,9 @@ import java.util.List;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.command.arguments.BlockStateParser;
-import net.minecraft.entity.Entity;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.common.config.Configs.CustomPickupConditions;
