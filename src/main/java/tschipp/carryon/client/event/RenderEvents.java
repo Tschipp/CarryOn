@@ -315,13 +315,14 @@ public class RenderEvents
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event)
 	{
-		Level world = Minecraft.getInstance().level;
+		Minecraft mc = Minecraft.getInstance();
+		Level world = mc.level;
 		float partialticks = event.getPartialTicks();
 		BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 		PoseStack matrix = event.getMatrixStack();
 		int light = 0;
 		int perspective = CarryRenderHelper.getPerspective();
-		EntityRenderDispatcher manager = Minecraft.getInstance().getEntityRenderDispatcher();
+		EntityRenderDispatcher manager = mc.getEntityRenderDispatcher();
 
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
@@ -329,7 +330,7 @@ public class RenderEvents
 
 		for (Player player : world.players())
 		{
-			if (perspective == 0 && player == Minecraft.getInstance().player)
+			if (perspective == 0 && player == mc.player)
 				continue;
 
 			light = manager.getPackedLightCoords(player, partialticks);
@@ -344,7 +345,7 @@ public class RenderEvents
 
 				applyBlockTransformations(player, partialticks, matrix, block);
 
-				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player, 0);
+				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : tileItem.isEmpty() ? mc.getBlockRenderer().getBlockModel(state) : mc.getItemRenderer().getModel(tileItem, world, player, 0);
 
 				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
@@ -358,13 +359,12 @@ public class RenderEvents
 						{
 							ItemStack s = new ItemStack(b, 1);
 							s.setTag(carryOverride.getRenderNBT());
-							model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player, 0);
+							model = mc.getItemRenderer().getModel(s, world, player, 0);
 						}
 					}
 				}
 
 				RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-				// TODO: Fix block light
 				RenderSystem.enableCull();
 
 				PoseStack.Pose p = matrix.last();

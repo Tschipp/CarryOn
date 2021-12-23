@@ -7,6 +7,8 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -58,18 +60,19 @@ public class CarryRenderHelper
 
 	public static void renderItem(BlockState state, CompoundTag tag, ItemStack stack, ItemStack tileStack, PoseStack matrix, MultiBufferSource buffer, int light, BakedModel model)
 	{
+		ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
 		if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
 		{
 			Object override = ModelOverridesHandler.getOverrideObject(state, tag);
 
 			if (override instanceof ItemStack)
 			{
-				Minecraft.getInstance().getItemRenderer().render((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
+				renderer.render((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
 				return;
 			}
 		}
 
-		Minecraft.getInstance().getItemRenderer().render(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, 0xFFFFFF, model);
+		renderer.render(tileStack.isEmpty() ? stack : tileStack, TransformType.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
 	}
 
 	@SuppressWarnings("resource")
