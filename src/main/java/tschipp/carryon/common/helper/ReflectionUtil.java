@@ -21,12 +21,12 @@ public class ReflectionUtil
 	 *
 	 * @param clazz
 	 *            The class
-	 * @param methodNames
+	 * @param methodName
 	 *            The possible names of the method
-	 * @param methodTypes
+	 * @param methodObfName
+	 *            The obfuscated method name
+	 * @param parameterTypes
 	 *            The argument types of the method
-	 * @param <T>
-	 *            The class
 	 * @return The MethodHandle
 	 */
 	public static MethodHandle findMethod(final Class<?> clazz, final String methodName, @Nullable final String methodObfName, final Class<?>... parameterTypes)
