@@ -204,7 +204,7 @@ public class Configs {
 			
 			useScripts = s
 					.comment("Use custom Pickup Scripts. Having this set to false, will not allow you to run scripts, but will increase your performance")
-					.worldRestart()
+					.levelRestart()
 					.define("useScripts", false);
 			
 			stackableEntities = s
