@@ -41,11 +41,11 @@ import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fmllegacy.network.PacketDistributor;
-import net.minecraftforge.fmllegacy.network.PacketDistributor.TargetPoint;
-import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.command.CommandCarryOn;
@@ -187,7 +187,7 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void serverLoad(FMLServerStartingEvent event)
+	public void serverLoad(FMLDedicatedServerSetupEvent event)
 	{
 		CustomPickupOverrideHandler.initPickupOverrides();
 	}

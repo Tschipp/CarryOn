@@ -2,8 +2,10 @@ package tschipp.carryon.common.handler;
 
 import net.minecraft.world.item.Item;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.registries.ObjectHolder;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.event.RenderEntityEvents;
@@ -17,7 +19,7 @@ import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.item.ItemCarryonEntity;
 
-@EventBusSubscriber(modid = CarryOn.MODID)
+@EventBusSubscriber(modid = CarryOn.MODID, bus = Bus.MOD)
 public class RegistrationHandler
 {
 	@ObjectHolder("carryon:tile_item")
@@ -58,9 +60,10 @@ public class RegistrationHandler
 		// ListHandler.initConfigLists();
 	}
 
-	public static void regCaps()
+	@SubscribeEvent
+	public static void regCaps(RegisterCapabilitiesEvent event)
 	{
-		CapabilityManager.INSTANCE.register(IPosition.class);
+		event.register(IPosition.class);
 	}
 
 }

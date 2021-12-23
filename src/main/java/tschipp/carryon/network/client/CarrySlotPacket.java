@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.scripting.ScriptChecker;
 

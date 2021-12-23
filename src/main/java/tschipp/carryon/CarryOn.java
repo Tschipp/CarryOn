@@ -17,10 +17,10 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fmllegacy.network.NetworkDirection;
-import net.minecraftforge.fmllegacy.network.NetworkRegistry;
-import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 import net.minecraftforge.forgespi.language.IModInfo;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.network.client.CarrySlotPacket;
@@ -75,7 +75,6 @@ public class CarryOn
 
 		// Init
 		RegistrationHandler.regOverrideList();
-		RegistrationHandler.regCaps();
 
 		proxy.setup(event);
 	}

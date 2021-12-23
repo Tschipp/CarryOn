@@ -8,7 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,14 +20,15 @@ import tschipp.carryon.common.capabilities.TEPosition;
 public class PositionClientEvents
 {
 
+	@SuppressWarnings("resource")
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void onGui(GuiScreenEvent.DrawScreenEvent event)
+	public void onGui(ScreenEvent.DrawScreenEvent event)
 	{
-		if (event.getGui() != null)
+		if (event.getScreen() != null)
 		{
 			Player player = Minecraft.getInstance().player;
-			boolean inventory = event.getGui() instanceof AbstractContainerScreen;
+			boolean inventory = event.getScreen() instanceof AbstractContainerScreen;
 
 			if (player != null && inventory && player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 			{

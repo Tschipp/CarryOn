@@ -127,9 +127,7 @@ public class Configs
 
 			maxEntityWidth = s.comment("Max width of entities that can be picked up in survival mode").defineInRange("maxEntityWidth", 1.5, 0, 10);
 
-			maxEntityHeight = s.comment("Max height of entities that can be picked up in survival mode").defineInRange("maxEntityHeight", 1.5, 0, 10);
-
-			maxEntityWidth = s.comment("Max width of entities that can be picked up in survival mode").defineInRange("maxEntityWidth", 1.5, 0, 10);
+			maxEntityHeight = s.comment("Max height of entities that can be picked up in survival mode").defineInRange("maxEntityHeight", 2.0, 0, 10);
 
 			blockSlownessMultiplier = s.comment("Slowness multiplier for blocks").defineInRange("blockSlownessMultiplier", 1, 0, Double.MAX_VALUE);
 

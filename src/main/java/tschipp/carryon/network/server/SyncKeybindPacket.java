@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 
 public class SyncKeybindPacket

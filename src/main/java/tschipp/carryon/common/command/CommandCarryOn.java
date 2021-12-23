@@ -13,7 +13,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;

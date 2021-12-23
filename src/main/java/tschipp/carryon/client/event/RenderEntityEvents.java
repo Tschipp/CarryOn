@@ -59,6 +59,7 @@ public class RenderEntityEvents
 	/*
 	 * Renders the Entity in First Person
 	 */
+	@SuppressWarnings("resource")
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
@@ -68,9 +69,9 @@ public class RenderEntityEvents
 		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
 		float partialticks = event.getPartialTicks();
-		PoseStack matrix = event.getMatrixStack();
-		int light = event.getLight();
-		MultiBufferSource buffer = event.getBuffers();
+		PoseStack matrix = event.getPoseStack();
+		int light = event.getPackedLight();
+		MultiBufferSource buffer = event.getMultiBufferSource();
 		EntityRenderDispatcher manager = Minecraft.getInstance().getEntityRenderDispatcher();
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))

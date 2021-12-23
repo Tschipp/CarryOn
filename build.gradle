@@ -31,18 +31,16 @@ version = "${version}"
 group = "tschipp.carryon"
 archivesBaseName = "carryon-${minecraft_version}"
 
-//sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.16'
-
 
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 minecraft {
-	mappings channel: 'parchment', version: '2021.12.12-1.17.1'
+	mappings channel: 'parchment', version: "${mappings_version}-${minecraft_version}"
    
     runs {
         client {

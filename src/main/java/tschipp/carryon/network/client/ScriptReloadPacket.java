@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptReader;
 
