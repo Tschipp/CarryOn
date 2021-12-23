@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
@@ -14,7 +14,7 @@ apply plugin: 'maven-publish'
 
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
 
-import net.minecraftforge.gradle.common.task.SignJar                      
+//import net.minecraftforge.gradle.common.task.SignJar                      
 import groovy.json.JsonSlurper                       
 import groovy.json.JsonOutput
 
@@ -26,8 +26,9 @@ version = "${version}"
 group = "tschipp.carryon"
 archivesBaseName = "carryon-${minecraft_version}"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+//sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
@@ -215,6 +216,7 @@ publishing {
     }
 }
 
+/*
 task signJar(type: SignJar, dependsOn: jar) {
     // Skips if the keyStore property is missing.
     onlyIf {
@@ -230,7 +232,7 @@ task signJar(type: SignJar, dependsOn: jar) {
     keyPass = project.findProperty('modkeyStoreKeyPass')
     inputFile = jar.archivePath
     outputFile = jar.archivePath
-}
+} */
 
 // Runs this task automatically when build is ran. 
-build.dependsOn signJar
+//build.dependsOn signJar
