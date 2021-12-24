@@ -205,11 +205,19 @@ public class ItemCarryonEntity extends Item
 		{
 			try
 			{
-				initGoals.invoke(entity);
+				if (entity instanceof Mob)
+					initGoals.invoke(entity);
 				entity.deserializeNBT(e);
 			}
 			catch (Exception e1)
 			{
+				try
+				{
+					entity.deserializeNBT(e);
+				}
+				catch (Exception e2)
+				{
+				}
 			}
 		}
 
