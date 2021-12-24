@@ -85,7 +85,7 @@ public class ItemCarryonBlock extends Item
 	{
 		Direction facing = context.getClickedFace();
 		Player player = context.getPlayer();
-		Level world = context.getLevel();
+		Level level = context.getLevel();
 		BlockPos pos = context.getClickedPos();
 		ItemStack stack = context.getItemInHand();
 
@@ -101,16 +101,16 @@ public class ItemCarryonBlock extends Item
 				BlockPos pos2 = pos;
 				Block containedblock = getBlock(stack);
 				BlockState containedstate = getBlockState(stack);
-				if (!world.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)))
+				if (!level.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)))
 				{
 					pos2 = pos.relative(facing);
 				}
 
-				if (world.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)) && containedblock != null)
+				if (level.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)) && containedblock != null)
 				{
-					boolean canPlace = containedstate.canSurvive(world, pos2);
+					boolean canPlace = containedstate.canSurvive(level, pos2);
 
-					if (canPlace && player.mayUseItemAt(pos, facing, stack) && world.mayInteract(player, pos2))
+					if (canPlace && player.mayUseItemAt(pos, facing, stack) && level.mayInteract(player, pos2))
 					{
 
 						BlockState placementState = containedblock.getStateForPlacement(new BlockPlaceContext(context));
@@ -138,13 +138,13 @@ public class ItemCarryonBlock extends Item
 						// }
 						// }
 
-						BlockSnapshot snapshot = BlockSnapshot.create(world.dimension(), world, pos2);
-						EntityPlaceEvent event = new EntityPlaceEvent(snapshot, world.getBlockState(pos), player);
+						BlockSnapshot snapshot = BlockSnapshot.create(level.dimension(), level, pos2);
+						EntityPlaceEvent event = new EntityPlaceEvent(snapshot, level.getBlockState(pos), player);
 						MinecraftForge.EVENT_BUS.post(event);
 
 						if (!event.isCanceled())
 						{
-							world.setBlockAndUpdate(pos2, actualState);
+							level.setBlockAndUpdate(pos2, actualState);
 
 							// If the blockstate doesn't handle rotation,
 							// try to
@@ -181,7 +181,7 @@ public class ItemCarryonBlock extends Item
 								}
 							}
 
-							BlockEntity tile = world.getBlockEntity(pos2);
+							BlockEntity tile = level.getBlockEntity(pos2);
 							if (tile != null)
 							{
 								CompoundTag data = getTileData(stack);
@@ -189,7 +189,7 @@ public class ItemCarryonBlock extends Item
 								tile.load(data);
 							}
 							clearTileData(stack);
-							player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);
+							player.playSound(actualState.getSoundType(level, pos2, player).getPlaceSound(), 1.0f, 0.5f);
 							player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 							player.getPersistentData().remove("overrideKey");
 							ItemEvents.sendPacket(player, 9, 0);
@@ -203,7 +203,7 @@ public class ItemCarryonBlock extends Item
 			{
 				e.printStackTrace();
 
-				if (world != null && world.isClientSide)
+				if (level != null && level.isClientSide)
 				{
 					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(stack));
 					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(stack));
@@ -230,7 +230,7 @@ public class ItemCarryonBlock extends Item
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected)
+	public void inventoryTick(ItemStack stack, Level level, Entity entity, int itemSlot, boolean isSelected)
 	{
 		if (hasTileData(stack))
 		{
@@ -258,14 +258,14 @@ public class ItemCarryonBlock extends Item
 		return false;
 	}
 
-	public static boolean storeTileData(@Nullable BlockEntity tile, Level world, BlockPos pos, BlockState state, ItemStack stack)
+	public static boolean storeTileData(@Nullable BlockEntity tile, Level level, BlockPos pos, BlockState state, ItemStack stack)
 	{
 		if (stack.isEmpty())
 			return false;
 
 		CompoundTag tileTag = new CompoundTag();
 		if (tile != null)
-			tileTag = tile.save(tileTag);
+			tileTag = tile.saveWithId();
 
 		CompoundTag tag = stack.hasTag() ? stack.getTag() : new CompoundTag();
 		if (tag.contains(TILE_DATA_KEY))
@@ -327,7 +327,7 @@ public class ItemCarryonBlock extends Item
 	// {
 	// if (stack.hasTag())
 	// {
-	// CompoundNBT tag = stack.getTag();
+	// CompoundTag tag = stack.getTag();
 	// int meta = tag.getInt("meta");
 	// return meta;
 	// }
@@ -350,13 +350,13 @@ public class ItemCarryonBlock extends Item
 		return Blocks.AIR.defaultBlockState();
 	}
 
-	public static boolean isLocked(BlockPos pos, Level world)
+	public static boolean isLocked(BlockPos pos, Level level)
 	{
-		BlockEntity te = world.getBlockEntity(pos);
+		BlockEntity te = level.getBlockEntity(pos);
 		if (te != null)
 		{
 			CompoundTag tag = new CompoundTag();
-			te.save(tag);
+			te.saveWithId();
 			return tag.contains("Lock") ? !tag.getString("Lock").equals("") : false;
 		}
 

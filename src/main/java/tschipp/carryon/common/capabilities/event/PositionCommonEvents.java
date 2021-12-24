@@ -32,13 +32,13 @@ public class PositionCommonEvents
 	public void onBlockRight(PlayerInteractEvent.RightClickBlock event)
 	{
 		BlockPos pos = event.getPos();
-		Level world = event.getWorld();
+		Level level = event.getWorld();
 		Player player = event.getPlayer();
 
 		if (event.isCanceled() || player == null || player instanceof FakePlayer)
 			return;
 
-		BlockEntity te = world.getBlockEntity(pos);
+		BlockEntity te = level.getBlockEntity(pos);
 		if (te != null && player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
 			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());

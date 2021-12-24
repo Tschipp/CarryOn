@@ -35,11 +35,11 @@ public class PositionClientEvents
 				IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());
 				if (cap.isBlockActivated())
 				{
-					Level world = player.level;
+					Level level = player.level;
 					BlockPos pos = cap.getPos();
-					if (world != null)
+					if (level != null)
 					{
-						BlockEntity te = world.getBlockEntity(pos);
+						BlockEntity te = level.getBlockEntity(pos);
 						if (te == null)
 						{
 							// player.openContainer = null;

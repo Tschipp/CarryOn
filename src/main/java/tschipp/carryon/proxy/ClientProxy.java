@@ -31,7 +31,7 @@ public class ClientProxy implements IProxy
 	}
 
 	@Override
-	public Level getWorld()
+	public Level getLevel()
 	{
 		return Minecraft.getInstance().level;
 	}

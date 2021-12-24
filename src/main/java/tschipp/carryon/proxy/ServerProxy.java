@@ -20,7 +20,7 @@ public class ServerProxy implements IProxy
 	}
 
 	@Override
-	public Level getWorld()
+	public Level getLevel()
 	{
 		return null;
 	}

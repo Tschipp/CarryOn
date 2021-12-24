@@ -201,10 +201,10 @@ public class ReflectionHelper
 	 *            The class to find the method on.
 	 * @param methodName
 	 *            The name of the method to find (used in developer
-	 *            environments, i.e. "getWorldTime").
+	 *            environments, i.e. "getLevelTime").
 	 * @param methodObfName
 	 *            The obfuscated name of the method to find (used in obfuscated
-	 *            environments, i.e. "getWorldTime"). If the name you are
+	 *            environments, i.e. "getLevelTime"). If the name you are
 	 *            looking for is on a class that is never obfuscated, this
 	 *            should be null.
 	 * @param parameterTypes

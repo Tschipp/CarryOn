@@ -97,7 +97,7 @@ public class ItemEvents
 	public void onItemDropped(EntityJoinWorldEvent event)
 	{
 		Entity e = event.getEntity();
-		Level world = event.getWorld();
+		Level level = event.getWorld();
 		if (e instanceof net.minecraft.world.entity.item.ItemEntity eitem)
 		{
 			ItemStack stack = eitem.getItem();
@@ -106,23 +106,23 @@ public class ItemEvents
 			{
 				BlockPos pos = eitem.blockPosition();
 				BlockPos finalPos = pos;
-				BlockPlaceContext context = new DirectionalPlaceContext(world, pos, Direction.DOWN, stack, Direction.UP);
+				BlockPlaceContext context = new DirectionalPlaceContext(level, pos, Direction.DOWN, stack, Direction.UP);
 
-				if (!world.getBlockState(pos).canBeReplaced(context) || !context.canPlace())
+				if (!level.getBlockState(pos).canBeReplaced(context) || !context.canPlace())
 				{
 					for (Direction facing : Direction.values())
 					{
 						BlockPos offsetPos = pos.relative(facing);
-						BlockPlaceContext newContext = new DirectionalPlaceContext(world, offsetPos, Direction.DOWN, stack, Direction.UP);
-						if (world.getBlockState(offsetPos).canBeReplaced(newContext) && newContext.canPlace())
+						BlockPlaceContext newContext = new DirectionalPlaceContext(level, offsetPos, Direction.DOWN, stack, Direction.UP);
+						if (level.getBlockState(offsetPos).canBeReplaced(newContext) && newContext.canPlace())
 						{
 							finalPos = offsetPos;
 							break;
 						}
 					}
 				}
-				world.setBlockAndUpdate(finalPos, ItemCarryonBlock.getBlockState(stack));
-				BlockEntity tile = world.getBlockEntity(finalPos);
+				level.setBlockAndUpdate(finalPos, ItemCarryonBlock.getBlockState(stack));
+				BlockEntity tile = level.getBlockEntity(finalPos);
 				if (tile != null)
 				{
 					var nbt = ItemCarryonBlock.getTileData(stack);
@@ -149,14 +149,14 @@ public class ItemEvents
 		if (event.getPlayer() instanceof Player)
 		{
 			Player player = event.getPlayer();
-			Level world = player.getCommandSenderWorld();
+			Level level = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
 			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
-					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), world, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
+					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), level, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
 					if (override != null)
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
@@ -164,7 +164,7 @@ public class ItemEvents
 				}
 				else
 				{
-					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, world));
+					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, level));
 					if (override != null)
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
@@ -206,14 +206,14 @@ public class ItemEvents
 
 		if (e instanceof Player player && tracker instanceof ServerPlayer)
 		{
-			Level world = player.getCommandSenderWorld();
+			Level level = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
 			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
 			{
 				if (carried.getItem() == RegistrationHandler.itemTile)
 				{
-					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), world, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
+					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), level, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
 					if (override != null)
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
@@ -221,7 +221,7 @@ public class ItemEvents
 				}
 				else
 				{
-					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, world));
+					CarryOnOverride override = ScriptChecker.inspectEntity(ItemCarryonEntity.getEntity(carried, level));
 					if (override != null)
 						CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) tracker), new CarrySlotPacket(player.getInventory().selected, player.getId(), override.hashCode()));
 					else
@@ -298,28 +298,28 @@ public class ItemEvents
 
 			ItemStack main = player.getMainHandItem();
 			ItemStack off = player.getOffhandItem();
-			Level world = event.getWorld();
+			Level level = event.getWorld();
 			BlockPos pos = event.getPos();
-			BlockState state = world.getBlockState(pos);
+			BlockState state = level.getBlockState(pos);
 
 			if (main.isEmpty() && off.isEmpty() && CarryOnKeybinds.isKeyPressed(player))
 			{
 
 				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
 
-				BlockEntity te = world.getBlockEntity(pos);
-				if (PickupHandler.canPlayerPickUpBlock((ServerPlayer) player, te, world, pos))
+				BlockEntity te = level.getBlockEntity(pos);
+				if (PickupHandler.canPlayerPickUpBlock((ServerPlayer) player, te, level, pos))
 				{
 					player.closeContainer();
-					world.levelEvent(1010, pos, 0);
+					level.levelEvent(1010, pos, 0);
 
-					if (ItemCarryonBlock.storeTileData(te, world, pos, state, stack))
+					if (ItemCarryonBlock.storeTileData(te, level, pos, state, stack))
 					{
 
-						BlockState statee = world.getBlockState(pos);
+						BlockState statee = level.getBlockState(pos);
 						CompoundTag tag = new CompoundTag();
-						tag = world.getBlockEntity(pos) != null ? world.getBlockEntity(pos).save(tag) : new CompoundTag();
-						CarryOnOverride override = ScriptChecker.inspectBlock(state, world, pos, tag);
+						tag = level.getBlockEntity(pos) != null ? level.getBlockEntity(pos).saveWithId() : tag;
+						CarryOnOverride override = ScriptChecker.inspectBlock(state, level, pos, tag);
 						int overrideHash = 0;
 						if (override != null)
 							overrideHash = override.hashCode();
@@ -330,8 +330,8 @@ public class ItemEvents
 						{
 							sendPacket(player, player.getInventory().selected, overrideHash);
 
-							world.removeBlockEntity(pos);
-							world.removeBlock(pos, false);
+							level.removeBlockEntity(pos);
+							level.removeBlock(pos, false);
 							player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 							event.setUseBlock(Result.DENY);
 							event.setUseItem(Result.DENY);
@@ -344,7 +344,7 @@ public class ItemEvents
 							{
 								sendPacket(player, player.getInventory().selected, overrideHash);
 								emptyTileEntity(te);
-								world.removeBlock(pos, false);
+								level.removeBlock(pos, false);
 								player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 								event.setUseBlock(Result.DENY);
 								event.setUseItem(Result.DENY);
@@ -354,7 +354,7 @@ public class ItemEvents
 							catch (Exception ex)
 							{
 								sendPacket(player, 9, 0);
-								world.setBlockAndUpdate(pos, statee);
+								level.setBlockAndUpdate(pos, statee);
 								if (!tag.isEmpty())
 								{
 									BlockEntity.loadStatic(pos, statee, tag);
@@ -444,9 +444,9 @@ public class ItemEvents
 			int carrySlot = original.getInventory().selected;
 
 			ItemStack stack = player.getInventory().removeItemNoUpdate(carrySlot);
-			Level world = player.level;
+			Level level = player.level;
 
-			ItemEntity item = new ItemEntity(world, 0, 0, 0, stack);
+			ItemEntity item = new ItemEntity(level, 0, 0, 0, stack);
 			BlockPos pos = null;
 			Optional<BlockPos> bedpos = original.getSleepingPos();
 			if (bedpos.isPresent())
@@ -454,7 +454,7 @@ public class ItemEvents
 			if (pos == null)
 				pos = player.blockPosition();
 			item.setPos(pos.getX(), pos.getY(), pos.getZ());
-			world.addFreshEntity(item);
+			level.addFreshEntity(item);
 		}
 
 	}

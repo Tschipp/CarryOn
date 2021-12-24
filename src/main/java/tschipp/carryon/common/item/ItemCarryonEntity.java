@@ -74,13 +74,13 @@ public class ItemCarryonEntity extends Item
 		return false;
 	}
 
-	public static boolean storeEntityData(@Nonnull Entity entity, Level world, ItemStack stack)
+	public static boolean storeEntityData(@Nonnull Entity entity, Level level, ItemStack stack)
 	{
 		if (entity == null || stack.isEmpty())
 			return false;
 
 		CompoundTag entityData = new CompoundTag();
-		entityData = entity.serializeNBT();
+		entity.saveWithoutId(entityData);
 
 		String name = EntityType.getKey(entity.getType()).toString();
 
@@ -98,13 +98,13 @@ public class ItemCarryonEntity extends Item
 	public InteractionResult useOn(UseOnContext context)
 	{
 		Player player = context.getPlayer();
-		Level world = context.getLevel();
+		Level level = context.getLevel();
 		BlockPos pos = context.getClickedPos();
 		Direction facing = context.getClickedFace();
 
 		ItemStack stack = context.getItemInHand();
 
-		BlockState state = world.getBlockState(pos);
+		BlockState state = level.getBlockState(pos);
 
 		if (ModList.get().isLoaded("betterplacement") && CarryOnKeybinds.isKeyPressed(player))
 			return InteractionResult.FAIL;
@@ -118,13 +118,13 @@ public class ItemCarryonEntity extends Item
 				finalPos = pos.relative(facing);
 			}
 
-			Entity entity = getEntity(stack, world);
+			Entity entity = getEntity(stack, level);
 			if (entity != null)
 			{
-				if (!world.isClientSide)
+				if (!level.isClientSide)
 				{
 					entity.absMoveTo(finalPos.getX() + 0.5, finalPos.getY(), finalPos.getZ() + 0.5, 180 + player.yHeadRot, 0.0f);
-					world.addFreshEntity(entity);
+					level.addFreshEntity(entity);
 					if (entity instanceof Mob)
 					{
 						((Mob) entity).playAmbientSound();
@@ -143,11 +143,11 @@ public class ItemCarryonEntity extends Item
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected)
+	public void inventoryTick(ItemStack stack, Level level, Entity entity, int itemSlot, boolean isSelected)
 	{
 		if (hasEntityData(stack))
 		{
-			if (getEntity(stack, world) == null)
+			if (getEntity(stack, level) == null)
 				stack = ItemStack.EMPTY;
 
 			if (entity instanceof LivingEntity)
@@ -155,7 +155,7 @@ public class ItemCarryonEntity extends Item
 				if (entity instanceof Player && Settings.slownessInCreative.get() ? false : ((Player) entity).isCreative())
 					return;
 
-				((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, this.potionLevel(stack, world), false, false));
+				((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, this.potionLevel(stack, level), false, false));
 			}
 
 		}
@@ -185,9 +185,9 @@ public class ItemCarryonEntity extends Item
 		return null;
 	}
 
-	public static Entity getEntity(ItemStack stack, Level world)
+	public static Entity getEntity(ItemStack stack, Level level)
 	{
-		if (world == null)
+		if (level == null)
 			return null;
 
 		String name = getEntityName(stack);
@@ -198,18 +198,20 @@ public class ItemCarryonEntity extends Item
 
 		if (type.isPresent())
 		{
-			entity = type.get().create(world);
+			entity = type.get().create(level);
 		}
 
 		if (entity != null)
 		{
 			try
 			{
-				initGoals.invoke(entity);
-				entity.deserializeNBT(e);
+				if (entity instanceof Mob)
+					initGoals.invoke(entity);
+				entity.load(e);
 			}
 			catch (Exception e1)
 			{
+				e1.printStackTrace();
 			}
 		}
 
@@ -256,9 +258,9 @@ public class ItemCarryonEntity extends Item
 		return null;
 	}
 
-	private int potionLevel(ItemStack stack, Level world)
+	private int potionLevel(ItemStack stack, Level level)
 	{
-		Entity e = getEntity(stack, world);
+		Entity e = getEntity(stack, level);
 		if (e == null)
 			return 1;
 

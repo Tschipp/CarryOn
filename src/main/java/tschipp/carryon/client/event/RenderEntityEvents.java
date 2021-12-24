@@ -35,7 +35,7 @@ public class RenderEntityEvents
 
 	public static final Map<String, Entity> nbtEntityMap = new HashMap<>();
 
-	public static Entity getEntity(ItemStack carried, Level world)
+	public static Entity getEntity(ItemStack carried, Level level)
 	{
 		String nbt = ItemCarryonEntity.getPersistentData(carried).toString();
 		if (nbtEntityMap.containsKey(nbt))
@@ -43,7 +43,7 @@ public class RenderEntityEvents
 			return nbtEntityMap.get(nbt);
 		}
 
-		Entity entity = ItemCarryonEntity.getEntity(carried, world);
+		Entity entity = ItemCarryonEntity.getEntity(carried, level);
 		nbtEntityMap.put(nbt, entity);
 
 		return entity;
@@ -51,7 +51,7 @@ public class RenderEntityEvents
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void onWorldUnload(WorldEvent.Unload event)
+	public void onLevelUnload(WorldEvent.Unload event)
 	{
 		nbtEntityMap.clear();
 	}
@@ -64,7 +64,7 @@ public class RenderEntityEvents
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-		Level world = Minecraft.getInstance().level;
+		Level level = Minecraft.getInstance().level;
 		Player player = Minecraft.getInstance().player;
 		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
@@ -79,7 +79,7 @@ public class RenderEntityEvents
 			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
 				return;
 
-			Entity entity = getEntity(stack, world);
+			Entity entity = getEntity(stack, level);
 
 			if (entity != null)
 			{
@@ -117,7 +117,7 @@ public class RenderEntityEvents
 
 							Optional<EntityType<?>> type = EntityType.byString(entityname);
 							if (type.isPresent())
-								newEntity = type.get().create(world);
+								newEntity = type.get().create(level);
 
 							if (newEntity != null)
 							{

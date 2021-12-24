@@ -191,7 +191,7 @@ public class ModelOverridesHandler
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	public static BakedModel getCustomOverrideModel(BlockState state, CompoundTag tag, Level world, Player player)
+	public static BakedModel getCustomOverrideModel(BlockState state, CompoundTag tag, Level level, Player player)
 	{
 		int stateid = Block.getId(state);
 		CompoundTag[] keys = new CompoundTag[OVERRIDE_OBJECTS.size()];
@@ -224,7 +224,7 @@ public class ModelOverridesHandler
 						if (override instanceof BlockState)
 							return Minecraft.getInstance().getBlockRenderer().getBlockModel((BlockState) override);
 						else
-							return Minecraft.getInstance().getItemRenderer().getModel((ItemStack) override, world, player, 0);
+							return Minecraft.getInstance().getItemRenderer().getModel((ItemStack) override, level, player, 0);
 					}
 				}
 			}

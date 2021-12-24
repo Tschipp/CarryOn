@@ -124,7 +124,7 @@ public class RenderEvents
 
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
-	public void onJoinWorld(EntityJoinWorldEvent event)
+	public void onJoinLevel(EntityJoinWorldEvent event)
 	{
 		if (event.getEntity() instanceof Player)
 		{
@@ -232,7 +232,7 @@ public class RenderEvents
 	@SubscribeEvent
 	public void renderHand(RenderHandEvent event)
 	{
-		Level world = Minecraft.getInstance().level;
+		Level level = Minecraft.getInstance().level;
 		Player player = Minecraft.getInstance().player;
 		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
@@ -267,7 +267,7 @@ public class RenderEvents
 				matrix.mulPose(Vector3f.XP.rotationDegrees(8));
 			}
 
-			BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, world, player, 0);
+			BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, level, player) : tileStack.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileStack, level, player, 0);
 
 			CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 			if (carryOverride != null)
@@ -281,7 +281,7 @@ public class RenderEvents
 					{
 						ItemStack s = new ItemStack(b, 1);
 						s.setTag(carryOverride.getRenderNBT());
-						model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player, 0);
+						model = Minecraft.getInstance().getItemRenderer().getModel(s, level, player, 0);
 					}
 				}
 			}
@@ -313,10 +313,10 @@ public class RenderEvents
 	@SuppressWarnings({ "deprecation", "resource" })
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void onRenderWorld(RenderLevelLastEvent event)
+	public void onRenderLevel(RenderLevelLastEvent event)
 	{
 		Minecraft mc = Minecraft.getInstance();
-		Level world = mc.level;
+		Level level = mc.level;
 		float partialticks = event.getPartialTick();
 		BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 		PoseStack matrix = event.getPoseStack();
@@ -328,7 +328,7 @@ public class RenderEvents
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();
 
-		for (Player player : world.players())
+		for (Player player : level.players())
 		{
 			if (perspective == 0 && player == mc.player)
 				continue;
@@ -345,7 +345,7 @@ public class RenderEvents
 
 				applyBlockTransformations(player, partialticks, matrix, block);
 
-				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : tileItem.isEmpty() ? mc.getBlockRenderer().getBlockModel(state) : mc.getItemRenderer().getModel(tileItem, world, player, 0);
+				BakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, level, player) : tileItem.isEmpty() ? mc.getBlockRenderer().getBlockModel(state) : mc.getItemRenderer().getModel(tileItem, level, player, 0);
 
 				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
 				if (carryOverride != null)
@@ -359,7 +359,7 @@ public class RenderEvents
 						{
 							ItemStack s = new ItemStack(b, 1);
 							s.setTag(carryOverride.getRenderNBT());
-							model = mc.getItemRenderer().getModel(s, world, player, 0);
+							model = mc.getItemRenderer().getModel(s, level, player, 0);
 						}
 					}
 				}
@@ -382,7 +382,7 @@ public class RenderEvents
 			}
 			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 			{
-				Entity entity = RenderEntityEvents.getEntity(stack, world);
+				Entity entity = RenderEntityEvents.getEntity(stack, level);
 
 				if (entity != null)
 				{
@@ -402,7 +402,7 @@ public class RenderEvents
 
 							Optional<EntityType<?>> type = EntityType.byString(entityname);
 							if (type.isPresent())
-								newEntity = type.get().create(world);
+								newEntity = type.get().create(level);
 
 							if (newEntity != null)
 							{

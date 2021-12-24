@@ -26,14 +26,14 @@ import tschipp.carryon.common.helper.ScriptParseHelper;
 public class ScriptChecker
 {
 	@Nullable
-	public static CarryOnOverride inspectBlock(BlockState state, Level world, BlockPos pos, @Nullable CompoundTag tag)
+	public static CarryOnOverride inspectBlock(BlockState state, Level level, BlockPos pos, @Nullable CompoundTag tag)
 	{
 		if (!Settings.useScripts.get())
 			return null;
 
 		Block block = state.getBlock();
 		Material material = state.getMaterial();
-		float hardness = state.getDestroySpeed(world, pos);
+		float hardness = state.getDestroySpeed(level, pos);
 		@SuppressWarnings("deprecation")
 		float resistance = block.getExplosionResistance();
 		CompoundTag nbt = tag;

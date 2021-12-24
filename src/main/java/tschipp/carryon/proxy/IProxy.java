@@ -11,5 +11,5 @@ public interface IProxy
 
 	public Player getPlayer();
 
-	public Level getWorld();
+	public Level getLevel();
 }

@@ -49,11 +49,11 @@ public class CarrySlotPacket
 		{
 			ctx.get().enqueueWork(() -> {
 
-				Level world = CarryOn.proxy.getWorld();
+				Level level = CarryOn.proxy.getLevel();
 
-				if (world != null)
+				if (level != null)
 				{
-					Entity e = world.getEntity(this.entityid);
+					Entity e = level.getEntity(this.entityid);
 
 					if (e instanceof Player player)
 					{

@@ -29,50 +29,50 @@ import tschipp.carryon.common.scripting.ScriptChecker;
 public class PickupHandler
 {
 
-	public static boolean canPlayerPickUpBlock(ServerPlayer player, @Nullable BlockEntity tile, Level world, BlockPos pos)
+	public static boolean canPlayerPickUpBlock(ServerPlayer player, @Nullable BlockEntity tile, Level level, BlockPos pos)
 	{
 		if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR || player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE)
 			return false;
 
-		BlockState state = world.getBlockState(pos);
+		BlockState state = level.getBlockState(pos);
 		CompoundTag tag = new CompoundTag();
 		if (tile != null)
-			tile.save(tag);
+			tile.saveWithId();
 
-		CarryOnOverride override = ScriptChecker.inspectBlock(world.getBlockState(pos), world, pos, tag);
+		CarryOnOverride override = ScriptChecker.inspectBlock(level.getBlockState(pos), level, pos, tag);
 		if (override != null)
 		{
-			return ScriptChecker.fulfillsConditions(override, player) && handleProtections(player, world, pos, state);
+			return ScriptChecker.fulfillsConditions(override, player) && handleProtections(player, level, pos, state);
 		}
 		else
 		{
 			if (Settings.useWhitelistBlocks.get())
 			{
-				if (!ListHandler.isAllowed(world.getBlockState(pos).getBlock()))
+				if (!ListHandler.isAllowed(level.getBlockState(pos).getBlock()))
 				{
 					return false;
 				}
 			}
-			else if (ListHandler.isForbidden(world.getBlockState(pos).getBlock()))
+			else if (ListHandler.isForbidden(level.getBlockState(pos).getBlock()))
 			{
 				return false;
 			}
 
-			if (state.getDestroySpeed(world, pos) != -1 || player.isCreative())
+			if (state.getDestroySpeed(level, pos) != -1 || player.isCreative())
 			{
 				double distance = Vec3.atLowerCornerOf(pos).distanceTo(player.position());
 				double maxDist = Settings.maxDistance.get();
 
-				if (distance < maxDist && !ItemCarryonBlock.isLocked(pos, world))
+				if (distance < maxDist && !ItemCarryonBlock.isLocked(pos, level))
 				{
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(state))
 					{
-						return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(state), player) && handleProtections(player, world, pos, state);
+						return CarryonGamestageHelper.hasGamestage(CustomPickupOverrideHandler.getPickupCondition(state), player) && handleProtections(player, level, pos, state);
 					}
 					else if (Settings.pickupAllBlocks.get() ? true : tile != null)
 					{
-						return handleProtections(player, world, pos, state);
+						return handleProtections(player, level, pos, state);
 					}
 
 				}
@@ -158,9 +158,9 @@ public class PickupHandler
 
 	public static class PickUpBlockEvent extends BlockEvent.BreakEvent
 	{
-		public PickUpBlockEvent(Level world, BlockPos pos, BlockState state, Player player)
+		public PickUpBlockEvent(Level level, BlockPos pos, BlockState state, Player player)
 		{
-			super(world, pos, state, player);
+			super(level, pos, state, player);
 		}
 	}
 
@@ -172,11 +172,11 @@ public class PickupHandler
 		}
 	}
 
-	private static boolean handleProtections(ServerPlayer player, Level world, BlockPos pos, BlockState state)
+	private static boolean handleProtections(ServerPlayer player, Level level, BlockPos pos, BlockState state)
 	{
 		boolean breakable = true;
 
-		PickUpBlockEvent event = new PickUpBlockEvent(world, pos, state, player);
+		PickUpBlockEvent event = new PickUpBlockEvent(level, pos, state, player);
 		MinecraftForge.EVENT_BUS.post(event);
 
 		if (event.isCanceled())
