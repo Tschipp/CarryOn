@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[39,)"
+loaderVersion="[38,)"
 issueTrackerURL="https://github.com/Tschipp/CarryOn/issues"
 logoFile="logo.png"
 license="GNU LGPLv3"
@@ -18,7 +18,7 @@ license="GNU LGPLv3"
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[39.0.8,)" #mandatory
+    versionRange="[38.0.17,)" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
@@ -27,6 +27,6 @@ license="GNU LGPLv3"
 [[dependencies.carryon]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.1,1.19)"
+    versionRange="[1.18,1.19)"
     ordering="NONE"
     side="BOTH"
