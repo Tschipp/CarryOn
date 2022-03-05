@@ -40,7 +40,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 minecraft {
-	mappings channel: 'parchment', version: "${mappings_version}-${minecraft_version}"
+	mappings channel: 'parchment', version: "${mappings_version}"
    
     runs {
         client {
