@@ -1,0 +1,16 @@
+{
+    "carryon.category.settings": "Inställningar",
+    "carryon.category.blacklist": "Svartlista",
+    "carryon.category.modeloverrides": "Åsidosättningar för modeller (avancerat)",
+    "carryon.category.custompickupconditions": "Anpassade villkor för att kunna plocka upp (avancerat)",
+    "carryon.category.whitelist": "Vitlista",
+
+    "carryon.general.modeloverrides.modeloverrides": "Åsidosättningar för modeller",
+    "carryon.general.blacklist.forbiddenentities": "Entiteter som spelare inte kan plocka upp",
+    "carryon.general.blacklist.forbiddentiles": "Block som spelare inte kan plocka upp",
+    "carryon.category.custompickupconditions.custompickupconditionsblocks": "Anpassade villkor för att kunna plocka upp block",
+    "carryon.category.custompickupconditions.custompickupconditionsentities": "Anpassade villkor för att kunna plocka upp entiteter",
+
+    "key.carry.desc": "Plocka upp",
+    "key.carry.category": "Carry On"
+}
