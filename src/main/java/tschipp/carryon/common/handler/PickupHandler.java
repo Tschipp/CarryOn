@@ -103,7 +103,7 @@ public class PickupHandler
 			{
 
 				double distance = pos.distanceToSqr(player.position());
-				if (distance <= Math.pow(Settings.maxDistance.get(), 2) && toPickUp instanceof TamableAnimal tame && tame.getOwnerUUID() != null && tame.getOwnerUUID() != Player.createPlayerUUID(player.getGameProfile()))
+				if (distance <= Math.pow(Settings.maxDistance.get(), 2) && toPickUp instanceof TamableAnimal tame && tame.getOwnerUUID() != null && tame.getOwnerUUID() != player.getGameProfile().getId())
 					return false;
 
 				if (CustomPickupOverrideHandler.hasSpecialPickupConditions(toPickUp))
@@ -136,7 +136,7 @@ public class PickupHandler
 						if (toPickUp instanceof TamableAnimal tame)
 						{
 							UUID owner = tame.getOwnerUUID();
-							UUID playerID = Player.createPlayerUUID(player.getGameProfile());
+							UUID playerID = player.getGameProfile().getId();
 							if (owner != null && !owner.equals(playerID))
 								return false;
 						}

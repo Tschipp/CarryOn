@@ -15,6 +15,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ScriptParseHelper
 {
@@ -256,7 +257,7 @@ public class ScriptParseHelper
 		for (MobEffectInstance effect : effects)
 		{
 			int amp = effect.getAmplifier();
-			String name = effect.getEffect().getRegistryName().toString();
+			String name = ForgeRegistries.MOB_EFFECTS.getKey(effect.getEffect()).toString();
 
 			if (names.contains(name))
 			{

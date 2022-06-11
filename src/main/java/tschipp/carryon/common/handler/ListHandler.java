@@ -33,7 +33,7 @@ public class ListHandler
 
 	public static boolean isForbidden(Block block)
 	{
-		String name = block.getRegistryName().toString();
+		String name = ForgeRegistries.BLOCKS.getKey(block).toString();
 		if (FORBIDDEN_TILES.contains(name))
 			return true;
 		else
@@ -51,7 +51,7 @@ public class ListHandler
 
 			for (TagKey<Block> tag : FORBIDDEN_TILES_TAGS)
 			{
-				if (block.defaultBlockState().m_204336_(tag))
+				if (block.defaultBlockState().is(tag))
 					return true;
 			}
 
@@ -61,12 +61,12 @@ public class ListHandler
 
 	public static boolean isForbidden(Entity entity)
 	{
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		boolean contains = FORBIDDEN_ENTITIES.contains(name);
 
 		for (TagKey<EntityType<?>> tag : FORBIDDEN_ENTITIES_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -75,12 +75,12 @@ public class ListHandler
 
 	public static boolean isAllowed(Entity entity)
 	{
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		boolean contains = ALLOWED_ENTITIES.contains(name);
 
 		for (TagKey<EntityType<?>> tag : ALLOWED_ENTITIES_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -89,12 +89,12 @@ public class ListHandler
 
 	public static boolean isStackingForbidden(Entity entity)
 	{
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		boolean contains = FORBIDDEN_STACKING.contains(name);
 
 		for (TagKey<EntityType<?>> tag : FORBIDDEN_STACKING_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -103,12 +103,12 @@ public class ListHandler
 
 	public static boolean isStackingAllowed(Entity entity)
 	{
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		boolean contains = ALLOWED_STACKING.contains(name);
 
 		for (TagKey<EntityType<?>> tag : ALLOWED_STACKING_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -117,7 +117,7 @@ public class ListHandler
 
 	public static boolean isAllowed(Block block)
 	{
-		String name = block.getRegistryName().toString();
+		String name = ForgeRegistries.BLOCKS.getKey(block).toString();
 		if (ALLOWED_TILES.contains(name))
 			return true;
 		else
@@ -135,7 +135,7 @@ public class ListHandler
 
 			for (TagKey<Block> tag : ALLOWED_TILES_TAGS)
 			{
-				if (block.defaultBlockState().m_204336_(tag))
+				if (block.defaultBlockState().is(tag))
 					return true;
 			}
 
@@ -277,8 +277,8 @@ public class ListHandler
 			}
 		}
 
-		Map<ResourceLocation, TagKey<Block>> blocktags = Registry.BLOCK.m_203613_().collect(Collectors.toMap(t -> t.f_203868_(), t -> t));
-		Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = Registry.ENTITY_TYPE.m_203613_().collect(Collectors.toMap(t -> t.f_203868_(), t -> t));
+		Map<ResourceLocation, TagKey<Block>> blocktags = Registry.BLOCK.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
+		Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = Registry.ENTITY_TYPE.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
 
 		
 		

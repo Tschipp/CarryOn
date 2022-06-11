@@ -34,9 +34,9 @@
 //
 // PlayerModel<?> model = event.getModelPlayer();
 // ItemStack stack = player.getMainHandItem();
-// if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile &&
+// if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get() &&
 // ItemCarryonBlock.hasTileData(stack) || stack.getItem() ==
-// RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
+// RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 // {
 //
 // float rotation = 0;
@@ -66,11 +66,11 @@
 // else if (renderLeft)
 // {
 // renderArmPre(model.leftArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) -
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0), rotation);
 // renderArmPre(model.leftSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) -
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0), rotation);
 // }
 //
 // if (renderRight && rotRight != null)
@@ -83,28 +83,28 @@
 // else if (renderRight)
 // {
 // renderArmPre(model.rightArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) -
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0), rotation);
 // renderArmPre(model.rightSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f)
-// - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+// - (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0), rotation);
 // }
 //
 // }
 // else
 // {
 // renderArmPre(model.rightArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) -
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0), rotation);
 // renderArmPre(model.rightSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f)
-// - (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0), rotation);
+// - (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0), rotation);
 // renderArmPre(model.leftArm, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) -
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0), rotation);
 // renderArmPre(model.leftSleeve, 0.8F + (player.isShiftKeyDown() ? 0.2f : 0f) -
-// (stack.getItem() == RegistrationHandler.itemEntity ? -0.2f : 0),
-// (stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0), rotation);
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.2f : 0),
+// (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0), rotation);
 // }
 //
 // }

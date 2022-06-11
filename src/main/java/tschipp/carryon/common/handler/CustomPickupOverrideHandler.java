@@ -13,6 +13,7 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.common.config.Configs.CustomPickupConditions;
 import tschipp.carryon.common.helper.InvalidConfigException;
+import tschipp.carryon.common.helper.StringParser;
 
 public class CustomPickupOverrideHandler
 {
@@ -85,15 +86,7 @@ public class CustomPickupOverrideHandler
 
 		for (String cond : PICKUP_CONDITIONS.keySet())
 		{
-			BlockStateParser parser = new BlockStateParser(new StringReader(cond), false);
-			try
-			{
-				parser.parse(false);
-			}
-			catch (CommandSyntaxException e)
-			{
-			}
-			if (parser.getState() == state)
+			if(state == StringParser.getBlockState(cond));
 				return true;
 		}
 
@@ -104,15 +97,7 @@ public class CustomPickupOverrideHandler
 	{
 		for (String cond : PICKUP_CONDITIONS.keySet())
 		{
-			BlockStateParser parser = new BlockStateParser(new StringReader(cond), false);
-			try
-			{
-				parser.parse(false);
-			}
-			catch (CommandSyntaxException e)
-			{
-			}
-			if (parser.getState() == state)
+			if(state == StringParser.getBlockState(cond));
 				return PICKUP_CONDITIONS.get(cond);
 		}
 		return null;
@@ -123,13 +108,13 @@ public class CustomPickupOverrideHandler
 		if (!ModList.get().isLoaded("gamestages"))
 			return false;
 
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		return PICKUP_CONDITIONS_ENTITIES.containsKey(name);
 	}
 
 	public static String getPickupCondition(Entity entity)
 	{
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		return PICKUP_CONDITIONS_ENTITIES.get(name);
 	}
 

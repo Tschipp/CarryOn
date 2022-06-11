@@ -13,7 +13,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.ClickEvent.Action;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -35,6 +34,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
@@ -51,7 +51,6 @@ public class ItemCarryonBlock extends Item
 	public ItemCarryonBlock()
 	{
 		super(new Item.Properties().stacksTo(1));
-		this.setRegistryName(CarryOn.MODID, "tile_item");
 	}
 
 	@Override
@@ -77,7 +76,7 @@ public class ItemCarryonBlock extends Item
 			return getItemStack(stack).getHoverName();
 		}
 
-		return new TextComponent("");
+		return Component.literal("");
 	}
 
 	@Override
@@ -207,7 +206,7 @@ public class ItemCarryonBlock extends Item
 				{
 					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(stack));
 					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(stack));
-					// CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
+					// CarryOn.LOGGER.info("Meta: " + itemTile.get().getMeta(stack));
 					CarryOn.LOGGER.info("ItemStack: " + ItemCarryonBlock.getItemStack(stack));
 
 					if (ModelOverridesHandler.hasCustomOverrideModel(ItemCarryonBlock.getBlockState(stack), ItemCarryonBlock.getTileData(stack)))
@@ -216,10 +215,10 @@ public class ItemCarryonBlock extends Item
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(stack)))
 						CarryOn.LOGGER.info("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(stack)));
 
-					player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"), false);
-					TextComponent s = new TextComponent(ChatFormatting.GOLD + "here");
+					player.displayClientMessage(Component.literal(ChatFormatting.RED + "Error detected. Cannot place block. Execute \"/carryon clear\" to remove the item"), false);
+					Component s = Component.literal(ChatFormatting.GOLD + "here");
 					s.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-					player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Please report this error ").append(s), false);
+					player.displayClientMessage(Component.literal(ChatFormatting.RED + "Please report this error ").append(s), false);
 
 				}
 			}
@@ -276,7 +275,7 @@ public class ItemCarryonBlock extends Item
 		// ItemStack drop = new ItemStack(state.getBlock().getItemDropped(state,
 		// itemRand, 0), 1, state.getBlock().damageDropped(state));
 
-		tag.putString("block", state.getBlock().getRegistryName().toString());
+		tag.putString("block", ForgeRegistries.BLOCKS.getKey(state.getBlock()).toString());
 		// Item item = Item.getItemFromBlock(state.getBlock());
 		// tag.setInt("meta", drop.getItemDamage());
 		tag.putInt("stateid", Block.getId(state));

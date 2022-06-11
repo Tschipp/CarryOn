@@ -28,7 +28,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.ClickEvent.Action;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -87,7 +87,7 @@ public class RenderEvents
 		{
 			ItemStack stack = player.getMainHandItem();
 
-			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() || stack.getItem() == RegistrationHandler.itemEntity.get()))
 			{
 				if (ItemCarryonBlock.hasTileData(stack) || ItemCarryonEntity.hasEntityData(stack))
 				{
@@ -136,10 +136,10 @@ public class RenderEvents
 
 				if (CarryOn.FINGERPRINT_VIOLATED)
 				{
-					TextComponent cf = new TextComponent(ChatFormatting.AQUA + "Curseforge" + ChatFormatting.RED);
+					Component cf = Component.literal(ChatFormatting.AQUA + "Curseforge" + ChatFormatting.RED);
 					cf.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://minecraft.curseforge.com/projects/carry-on"));
 
-					player.displayClientMessage(new TextComponent(ChatFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).append(ChatFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
+					player.displayClientMessage(Component.literal(ChatFormatting.RED + "[CarryOn] WARNING! Invalid fingerprint detected! The Carry On mod file may have been tampered with! If you didn't download the file from ").append(cf).append(ChatFormatting.RED + " or through any kind of mod launcher, immediately delete the file and re-download it from ").append(cf), false);
 				}
 			}
 
@@ -163,7 +163,7 @@ public class RenderEvents
 			{
 				ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-				if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
+				if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack)))
 				{
 					Minecraft.getInstance().player.closeContainer();
 					Minecraft.getInstance().screen = null;
@@ -192,7 +192,7 @@ public class RenderEvents
 		{
 			ItemStack stack = Minecraft.getInstance().player.getMainHandItem();
 
-			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack)))
 			{
 				if (settings.keyDrop.matches(key, scancode))
 				{
@@ -241,7 +241,7 @@ public class RenderEvents
 		PoseStack matrix = event.getPoseStack();
 		int light = event.getPackedLight();
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) && perspective == 0 && !f1)
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack) && perspective == 0 && !f1)
 		{
 			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
 				return;
@@ -336,7 +336,7 @@ public class RenderEvents
 			light = manager.getPackedLightCoords(player, partialticks);
 			ItemStack stack = player.getMainHandItem();
 
-			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
+			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack))
 			{
 				Block block = ItemCarryonBlock.getBlock(stack);
 				BlockState state = ItemCarryonBlock.getBlockState(stack);
@@ -380,7 +380,7 @@ public class RenderEvents
 
 				matrix.popPose();
 			}
-			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
+			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 			{
 				Entity entity = RenderEntityEvents.getEntity(stack, level);
 
@@ -594,7 +594,7 @@ public class RenderEvents
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
 			ItemStack stack = player.getMainHandItem();
-			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
+			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 			{
 				PlayerModel<AbstractClientPlayer> model = getPlayerModel((AbstractClientPlayer) player);
 
@@ -629,8 +629,8 @@ public class RenderEvents
 					}
 					else if (renderLeft)
 					{
-						renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
 					}
 
 					if (renderRight && rotRight != null)
@@ -640,16 +640,16 @@ public class RenderEvents
 					}
 					else if (renderRight)
 					{
-						renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
-						renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
+						renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
 					}
 				}
 				else
 				{
-					renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
-					renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.rightArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.leftArm, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.leftSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.15f : 0, false, doSneakCheck(player), light, matrix, builder);
+					renderArmPost(model.rightSleeve, 2.0F + (doSneakCheck(player) ? 0f : 0.2f) - (stack.getItem() == RegistrationHandler.itemEntity.get() ? 0.3f : 0), stack.getItem() == RegistrationHandler.itemEntity.get() ? -0.15f : 0, true, doSneakCheck(player), light, matrix, builder);
 				}
 
 				if (buffer instanceof BufferSource)
@@ -675,7 +675,7 @@ public class RenderEvents
 			Player player = event.getPlayer();
 			Pose pose = player.getPose();
 			ItemStack stack = player.getMainHandItem();
-			if (pose != Pose.SWIMMING && pose != Pose.FALL_FLYING && !stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
+			if (pose != Pose.SWIMMING && pose != Pose.FALL_FLYING && !stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack)))
 			{
 				PlayerModel<AbstractClientPlayer> model = event.getRenderer().getModel();
 
@@ -787,8 +787,8 @@ public class RenderEvents
 	// {
 	// ItemStack stack = event.getItemStack();
 	//
-	// if (stack != null && (stack.getItem() == RegistrationHandler.itemTile ||
-	// stack.getItem() == RegistrationHandler.itemEntity))
+	// if (stack != null && (stack.getItem() == RegistrationHandler.itemTile.get() ||
+	// stack.getItem() == RegistrationHandler.itemEntity.get()))
 	// {
 	// event.setCanceled(true);
 	// }

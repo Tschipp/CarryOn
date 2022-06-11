@@ -9,8 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -49,7 +47,6 @@ public class ItemCarryonEntity extends Item
 	public ItemCarryonEntity()
 	{
 		super(new Item.Properties().stacksTo(1));
-		this.setRegistryName(CarryOn.MODID, "entity_item");
 	}
 
 	@Override
@@ -58,10 +55,10 @@ public class ItemCarryonEntity extends Item
 		if (hasEntityData(stack))
 		{
 
-			return new TranslatableComponent(getEntityType(stack).getDescriptionId());
+			return Component.translatable(getEntityType(stack).getDescriptionId());
 		}
 
-		return new TextComponent("");
+		return Component.literal("");
 	}
 
 	public static boolean hasEntityData(ItemStack stack)

@@ -6,7 +6,11 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.RegistryObject;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.event.RenderEntityEvents;
 import tschipp.carryon.client.event.RenderEvents;
@@ -22,18 +26,17 @@ import tschipp.carryon.common.item.ItemCarryonEntity;
 @EventBusSubscriber(modid = CarryOn.MODID, bus = Bus.MOD)
 public class RegistrationHandler
 {
-	@ObjectHolder("carryon:tile_item")
-	public static Item itemTile;
+	
+	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, CarryOn.MODID);
 
-	@ObjectHolder("carryon:entity_item")
-	public static Item itemEntity;
+	public static final RegistryObject<Item> itemTile = ITEMS.register("tile_item", () -> new ItemCarryonBlock());
+	public static final RegistryObject<Item> itemEntity = ITEMS.register("entity_item", () -> new ItemCarryonEntity());
 
-	public static void regItems()
-	{
-		itemTile = new ItemCarryonBlock();
-		itemEntity = new ItemCarryonEntity();
+
+	public static void init() {
+		ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
-
+	
 	public static void regCommonEvents()
 	{
 		MinecraftForge.EVENT_BUS.register(new ItemEvents());

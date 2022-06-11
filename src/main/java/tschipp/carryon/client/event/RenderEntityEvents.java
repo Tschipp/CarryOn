@@ -68,13 +68,13 @@ public class RenderEntityEvents
 		Player player = Minecraft.getInstance().player;
 		ItemStack stack = player.getMainHandItem();
 		int perspective = CarryRenderHelper.getPerspective();
-		float partialticks = event.getPartialTicks();
+		float partialticks = event.getPartialTick();
 		PoseStack matrix = event.getPoseStack();
 		int light = event.getPackedLight();
 		MultiBufferSource buffer = event.getMultiBufferSource();
 		EntityRenderDispatcher manager = Minecraft.getInstance().getEntityRenderDispatcher();
 
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 		{
 			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
 				return;

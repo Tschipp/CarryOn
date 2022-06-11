@@ -1,5 +1,6 @@
 package tschipp.carryon.common.event;
 
+import java.awt.TextComponent;
 import java.util.Optional;
 
 import net.minecraft.ChatFormatting;
@@ -8,7 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.ClickEvent.Action;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -73,7 +74,7 @@ public class ItemEvents
 
 		Player player = event.getPlayer();
 		ItemStack stack = player.getMainHandItem();
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack))
 		{
 			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
@@ -102,7 +103,7 @@ public class ItemEvents
 		{
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
-			if (item == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
+			if (item == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack))
 			{
 				BlockPos pos = eitem.blockPosition();
 				BlockPos finalPos = pos;
@@ -152,9 +153,9 @@ public class ItemEvents
 			Level level = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
-			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile.get() || carried.getItem() == RegistrationHandler.itemEntity.get())
 			{
-				if (carried.getItem() == RegistrationHandler.itemTile)
+				if (carried.getItem() == RegistrationHandler.itemTile.get())
 				{
 					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), level, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
 					if (override != null)
@@ -209,9 +210,9 @@ public class ItemEvents
 			Level level = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
-			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile || carried.getItem() == RegistrationHandler.itemEntity)
+			if (!carried.isEmpty() && carried.getItem() == RegistrationHandler.itemTile.get() || carried.getItem() == RegistrationHandler.itemEntity.get())
 			{
-				if (carried.getItem() == RegistrationHandler.itemTile)
+				if (carried.getItem() == RegistrationHandler.itemTile.get())
 				{
 					CarryOnOverride override = ScriptChecker.inspectBlock(ItemCarryonBlock.getBlockState(carried), level, player.blockPosition(), ItemCarryonBlock.getTileData(carried));
 					if (override != null)
@@ -239,7 +240,7 @@ public class ItemEvents
 		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getMainHandItem();
-			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() || stack.getItem() == RegistrationHandler.itemEntity.get()))
 				event.setNewSpeed(0);
 		}
 	}
@@ -249,7 +250,7 @@ public class ItemEvents
 	{
 		Player player = event.getPlayer();
 		ItemStack stack = player.getMainHandItem();
-		if (!stack.isEmpty() && !Settings.hitWhileCarrying.get() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+		if (!stack.isEmpty() && !Settings.hitWhileCarrying.get() && (stack.getItem() == RegistrationHandler.itemTile.get() || stack.getItem() == RegistrationHandler.itemEntity.get()))
 		{
 			event.setCanceled(true);
 		}
@@ -262,7 +263,7 @@ public class ItemEvents
 		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getMainHandItem();
-			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity))
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() || stack.getItem() == RegistrationHandler.itemEntity.get()))
 				event.setCanceled(true);
 		}
 	}
@@ -274,7 +275,7 @@ public class ItemEvents
 		if (eliving instanceof Player player && Settings.dropCarriedWhenHit.get())
 		{
 			ItemStack stack = player.getMainHandItem();
-			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile || stack.getItem() == RegistrationHandler.itemEntity) && !player.level.isClientSide)
+			if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() || stack.getItem() == RegistrationHandler.itemEntity.get()) && !player.level.isClientSide)
 			{
 				player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 				ItemEntity item = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), stack);
@@ -305,7 +306,7 @@ public class ItemEvents
 			if (main.isEmpty() && off.isEmpty() && CarryOnKeybinds.isKeyPressed(player))
 			{
 
-				ItemStack stack = new ItemStack(RegistrationHandler.itemTile);
+				ItemStack stack = new ItemStack(RegistrationHandler.itemTile.get());
 
 				BlockEntity te = level.getBlockEntity(pos);
 				if (PickupHandler.canPlayerPickUpBlock((ServerPlayer) player, te, level, pos))
@@ -360,10 +361,10 @@ public class ItemEvents
 									BlockEntity.loadStatic(pos, statee, tag);
 								}
 
-								player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Error detected. Cannot pick up block."), false);
-								TextComponent s = new TextComponent(ChatFormatting.GOLD + "here");
+								player.displayClientMessage(Component.literal(ChatFormatting.RED + "Error detected. Cannot pick up block."), false);
+								Component s = Component.literal(ChatFormatting.GOLD + "here");
 								s.getStyle().withClickEvent(new ClickEvent(Action.OPEN_URL, "https://github.com/Tschipp/CarryOn/issues"));
-								player.displayClientMessage(new TextComponent(ChatFormatting.RED + "Please report this error ").append(s), false);
+								player.displayClientMessage(Component.literal(ChatFormatting.RED + "Please report this error ").append(s), false);
 							}
 
 						}
@@ -437,7 +438,7 @@ public class ItemEvents
 		boolean wasDead = event.isWasDeath();
 		GameRules rules = player.level.getGameRules();
 		boolean keepInv = rules.getBoolean(GameRules.RULE_KEEPINVENTORY);
-		boolean wasCarrying = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile)) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity));
+		boolean wasCarrying = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile.get())) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity.get()));
 
 		if ((wasDead ? keepInv : true) && wasCarrying)
 		{
@@ -465,13 +466,13 @@ public class ItemEvents
 		LivingEntity entity = event.getEntityLiving();
 		if (entity instanceof Player player && !entity.level.isClientSide)
 		{
-			boolean hasCarried = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile)) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity));
+			boolean hasCarried = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile.get())) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity.get()));
 			ItemStack inHand = player.getMainHandItem();
 
-			if (hasCarried && inHand.getItem() != RegistrationHandler.itemTile && inHand.getItem() != RegistrationHandler.itemEntity && player.getDimensionChangingDelay() == 0)
+			if (hasCarried && inHand.getItem() != RegistrationHandler.itemTile.get() && inHand.getItem() != RegistrationHandler.itemEntity.get() && player.getDimensionChangingDelay() == 0)
 			{
-				int slotBlock = this.getSlot(player, RegistrationHandler.itemTile);
-				int slotEntity = this.getSlot(player, RegistrationHandler.itemEntity);
+				int slotBlock = this.getSlot(player, RegistrationHandler.itemTile.get());
+				int slotEntity = this.getSlot(player, RegistrationHandler.itemEntity.get());
 
 				ItemEntity item = null;
 				if (slotBlock != -1)

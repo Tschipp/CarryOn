@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.common.config.Configs.ModelOverrides;
 import tschipp.carryon.common.helper.InvalidConfigException;
 import tschipp.carryon.common.helper.StringParser;
@@ -131,12 +132,12 @@ public class ModelOverridesHandler
 					keyComp.put("nbttag", tag);
 					if (toOverrideObject instanceof Block)
 					{
-						keyComp.putString("block", ((Block) toOverrideObject).getRegistryName().toString());
+						keyComp.putString("block", ForgeRegistries.BLOCKS.getKey(((Block) toOverrideObject)).toString());
 					}
 					else
 					{
 						keyComp.putInt("stateid", Block.getId((BlockState) toOverrideObject));
-						keyComp.putString("block", ((BlockState) toOverrideObject).getBlock().getRegistryName().toString());
+						keyComp.putString("block", ForgeRegistries.BLOCKS.getKey(((BlockState) toOverrideObject).getBlock()).toString());
 					}
 					OVERRIDE_OBJECTS.put(keyComp, overrideObject);
 				}

@@ -44,7 +44,7 @@ public class ItemEntityEvents
 	{
 		Player player = event.getPlayer();
 		ItemStack stack = player.getMainHandItem();
-		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
+		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 		{
 			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
@@ -73,7 +73,7 @@ public class ItemEntityEvents
 		{
 			ItemStack stack = eitem.getItem();
 			Item item = stack.getItem();
-			if (item == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
+			if (item == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 			{
 				BlockPos pos = eitem.blockPosition();
 				Entity entity = ItemCarryonEntity.getEntity(stack, level);
@@ -101,7 +101,7 @@ public class ItemEntityEvents
 
 			if (main.isEmpty() && off.isEmpty() && CarryOnKeybinds.isKeyPressed(player))
 			{
-				ItemStack stack = new ItemStack(RegistrationHandler.itemEntity);
+				ItemStack stack = new ItemStack(RegistrationHandler.itemEntity.get());
 
 				if (entity.invulnerableTime == 0)
 				{
@@ -139,7 +139,7 @@ public class ItemEntityEvents
 				}
 
 			}
-			else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
+			else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(main) && !CarryOnKeybinds.isKeyPressed(player) && Settings.stackableEntities.get())
 			{
 				Entity entityHeld = ItemCarryonEntity.getEntity(main, level);
 
@@ -248,7 +248,7 @@ public class ItemEntityEvents
 		LivingEntity entity = event.getEntityLiving();
 		Level level = entity.level;
 		ItemStack main = entity.getMainHandItem();
-		if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(main))
+		if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(main))
 		{
 			BlockPos pos = entity.blockPosition();
 			BlockPos below = pos.relative(Direction.DOWN);

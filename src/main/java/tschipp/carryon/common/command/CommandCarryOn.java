@@ -10,7 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.PacketDistributor;
@@ -49,17 +49,17 @@ public class CommandCarryOn
 				ServerPlayer player = source.getPlayerOrException();
 
 				ItemStack main = player.getMainHandItem();
-				if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemTile)
+				if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemTile.get())
 				{
-					source.sendSuccess(new TextComponent("Block: " + ItemCarryonBlock.getBlock(main)), true);
-					source.sendSuccess(new TextComponent("BlockState: " + ItemCarryonBlock.getBlockState(main)), true);
-					source.sendSuccess(new TextComponent("ItemStack: " + ItemCarryonBlock.getItemStack(main)), true);
+					source.sendSuccess(Component.literal("Block: " + ItemCarryonBlock.getBlock(main)), true);
+					source.sendSuccess(Component.literal("BlockState: " + ItemCarryonBlock.getBlockState(main)), true);
+					source.sendSuccess(Component.literal("ItemStack: " + ItemCarryonBlock.getItemStack(main)), true);
 
 					if (ModelOverridesHandler.hasCustomOverrideModel(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main)))
-						source.sendSuccess(new TextComponent("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main))), true);
+						source.sendSuccess(Component.literal("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main))), true);
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(main)))
-						source.sendSuccess(new TextComponent("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(main))), true);
+						source.sendSuccess(Component.literal("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(main))), true);
 
 					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(main));
 					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(main));
@@ -73,13 +73,13 @@ public class CommandCarryOn
 
 					return 1;
 				}
-				else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity)
+				else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity.get())
 				{
-					source.sendSuccess(new TextComponent("Entity: " + ItemCarryonEntity.getEntity(main, player.level)), true);
-					source.sendSuccess(new TextComponent("Entity Name: " + ItemCarryonEntity.getEntityName(main)), true);
+					source.sendSuccess(Component.literal("Entity: " + ItemCarryonEntity.getEntity(main, player.level)), true);
+					source.sendSuccess(Component.literal("Entity Name: " + ItemCarryonEntity.getEntityName(main)), true);
 
 					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonEntity.getEntity(main, player.level)))
-						source.sendSuccess(new TextComponent("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.level))), true);
+						source.sendSuccess(Component.literal("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.level))), true);
 
 					CarryOn.LOGGER.info("Entity: " + ItemCarryonEntity.getEntity(main, player.level));
 					CarryOn.LOGGER.info("Entity Name: " + ItemCarryonEntity.getEntityName(main));
@@ -104,15 +104,15 @@ public class CommandCarryOn
 		for (ServerPlayer player : players)
 		{
 			int cleared = 0;
-			cleared += player.getInventory().clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile, 64, player.inventoryMenu.getCraftSlots()); // TODO
-			cleared += player.getInventory().clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity, 64, player.inventoryMenu.getCraftSlots());
+			cleared += player.getInventory().clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get(), 64, player.inventoryMenu.getCraftSlots()); // TODO
+			cleared += player.getInventory().clearOrCountMatchingItems(stack -> !stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity.get(), 64, player.inventoryMenu.getCraftSlots());
 
 			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> player), new CarrySlotPacket(9, player.getId()));
 
 			if (cleared != 1)
-				source.sendSuccess(new TextComponent("Cleared " + cleared + " Items!"), true);
+				source.sendSuccess(Component.literal("Cleared " + cleared + " Items!"), true);
 			else
-				source.sendSuccess(new TextComponent("Cleared " + cleared + " Item!"), true);
+				source.sendSuccess(Component.literal("Cleared " + cleared + " Item!"), true);
 
 			return 1;
 		}

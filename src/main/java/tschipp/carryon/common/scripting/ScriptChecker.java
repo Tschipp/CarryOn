@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.helper.ScriptParseHelper;
@@ -58,7 +59,7 @@ public class ScriptChecker
 		if (!Settings.useScripts.get())
 			return null;
 
-		String name = entity.getType().getRegistryName().toString();
+		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
 		float height = entity.getBbHeight();
 		float width = entity.getBbWidth();
 		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;

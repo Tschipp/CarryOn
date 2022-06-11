@@ -7,9 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -56,6 +53,7 @@ public class CarryOn
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Configs.SERVER_CONFIG);
 
 		info = ModLoadingContext.get().getActiveContainer().getModInfo();
+		RegistrationHandler.init();
 	}
 
 	private void setup(final FMLCommonSetupEvent event)
@@ -77,14 +75,5 @@ public class CarryOn
 		RegistrationHandler.regOverrideList();
 
 		proxy.setup(event);
-	}
-
-	@SubscribeEvent
-	public static void onRegistry(RegistryEvent.Register<Item> event)
-	{
-		RegistrationHandler.regItems();
-
-		event.getRegistry().register(RegistrationHandler.itemEntity);
-		event.getRegistry().register(RegistrationHandler.itemTile);
 	}
 }
