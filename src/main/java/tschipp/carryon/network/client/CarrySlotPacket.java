@@ -43,21 +43,24 @@ public class CarrySlotPacket
 		buf.writeInt(this.entityid);
 	}
 
-	public void handle(Supplier<NetworkEvent.Context> ctx)
+	public boolean handle(Supplier<NetworkEvent.Context> ctx)
 	{
 		if (ctx.get().getDirection().getReceptionSide().isClient())
 		{
+			ctx.get().setPacketHandled(true);
+			
 			ctx.get().enqueueWork(() -> {
 
 				Level level = CarryOn.proxy.getLevel();
-
+				ctx.get().setPacketHandled(true);
+				
 				if (level != null)
 				{
 					Entity e = level.getEntity(this.entityid);
 
 					if (e instanceof Player player)
 					{
-						ctx.get().setPacketHandled(true);
+						
 
 						if (this.slot >= 9)
 						{
@@ -76,6 +79,8 @@ public class CarrySlotPacket
 				}
 			});
 		}
+		
+		return true;
 	}
 
 }

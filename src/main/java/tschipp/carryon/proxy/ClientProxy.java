@@ -17,8 +17,6 @@ public class ClientProxy implements IProxy
 	{
 		RegistrationHandler.regClientEvents();
 
-		CarryOnKeybinds.init();
-
 		new ScrollCallbackWrapper().setup(Minecraft.getInstance());
 		new KeyboardCallbackWrapper().setup(Minecraft.getInstance());
 	}

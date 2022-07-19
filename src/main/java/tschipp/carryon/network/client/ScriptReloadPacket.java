@@ -14,9 +14,9 @@ public class ScriptReloadPacket
 {
 	private List<CarryOnOverride> overrides = new ArrayList<>();
 
-	public ScriptReloadPacket()
-	{
-	}
+//	public ScriptReloadPacket()
+//	{
+//	}
 
 	public ScriptReloadPacket(Collection<CarryOnOverride> collection)
 	{
@@ -38,10 +38,11 @@ public class ScriptReloadPacket
 		this.overrides.forEach(override -> override.serialize(buf));
 	}
 
-	public void handle(Supplier<NetworkEvent.Context> ctx)
+	public boolean handle(Supplier<NetworkEvent.Context> ctx)
 	{
 		if (ctx.get().getDirection().getReceptionSide().isClient())
 		{
+			ctx.get().setPacketHandled(true);
 			ctx.get().enqueueWork(() -> {
 
 				ScriptReader.OVERRIDES.clear();
@@ -50,9 +51,10 @@ public class ScriptReloadPacket
 					ScriptReader.OVERRIDES.put(override.hashCode(), override);
 				});
 
-				ctx.get().setPacketHandled(true);
 			});
 		}
+		
+		return true;
 
 	}
 }

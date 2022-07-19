@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import tschipp.carryon.client.helper.CarryRenderHelper;
@@ -51,7 +51,7 @@ public class RenderEntityEvents
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void onLevelUnload(WorldEvent.Unload event)
+	public void onLevelUnload(LevelEvent.Unload event)
 	{
 		nbtEntityMap.clear();
 	}

@@ -59,7 +59,7 @@ public class ScriptChecker
 		if (!Settings.useScripts.get())
 			return null;
 
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		float height = entity.getBbHeight();
 		float width = entity.getBbWidth();
 		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;

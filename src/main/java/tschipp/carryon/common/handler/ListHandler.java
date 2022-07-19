@@ -12,6 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
+import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.config.Configs.Blacklist;
 import tschipp.carryon.common.config.Configs.WhiteList;
 
@@ -61,7 +62,7 @@ public class ListHandler
 
 	public static boolean isForbidden(Entity entity)
 	{
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		boolean contains = FORBIDDEN_ENTITIES.contains(name);
 
 		for (TagKey<EntityType<?>> tag : FORBIDDEN_ENTITIES_TAGS)
@@ -75,7 +76,7 @@ public class ListHandler
 
 	public static boolean isAllowed(Entity entity)
 	{
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		boolean contains = ALLOWED_ENTITIES.contains(name);
 
 		for (TagKey<EntityType<?>> tag : ALLOWED_ENTITIES_TAGS)
@@ -89,7 +90,7 @@ public class ListHandler
 
 	public static boolean isStackingForbidden(Entity entity)
 	{
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		boolean contains = FORBIDDEN_STACKING.contains(name);
 
 		for (TagKey<EntityType<?>> tag : FORBIDDEN_STACKING_TAGS)
@@ -103,7 +104,7 @@ public class ListHandler
 
 	public static boolean isStackingAllowed(Entity entity)
 	{
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		boolean contains = ALLOWED_STACKING.contains(name);
 
 		for (TagKey<EntityType<?>> tag : ALLOWED_STACKING_TAGS)
@@ -147,6 +148,9 @@ public class ListHandler
 	@SuppressWarnings("deprecation")
 	public static void initConfigLists()
 	{
+		if(!Configs.SERVER_LOADED)
+			return;
+		
 		FORBIDDEN_ENTITIES.clear();
 		FORBIDDEN_ENTITIES_TAGS.clear();
 		FORBIDDEN_STACKING.clear();
@@ -182,7 +186,7 @@ public class ListHandler
 				{
 					String[] filter = forbiddenEntity.get(i).replace("*", ",").split(",");
 
-					ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+					ResourceLocation[] keys = ForgeRegistries.ENTITY_TYPES.getKeys().toArray(new ResourceLocation[0]);
 					for (ResourceLocation key : keys)
 					{
 						if (containsAll(key.toString(), filter))
@@ -206,7 +210,7 @@ public class ListHandler
 				{
 					String[] filter = allowedEntities.get(i).replace("*", ",").split(",");
 
-					ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+					ResourceLocation[] keys = ForgeRegistries.ENTITY_TYPES.getKeys().toArray(new ResourceLocation[0]);
 					for (ResourceLocation key : keys)
 					{
 						if (containsAll(key.toString(), filter))
@@ -240,7 +244,7 @@ public class ListHandler
 				{
 					String[] filter = forbiddenStacking.get(i).replace("*", ",").split(",");
 
-					ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+					ResourceLocation[] keys = ForgeRegistries.ENTITY_TYPES.getKeys().toArray(new ResourceLocation[0]);
 					for (ResourceLocation key : keys)
 					{
 						if (containsAll(key.toString(), filter))
@@ -264,7 +268,7 @@ public class ListHandler
 				{
 					String[] filter = allowedStacking.get(i).replace("*", ",").split(",");
 
-					ResourceLocation[] keys = ForgeRegistries.ENTITIES.getKeys().toArray(new ResourceLocation[0]);
+					ResourceLocation[] keys = ForgeRegistries.ENTITY_TYPES.getKeys().toArray(new ResourceLocation[0]);
 					for (ResourceLocation key : keys)
 					{
 						if (containsAll(key.toString(), filter))
@@ -277,6 +281,7 @@ public class ListHandler
 			}
 		}
 
+		
 		Map<ResourceLocation, TagKey<Block>> blocktags = Registry.BLOCK.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
 		Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = Registry.ENTITY_TYPE.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
 

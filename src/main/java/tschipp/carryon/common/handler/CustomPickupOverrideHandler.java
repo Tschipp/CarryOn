@@ -3,10 +3,6 @@ package tschipp.carryon.common.handler;
 import java.util.HashMap;
 import java.util.List;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fml.ModList;
@@ -108,13 +104,13 @@ public class CustomPickupOverrideHandler
 		if (!ModList.get().isLoaded("gamestages"))
 			return false;
 
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		return PICKUP_CONDITIONS_ENTITIES.containsKey(name);
 	}
 
 	public static String getPickupCondition(Entity entity)
 	{
-		String name = ForgeRegistries.ENTITIES.getKey(entity.getType()).toString();
+		String name = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
 		return PICKUP_CONDITIONS_ENTITIES.get(name);
 	}
 

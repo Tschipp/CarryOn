@@ -48,9 +48,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.ScreenEvent.InitScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -124,7 +124,7 @@ public class RenderEvents
 
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
-	public void onJoinLevel(EntityJoinWorldEvent event)
+	public void onJoinLevel(EntityJoinLevelEvent event)
 	{
 		if (event.getEntity() instanceof Player)
 		{
@@ -152,7 +152,7 @@ public class RenderEvents
 	@SuppressWarnings("resource")
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void onGuiInit(InitScreenEvent.Pre event)
+	public void onGuiInit(ScreenEvent.Init.Pre event)
 	{
 		if (event.getScreen() != null)
 		{
@@ -672,7 +672,7 @@ public class RenderEvents
 
 		if (handleMobends() && !ModList.get().isLoaded("obfuscate"))
 		{
-			Player player = event.getPlayer();
+			Player player = event.getEntity();
 			Pose pose = player.getPose();
 			ItemStack stack = player.getMainHandItem();
 			if (pose != Pose.SWIMMING && pose != Pose.FALL_FLYING && !stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack)))

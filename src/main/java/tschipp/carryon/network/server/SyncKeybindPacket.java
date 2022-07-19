@@ -26,19 +26,21 @@ public class SyncKeybindPacket
 		buf.writeBoolean(this.pressed);
 	}
 
-	public void handle(Supplier<NetworkEvent.Context> ctx)
+	public boolean handle(Supplier<NetworkEvent.Context> ctx)
 	{
 		if (ctx.get().getDirection().getReceptionSide().isServer())
 		{
+			ctx.get().setPacketHandled(true);
 			ctx.get().enqueueWork(() -> {
 
 				ServerPlayer player = ctx.get().getSender();
 
 				CarryOnKeybinds.setKeyPressed(player, this.pressed);
 
-				ctx.get().setPacketHandled(true);
 			});
 		}
+		
+		return true;
 	}
 
 }

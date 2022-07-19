@@ -23,7 +23,7 @@ public class PositionClientEvents
 	@SuppressWarnings("resource")
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void onGui(ScreenEvent.DrawScreenEvent event)
+	public void onGui(ScreenEvent.BackgroundRendered event)
 	{
 		if (event.getScreen() != null)
 		{
@@ -58,7 +58,7 @@ public class PositionClientEvents
 	@SubscribeEvent
 	public void onGuiClose(PlayerContainerEvent.Close event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		if (player.getCapability(PositionProvider.POSITION_CAPABILITY).isPresent())
 		{
 			IPosition cap = player.getCapability(PositionProvider.POSITION_CAPABILITY).orElse(new TEPosition());

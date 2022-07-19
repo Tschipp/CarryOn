@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.helper.CarryonGamestageHelper;
 import tschipp.carryon.common.item.ItemCarryonBlock;

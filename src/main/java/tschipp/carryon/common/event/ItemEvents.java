@@ -1,6 +1,5 @@
 package tschipp.carryon.common.event;
 
-import java.awt.TextComponent;
 import java.util.Optional;
 
 import net.minecraft.ChatFormatting;
@@ -28,16 +27,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.level.BlockEvent.BreakEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -50,6 +50,7 @@ import net.minecraftforge.network.PacketDistributor.TargetPoint;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.command.CommandCarryOn;
+import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ListHandler;
@@ -72,7 +73,7 @@ public class ItemEvents
 		if (event.isCanceled())
 			return;
 
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile.get() && ItemCarryonBlock.hasTileData(stack))
 		{
@@ -95,10 +96,10 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public void onItemDropped(EntityJoinWorldEvent event)
+	public void onItemDropped(EntityJoinLevelEvent event)
 	{
 		Entity e = event.getEntity();
-		Level level = event.getWorld();
+		Level level = event.getLevel();
 		if (e instanceof net.minecraft.world.entity.item.ItemEntity eitem)
 		{
 			ItemStack stack = eitem.getItem();
@@ -147,9 +148,9 @@ public class ItemEvents
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
-		if (event.getPlayer() instanceof Player)
+		if (event.getEntity() instanceof Player)
 		{
-			Player player = event.getPlayer();
+			Player player = event.getEntity();
 			Level level = player.getCommandSenderWorld();
 
 			ItemStack carried = player.getMainHandItem();
@@ -175,9 +176,9 @@ public class ItemEvents
 			}
 
 		}
-		if (event.getPlayer() instanceof ServerPlayer)
+		if (event.getEntity() instanceof ServerPlayer)
 		{
-			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getPlayer()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
+			CarryOn.network.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) event.getEntity()), new ScriptReloadPacket(ScriptReader.OVERRIDES.values()));
 		}
 	}
 
@@ -198,12 +199,18 @@ public class ItemEvents
 	{
 		ListHandler.initConfigLists();
 	}
+	
+	@SubscribeEvent
+	public void unloadWorld(LevelEvent.Unload event)
+	{
+		Configs.SERVER_LOADED = false;
+	}
 
 	@SubscribeEvent
 	public void onEntityStartTracking(StartTracking event)
 	{
 		Entity e = event.getTarget();
-		Player tracker = event.getPlayer();
+		Player tracker = event.getEntity();
 
 		if (e instanceof Player player && tracker instanceof ServerPlayer)
 		{
@@ -236,7 +243,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void harvestSpeed(BreakSpeed event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		if (player != null && !Settings.hitWhileCarrying.get())
 		{
 			ItemStack stack = player.getMainHandItem();
@@ -248,7 +255,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void attackEntity(AttackEntityEvent event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && !Settings.hitWhileCarrying.get() && (stack.getItem() == RegistrationHandler.itemTile.get() || stack.getItem() == RegistrationHandler.itemEntity.get()))
 		{
@@ -271,7 +278,7 @@ public class ItemEvents
 	@SubscribeEvent
 	public void playerAttack(LivingAttackEvent event)
 	{
-		LivingEntity eliving = event.getEntityLiving();
+		LivingEntity eliving = event.getEntity();
 		if (eliving instanceof Player player && Settings.dropCarriedWhenHit.get())
 		{
 			ItemStack stack = player.getMainHandItem();
@@ -289,7 +296,7 @@ public class ItemEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 
 		if (event.isCanceled())
 			return;
@@ -299,7 +306,7 @@ public class ItemEvents
 
 			ItemStack main = player.getMainHandItem();
 			ItemStack off = player.getOffhandItem();
-			Level level = event.getWorld();
+			Level level = event.getLevel();
 			BlockPos pos = event.getPos();
 			BlockState state = level.getBlockState(pos);
 
@@ -434,7 +441,7 @@ public class ItemEvents
 	public void onRespawn(PlayerEvent.Clone event)
 	{
 		Player original = event.getOriginal();
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		boolean wasDead = event.isWasDeath();
 		GameRules rules = player.level.getGameRules();
 		boolean keepInv = rules.getBoolean(GameRules.RULE_KEEPINVENTORY);
@@ -461,9 +468,9 @@ public class ItemEvents
 	}
 
 	@SubscribeEvent
-	public void dropNonHotbarItems(LivingUpdateEvent event)
+	public void dropNonHotbarItems(LivingTickEvent event)
 	{
-		LivingEntity entity = event.getEntityLiving();
+		LivingEntity entity = event.getEntity();
 		if (entity instanceof Player player && !entity.level.isClientSide)
 		{
 			boolean hasCarried = player.getInventory().contains(new ItemStack(RegistrationHandler.itemTile.get())) || player.getInventory().contains(new ItemStack(RegistrationHandler.itemEntity.get()));

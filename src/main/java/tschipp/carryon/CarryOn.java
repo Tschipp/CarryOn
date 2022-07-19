@@ -61,7 +61,7 @@ public class CarryOn
 		String version = info.getVersion().toString();
 		// PreInitevent.
 		CarryOn.network = NetworkRegistry.newSimpleChannel(new ResourceLocation(CarryOn.MODID, "carryonpackets"), () -> version, version::equals, version::equals);
-
+		
 		// CLIENT PACKETS
 		CarryOn.network.registerMessage(0, CarrySlotPacket.class, CarrySlotPacket::toBytes, CarrySlotPacket::new, CarrySlotPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 		CarryOn.network.registerMessage(1, ScriptReloadPacket.class, ScriptReloadPacket::toBytes, ScriptReloadPacket::new, ScriptReloadPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));

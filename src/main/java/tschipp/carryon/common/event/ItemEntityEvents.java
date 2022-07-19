@@ -19,8 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -42,7 +42,7 @@ public class ItemEntityEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		ItemStack stack = player.getMainHandItem();
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(stack))
 		{
@@ -65,10 +65,10 @@ public class ItemEntityEvents
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
-	public void onItemDropped(EntityJoinWorldEvent event)
+	public void onItemDropped(EntityJoinLevelEvent event)
 	{
 		Entity e = event.getEntity();
-		Level level = event.getWorld();
+		Level level = event.getLevel();
 		if (e instanceof net.minecraft.world.entity.item.ItemEntity eitem)
 		{
 			ItemStack stack = eitem.getItem();
@@ -89,13 +89,13 @@ public class ItemEntityEvents
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onEntityRightClick(PlayerInteractEvent.EntityInteract event)
 	{
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 
 		if (player instanceof ServerPlayer)
 		{
 			ItemStack main = player.getMainHandItem();
 			ItemStack off = player.getOffhandItem();
-			Level level = event.getWorld();
+			Level level = event.getLevel();
 			Entity entity = event.getTarget();
 			BlockPos pos = entity.blockPosition();
 
@@ -243,9 +243,9 @@ public class ItemEntityEvents
 	}
 
 	@SubscribeEvent
-	public void onLivingUpdate(LivingUpdateEvent event)
+	public void onLivingUpdate(LivingTickEvent event)
 	{
-		LivingEntity entity = event.getEntityLiving();
+		LivingEntity entity = event.getEntity();
 		Level level = entity.level;
 		ItemStack main = entity.getMainHandItem();
 		if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemEntity.get() && ItemCarryonEntity.hasEntityData(main))

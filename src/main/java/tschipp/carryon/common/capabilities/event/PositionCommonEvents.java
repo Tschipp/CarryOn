@@ -32,8 +32,8 @@ public class PositionCommonEvents
 	public void onBlockRight(PlayerInteractEvent.RightClickBlock event)
 	{
 		BlockPos pos = event.getPos();
-		Level level = event.getWorld();
-		Player player = event.getPlayer();
+		Level level = event.getLevel();
+		Player player = event.getEntity();
 
 		if (event.isCanceled() || player == null || player instanceof FakePlayer)
 			return;
