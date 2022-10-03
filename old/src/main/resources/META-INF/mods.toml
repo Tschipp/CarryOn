@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="[41,)"
+issueTrackerURL="https://github.com/Tschipp/CarryOn/issues"
+logoFile="logo.png"
+license="GNU LGPLv3"
+
+[[mods]] 
+	modId="carryon" 
+	version="${file.jarVersion}" 
+	displayName="Carry On"
+	description='''Carry On is a simple mod that improves game interaction by allowing players to pick up, carry, and place single block Tile Entities using only their empty hands.'''
+	authors="Tschipp, Purplicious_Cow, cy4n" #mandatory
+	displayURL="https://minecraft.curseforge.com/projects/carry-on" #mandatory
+	
+[[dependencies.carryon]] #optional
+    # the modid of the dependency
+    modId="forge" #mandatory
+    # Does this dependency have to exist - if not, ordering below must be specified
+    mandatory=true #mandatory
+    # The version range of the dependency
+    versionRange="[41,)" #mandatory
+    # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
+    ordering="NONE"
+    # Side this dependency is applied on - BOTH, CLIENT or SERVER
+    side="BOTH"
+
+[[dependencies.carryon]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.19,1.20)"
+    ordering="NONE"
+    side="BOTH"
