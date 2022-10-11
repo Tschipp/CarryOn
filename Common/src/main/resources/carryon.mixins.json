@@ -4,8 +4,11 @@
   "package": "tschipp.carryon.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "InventoryMixin",
+    "PlayerMixin"
   ],
   "client": [
+    "MinecraftMixin"
   ],
   "server": [
   ],

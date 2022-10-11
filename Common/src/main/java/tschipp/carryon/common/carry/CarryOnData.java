@@ -8,6 +8,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import javax.annotation.Nullable;
 
@@ -35,6 +36,10 @@ public class CarryOnData {
     public void setBlock(BlockState state, @Nullable BlockEntity tile)
     {
         this.type = CarryType.BLOCK;
+
+        if(state.hasProperty(BlockStateProperties.WATERLOGGED))
+            state = state.setValue(BlockStateProperties.WATERLOGGED, false);
+
         CompoundTag stateData = NbtUtils.writeBlockState(state);
         nbt.put("block", stateData);
 
@@ -79,6 +84,29 @@ public class CarryOnData {
             throw new IllegalStateException("Called getEntity on data that contained " + this.type);
 
         return EntityType.create(nbt.getCompound("entity"), level).orElseThrow();
+    }
+
+    public boolean isCarrying()
+    {
+        return this.type != CarryType.INVALID;
+    }
+
+    public boolean isCarrying(CarryType type)
+    {
+        return this.type == type;
+    }
+
+    public void clear()
+    {
+        this.type = CarryType.INVALID;
+        this.nbt = new CompoundTag();
+    }
+
+    public int getTick()
+    {
+        if(!this.nbt.contains("tick"))
+            return -1;
+        return this.nbt.getInt("tick");
     }
 
     public enum CarryType {

@@ -19,7 +19,7 @@
     "environment": "*",
     "entrypoints": {
       "main": [
-        "tschipp.carryon.ExampleMod"
+        "tschipp.carryon.CarryOnFabricMod"
       ]
     },
     "mixins": [
