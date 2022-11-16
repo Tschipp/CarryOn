@@ -1,12 +1,12 @@
 {
     "schemaVersion": 1,
-    "id": "modid",
+    "id": "carryon",
     "version": "${version}",
   
-    "name": "Example Mod",
+    "name": "Carry On",
     "description": "This is an example description! Tell everyone what your mod is about!",
     "authors": [
-      "Me!"
+      "Tschipp"
     ],
     "contact": {
       "homepage": "https://fabricmc.net/",
@@ -14,7 +14,7 @@
     },
   
     "license": "CC0-1.0",
-    "icon": "assets/modid/icon.png",
+    "icon": "assets/carryon/logo.png",
   
     "environment": "*",
     "entrypoints": {
@@ -23,7 +23,8 @@
       ]
     },
     "mixins": [
-      "carryon.fabric.mixins.json"
+      "carryon.fabric.mixins.json",
+      "carryon.mixins.json"
     ],
   
     "depends": {
@@ -31,9 +32,6 @@
       "fabric": "*",
       "minecraft": "1.19.x",
       "java": ">=17"
-    },
-    "suggests": {
-      "another-mod": "*"
     }
   }
   

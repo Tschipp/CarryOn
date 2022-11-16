@@ -1,6 +1,10 @@
 package tschipp.carryon;
 
 import net.fabricmc.api.ModInitializer;
+import tschipp.carryon.config.fabric.ConfigLoaderImpl;
+import tschipp.carryon.events.CommonEvents;
+
+import java.io.IOException;
 
 public class CarryOnFabricMod implements ModInitializer {
     
@@ -13,6 +17,14 @@ public class CarryOnFabricMod implements ModInitializer {
 
         // Use Fabric to bootstrap the Common mod.
         Constants.LOG.info("Hello Fabric world!");
+        try {
+            ConfigLoaderImpl.initialize();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        CommonEvents.registerEvents();
+
 
     }
 }

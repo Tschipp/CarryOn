@@ -24,8 +24,9 @@ public class ClientEvents {
 		MultiBufferSource buffer = event.getMultiBufferSource();
 		PoseStack matrix = event.getPoseStack();
 		int light = event.getPackedLight();
+		float partialTicks = event.getPartialTick();
 
-		if(CarriedObjectRender.drawFirstPerson(player, buffer, matrix, light) && CarryRenderHelper.getPerspective() == 0)
+		if(CarriedObjectRender.drawFirstPerson(player, buffer, matrix, light, partialTicks) && CarryRenderHelper.getPerspective() == 0)
 			event.setCanceled(true);
 	}
 }

@@ -1,5 +1,7 @@
 package tschipp.carryon.platform.services;
 
+import tschipp.carryon.config.BuiltConfig;
+
 public interface IPlatformHelper {
 
     /**
@@ -23,4 +25,6 @@ public interface IPlatformHelper {
      * @return True if in a development environment, false otherwise.
      */
     boolean isDevelopmentEnvironment();
+
+    void registerConfig(BuiltConfig cfg);
 }

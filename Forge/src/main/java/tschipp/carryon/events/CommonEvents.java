@@ -25,7 +25,6 @@ import tschipp.carryon.common.carry.PlacementHandler;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = Constants.MOD_ID)
 public class CommonEvents
 {
-
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onBlockClick(PlayerInteractEvent.RightClickBlock event)
 	{
@@ -39,12 +38,12 @@ public class CommonEvents
 		if (level.isClientSide)
 			return;
 
-		boolean cancel = false;
+		boolean success = false;
 
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if (!carry.isCarrying()) {
 			if (PickupHandler.tryPickUpBlock((ServerPlayer) player, pos, level)) {
-				cancel = true;
+				success = true;
 			}
 		} else {
 			if (carry.isCarrying(CarryType.BLOCK)) {
@@ -54,23 +53,23 @@ public class CommonEvents
 					MinecraftForge.EVENT_BUS.post(event1);
 					return !event1.isCanceled();
 				})) {
-					cancel = true;
+					success = true;
 				}
 			} else {
+				//TODO: Entity place perms
 				if (PlacementHandler.tryPlaceEntity((ServerPlayer) player,pos, event.getFace(), null))
 				{
-					cancel = true;
+					success = true;
 				}
 			}
 		}
 
-		if(cancel)
+		if(success)
 		{
 			event.setUseBlock(Event.Result.DENY);
 			event.setUseItem(Event.Result.DENY);
 			event.setCancellationResult(InteractionResult.SUCCESS);
 			event.setCanceled(true);
-			return;
 		}
 	}
 

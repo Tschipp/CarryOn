@@ -2,7 +2,6 @@ package tschipp.carryon.common.carry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Direction.Axis;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -55,7 +53,7 @@ public class PlacementHandler
 			return false;
 
 		state = getPlacementState(state, player, context, pos);
-		boolean doPlace = placementCallback == null ? true : placementCallback.apply(pos, state);
+		boolean doPlace = placementCallback == null || placementCallback.apply(pos, state);
 
 		if (!doPlace)
 			return false;
@@ -80,12 +78,12 @@ public class PlacementHandler
 			if (prop instanceof DirectionProperty) {
 				state = updateProperty(state, placementState, prop);
 			}
-			if (prop instanceof EnumProperty<?>) {
-				if (state.getValue(prop) instanceof Axis)
-					state = updateProperty(state, placementState, prop);
+			if (prop.getValueClass() == Direction.Axis.class) {
+				state = updateProperty(state, placementState, prop);
 			}
-			//TODO: Add config for state variant names, which should be taken from the placementState
-			if (prop.getName().equals("type")) {
+
+			//This is needed for certain blocks, otherwise we get problems like chests not connecting
+			if (ListHandler.isPropertyException(prop)) {
 				state = updateProperty(state, placementState, prop);
 			}
 		}
@@ -100,7 +98,7 @@ public class PlacementHandler
 		return state;
 	}
 
-	private static <T extends Comparable<T>, V extends T> BlockState updateProperty(BlockState state, BlockState otherState, Property<T> prop)
+	private static <T extends Comparable<T>> BlockState updateProperty(BlockState state, BlockState otherState, Property<T> prop)
 	{
 		var val = otherState.getValue(prop);
 		return state.setValue(prop, val);
@@ -127,7 +125,7 @@ public class PlacementHandler
 		Entity entity = carry.getEntity(level);
 		entity.setPos(placementPos);
 
-		boolean doPlace = placementCallback == null ? true : placementCallback.apply(placementPos, entity);
+		boolean doPlace = placementCallback == null || placementCallback.apply(placementPos, entity);
 		if (!doPlace)
 			return false;
 

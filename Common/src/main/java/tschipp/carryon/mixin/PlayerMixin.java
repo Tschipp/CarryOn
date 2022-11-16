@@ -23,6 +23,7 @@ public abstract class PlayerMixin extends LivingEntity {
     @Inject(method = "defineSynchedData()V", at = @At("RETURN"))
     private void onDefineSynchedData(CallbackInfo info) {
         this.entityData.define(CarryOnDataManager.CARRY_DATA_KEY, new CompoundTag());
+        System.out.println("Added Carry Data!");
     }
 
     @Inject(method = "addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("RETURN"))

@@ -8,7 +8,8 @@
     "PlayerMixin"
   ],
   "client": [
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "HumanoidModelMixin"
   ],
   "server": [
   ],
