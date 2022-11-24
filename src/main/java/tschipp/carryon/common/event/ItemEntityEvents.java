@@ -57,7 +57,7 @@ public class ItemEntityEvents
 					String command = override.getCommandPlace();
 
 					if (command != null)
-						player.getServer().getCommands().performCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + command);
+						player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + command);
 				}
 			}
 		}
