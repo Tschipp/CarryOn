@@ -6,6 +6,9 @@
     "mixins": [
     ],
     "client": [
+        "ItemInHandRendererMixin",
+        "LevelRendererMixin",
+        "ScreenMixin"
     ],
     "injectors": {
       "defaultRequire": 1

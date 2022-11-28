@@ -2,11 +2,13 @@ buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+		maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+		classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 apply plugin: 'java'
@@ -14,8 +16,9 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'maven-publish'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-archivesBaseName = "${mod_name}-forge-${minecraft_version}"
+archivesBaseName = "${mod_id}-forge-${minecraft_version}"
 
 mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
@@ -25,7 +28,7 @@ mixin {
 }
 
 minecraft {
-    mappings channel: 'official', version: minecraft_version
+    mappings channel: 'parchment', version: "${parchment_mappings}"
     
     if (project.hasProperty('forge_ats_enabled') && project.findProperty('forge_ats_enabled').toBoolean()) {
         // This location is hardcoded in Forge and can not be changed.

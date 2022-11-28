@@ -153,6 +153,12 @@ public class CarryConfig {
             public String[] placementStateExceptions = {
                     "minecraft:chest[type]"
             };
+
+            @Property(
+                    type = PropertyType.BOOLEAN,
+                    description = "Whether Players can be picked up. Creative players can't be picked up in Survival Mode"
+            )
+            public boolean pickupPlayers = true;
         }
 
         @Property(
@@ -196,7 +202,7 @@ public class CarryConfig {
                     description = "Blocks that cannot be picked up"
             )
             public String[] forbiddenTiles = {
-                    "#forge:immovable", "#forge:relocation_not_supported", "minecraft:end_portal",
+                    "#forge:immovable", "#forge:relocation_not_supported", "minecraft:end_portal", "minecraft:piston_head",
                     "minecraft:end_gateway", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:peony",
                     "minecraft:rose_bush", "minecraft:lilac", "minecraft:sunflower", "minecraft:*_bed",
                     "minecraft:*_door", "minecraft:big_dripleaf_stem", "minecraft:waterlily", "minecraft:cake",

@@ -19,17 +19,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import tschipp.carryon.Constants;
+import tschipp.carryon.common.scripting.CarryOnScript;
+import tschipp.carryon.common.scripting.ScriptManager;
+import tschipp.carryon.networking.clientbound.ClientboundStartRidingPacket;
+import tschipp.carryon.platform.Services;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class PickupHandler {
 
     public static boolean canCarryGeneral(ServerPlayer player, Vec3 pos)
     {
-        //TODO: Check carry key
-        if(!player.isShiftKeyDown())
-            return false;
-
         if(!player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty())
             return false;
 
@@ -38,6 +39,9 @@ public class PickupHandler {
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
         if(carry.isCarrying())
+            return false;
+
+        if(!carry.isKeyPressed())
             return false;
 
         //Needed so that we don't pick up and place in the same tick
@@ -61,6 +65,9 @@ public class PickupHandler {
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
         BlockEntity blockEntity = level.getBlockEntity(pos);
         BlockState state = level.getBlockState(pos);
+        CompoundTag nbt = null;
+        if(blockEntity != null)
+            nbt = blockEntity.saveWithId();
 
         if(!ListHandler.isPermitted(state.getBlock()))
             return false;
@@ -74,16 +81,27 @@ public class PickupHandler {
         //Check if TE is locked
         if(blockEntity != null)
         {
-            CompoundTag nbt = blockEntity.saveWithId();
             if(nbt.contains("Lock") && !nbt.getString("Lock").equals(""))
                 return false;
         }
 
-        //TODO: Script conditions
-
         //TODO: Gamestages conditions check
 
         //TODO: Protections
+
+        Optional<CarryOnScript> result =  ScriptManager.inspectBlock(state, level, pos, nbt);
+        if(result.isPresent())
+        {
+            CarryOnScript script = result.get();
+            if(!script.fulfillsConditions(player))
+                return false;
+
+            carry.setActiveScript(script);
+
+            String cmd = script.scriptEffects().commandInit();
+            if(!cmd.isEmpty())
+                player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
+        }
 
         carry.setBlock(state, blockEntity);
 
@@ -104,9 +122,6 @@ public class PickupHandler {
             return false;
 
         if (entity.invulnerableTime != 0)
-            return false;
-
-        if (entity instanceof Player)
             return false;
 
         if (entity instanceof TamableAnimal tame)
@@ -130,21 +145,65 @@ public class PickupHandler {
             if(!Constants.COMMON_CONFIG.settings.pickupHostileMobs && entity.getType().getCategory() == MobCategory.MONSTER)
                 return false;
 
-            if(Constants.COMMON_CONFIG.settings.maxEntityHeight > entity.getBbHeight() || Constants.COMMON_CONFIG.settings.maxEntityWidth > entity.getBbWidth())
+            if(Constants.COMMON_CONFIG.settings.maxEntityHeight < entity.getBbHeight() || Constants.COMMON_CONFIG.settings.maxEntityWidth < entity.getBbWidth())
                 return false;
         }
-
-        //TODO: Script conditions
 
         //TODO: Gamestages conditions check
 
         //TODO: Protections
 
+
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
+        Optional<CarryOnScript> result =  ScriptManager.inspectEntity(entity);
+        if(result.isPresent())
+        {
+            CarryOnScript script = result.get();
+            if(!script.fulfillsConditions(player))
+                return false;
+
+            carry.setActiveScript(script);
+        }
+
+        if (entity instanceof Player otherPlayer) {
+            if (!Constants.COMMON_CONFIG.settings.pickupPlayers)
+                return false;
+
+            if (!player.isCreative() && otherPlayer.isCreative())
+                return false;
+
+            otherPlayer.ejectPassengers();
+            otherPlayer.stopRiding();
+
+            if (result.isPresent()) {
+                String cmd = result.get().scriptEffects().commandInit();
+                if (!cmd.isEmpty())
+                    player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
+            }
+
+            otherPlayer.startRiding(player);
+            Services.PLATFORM.sendPacketToPlayer(Constants.PACKET_ID_START_RIDING, new ClientboundStartRidingPacket(otherPlayer.getId(), true), player);
+            carry.setCarryingPlayer();
+            player.swing(InteractionHand.MAIN_HAND, true);
+            player.level.playSound(null, player.getOnPos(), SoundEvents.ARMOR_EQUIP_GENERIC, SoundSource.AMBIENT, 1.0f, 0.5f);
+            CarryOnDataManager.setCarryData(player, carry);
+            return true;
+
+        }
+
         entity.ejectPassengers();
-        if (entity instanceof Animal animal)
+        entity.stopRiding();
+        if (entity instanceof Animal animal) {
             animal.dropLeash(true, true);
+        }
+
+        if(result.isPresent())
+        {
+            String cmd = result.get().scriptEffects().commandInit();
+            if(!cmd.isEmpty())
+                player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
+        }
 
         carry.setEntity(entity);
         entity.remove(RemovalReason.UNLOADED_WITH_PLAYER);
@@ -153,6 +212,20 @@ public class PickupHandler {
         CarryOnDataManager.setCarryData(player, carry);
         player.swing(InteractionHand.MAIN_HAND, true);
         return true;
+    }
+
+    public static void onCarryTick(ServerPlayer player)
+    {
+        CarryOnData carry = CarryOnDataManager.getCarryData(player);
+        if(carry.isCarrying())
+        {
+            if(carry.getActiveScript().isPresent())
+            {
+                String cmd = carry.getActiveScript().get().scriptEffects().commandLoop();
+                if(!cmd.isEmpty())
+                    player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
+            }
+        }
     }
 
 }

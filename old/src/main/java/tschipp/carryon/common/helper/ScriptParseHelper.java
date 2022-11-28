@@ -20,6 +20,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class ScriptParseHelper
 {
 
+
+
 	public static boolean matches(double number, String cond)
 	{
 		if (cond == null || cond.isEmpty())

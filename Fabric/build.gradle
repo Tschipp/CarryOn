@@ -4,7 +4,7 @@ plugins {
     id 'idea'
 }
 
-archivesBaseName = "${mod_name}-fabric-${minecraft_version}"
+archivesBaseName = "${mod_id}-fabric-${minecraft_version}"
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"

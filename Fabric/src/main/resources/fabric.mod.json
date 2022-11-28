@@ -20,6 +20,9 @@
     "entrypoints": {
       "main": [
         "tschipp.carryon.CarryOnFabricMod"
+      ],
+      "client": [
+        "tschipp.carryon.CarryOnFabricClientMod"
       ]
     },
     "mixins": [

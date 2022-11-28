@@ -8,19 +8,28 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent.EntityPlaceEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.InterModComms.IMCMessage;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
+import tschipp.carryon.CarryOnCommon;
 import tschipp.carryon.Constants;
-import tschipp.carryon.common.carry.CarryOnData;
+import tschipp.carryon.common.carry.*;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
-import tschipp.carryon.common.carry.CarryOnDataManager;
-import tschipp.carryon.common.carry.PickupHandler;
-import tschipp.carryon.common.carry.PlacementHandler;
+import tschipp.carryon.common.scripting.ScriptReloadListener;
+
+import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = Constants.MOD_ID)
 public class CommonEvents
@@ -95,10 +104,86 @@ public class CommonEvents
 				return;
 			}
 		}
-		else if(carry.isCarrying(CarryType.ENTITY))
+		else if(carry.isCarrying(CarryType.ENTITY) || carry.isCarrying(CarryType.PLAYER))
 		{
-			//TODO: Stacking
+			PlacementHandler.tryStackEntity((ServerPlayer)player, target);
 		}
+	}
+
+	@SubscribeEvent
+	public static void onRegisterCommands(RegisterCommandsEvent event)
+	{
+		CarryOnCommon.registerCommands(event.getDispatcher());
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOW)
+	public void serverLoad(FMLDedicatedServerSetupEvent event)
+	{
+		Stream<IMCMessage> messages = InterModComms.getMessages(Constants.MOD_ID);
+
+		messages.forEach(msg -> {
+
+			String method = msg.method();
+			Object obj = msg.messageSupplier().get();
+
+			if (!(obj instanceof String str))
+				return;
+
+			switch (method)
+			{
+				case "blacklistBlock":
+					ListHandler.addForbiddenTiles(str);
+					break;
+				case "blacklistEntity":
+					ListHandler.addForbiddenEntities(str);
+					break;
+				case "whitelistBlock":
+					ListHandler.addAllowedTiles(str);
+					break;
+				case "whitelistEntity":
+					ListHandler.addAllowedEntities(str);
+					break;
+				case "blacklistStacking":
+					ListHandler.addForbiddenStacking(str);
+					break;
+				case "whitelistStacking":
+					ListHandler.addAllowedStacking(str);
+					break;
+					//TODO
+//				case "addModelOverride":
+//					ModelOverridesHandler.parseOverride(str, 0);
+//					break;
+			}
+
+		});
+
+	}
+
+	@SubscribeEvent
+	public static void onDatapackRegister(AddReloadListenerEvent event)
+	{
+		event.addListener(new ScriptReloadListener());
+	}
+
+	@SubscribeEvent
+	public static void onDatapackSync(OnDatapackSyncEvent event)
+	{
+		ServerPlayer player = event.getPlayer();
+		if(player == null)
+		{
+			for(ServerPlayer p : event.getPlayerList().getPlayers())
+				ScriptReloadListener.syncScriptsWithClient(p);
+		}
+		else
+			ScriptReloadListener.syncScriptsWithClient(player);
+	}
+
+	@SubscribeEvent
+	public static void onServerTick(ServerTickEvent event)
+	{
+		if(event.phase == Phase.END)
+			for(ServerPlayer player : event.getServer().getPlayerList().getPlayers())
+				PickupHandler.onCarryTick(player);
 	}
 
 }

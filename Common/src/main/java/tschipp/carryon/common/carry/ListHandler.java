@@ -191,4 +191,34 @@ public class ListHandler {
         return containsAll;
     }
 
+    public static void addForbiddenTiles(String toAdd)
+    {
+        FORBIDDEN_TILES.add(toAdd);
+    }
+
+    public static void addForbiddenEntities(String toAdd)
+    {
+        FORBIDDEN_ENTITIES.add(toAdd);
+    }
+
+    public static void addForbiddenStacking(String toAdd)
+    {
+        FORBIDDEN_STACKING.add(toAdd);
+    }
+
+    public static void addAllowedTiles(String toAdd)
+    {
+        ALLOWED_TILES.add(toAdd);
+    }
+
+    public static void addAllowedEntities(String toAdd)
+    {
+        ALLOWED_ENTITIES.add(toAdd);
+    }
+
+    public static void addAllowedStacking(String toAdd)
+    {
+        ALLOWED_ENTITIES.add(toAdd);
+    }
+
 }

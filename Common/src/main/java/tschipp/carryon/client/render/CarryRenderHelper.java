@@ -9,15 +9,26 @@ import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Registry;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import tschipp.carryon.Constants;
+import tschipp.carryon.common.carry.CarryOnData;
+import tschipp.carryon.common.carry.CarryOnData.CarryType;
+import tschipp.carryon.common.carry.CarryOnDataManager;
+import tschipp.carryon.common.scripting.CarryOnScript;
+import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
 
 public class CarryRenderHelper
 {
@@ -28,8 +39,11 @@ public class CarryRenderHelper
 
 	public static float getExactBodyRotationDegrees(LivingEntity entity, float partialticks)
 	{
-		if (entity.getVehicle() != null && entity.getVehicle() instanceof LivingEntity)
-			return -(entity.yHeadRotO + (entity.yHeadRot - entity.yHeadRotO) * partialticks);
+		if (entity.getVehicle() != null && entity.getVehicle() instanceof LivingEntity vehicle)
+			if(vehicle instanceof Player player)
+				return -(player.yBodyRotO + (player.yBodyRot - player.yBodyRotO) * partialticks);
+			else
+				return -(entity.yHeadRotO + (entity.yHeadRot - entity.yHeadRotO) * partialticks);
 		else
 			return -(entity.yBodyRotO + (entity.yBodyRot - entity.yBodyRotO) * partialticks);
 	}
@@ -99,14 +113,14 @@ public class CarryRenderHelper
 					matrix.mulPose(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.xRotO)));
 			}
 
-			Vec3 Vector3d = player.getViewVector(partialticks);
-			Vec3 Vector3d1 = player.getDeltaMovement();
-			double d0 = Vector3d1.horizontalDistanceSqr();
-			double d1 = Vector3d1.horizontalDistanceSqr();
+			Vec3 viewVector = player.getViewVector(partialticks);
+			Vec3 deltaMovement = player.getDeltaMovement();
+			double d0 = deltaMovement.horizontalDistanceSqr();
+			double d1 = deltaMovement.horizontalDistanceSqr();
 			if (d0 > 0.0D && d1 > 0.0D)
 			{
-				double d2 = (Vector3d1.x * Vector3d.x + Vector3d1.z * Vector3d.z) / (Math.sqrt(d0) * Math.sqrt(d1));
-				double d3 = Vector3d1.x * Vector3d.z - Vector3d1.z * Vector3d.x;
+				double d2 = (deltaMovement.x * viewVector.x + deltaMovement.z * viewVector.z) / (Math.sqrt(d0) * Math.sqrt(d1));
+				double d3 = deltaMovement.x * viewVector.z - deltaMovement.z * viewVector.x;
 
 				matrix.mulPose(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
 			}
@@ -119,42 +133,181 @@ public class CarryRenderHelper
 		matrix.translate(0, 1.6, 0.65);
 	}
 
+	public static void applyBlockTransformations(Player player, float partialticks, PoseStack matrix, Block block)
+	{
+		int perspective = CarryRenderHelper.getPerspective();
 
-	//TODO: Scripting
-//	public static void performOverrideTransformation(PoseStack matrix, CarryOnOverride override)
-//	{
-//		int perspective = getPerspective();
-//
-//		float[] translation = ScriptParseHelper.getXYZArray(override.getRenderTranslation());
-//		float[] rotation = ScriptParseHelper.getXYZArray(override.getRenderRotation());
-//		float[] scaled = ScriptParseHelper.getScaled(override.getRenderScaled());
-//
-//		Quaternion rot = Vector3f.XP.rotationDegrees(rotation[0]);
-//		rot.mul(Vector3f.YP.rotationDegrees(rotation[1]));
-//		rot.mul(Vector3f.ZP.rotationDegrees(rotation[2]));
-//		matrix.mulPose(rot);
-//
-//		matrix.translate(translation[0], translation[1], perspective == 1 && override.isBlock() ? -translation[2] : translation[2]);
-//
-//		matrix.scale(scaled[0], scaled[1], scaled[2]);
-//	}
+		applyGeneralTransformations(player, partialticks, matrix);
 
-	public static void renderItem(BlockState state, CompoundTag tag, ItemStack stack, PoseStack matrix, MultiBufferSource buffer, int light, BakedModel model)
+		if (!Constants.CLIENT_CONFIG.facePlayer && isChest(block))
+		{
+			//if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
+			//	matrix.translate(0, 0, -0.4);
+			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+		}
+		//else if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
+		//	matrix.translate(0, 0, 0.4);
+		//matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+
+		float height = getRenderHeight(player);
+		float offset = (height - 1f) / 1.2f;
+		matrix.translate(0, -offset, 0);
+	}
+
+	public static void applyEntityTransformations(Player player, float partialticks, PoseStack matrix, Entity entity)
+	{
+		int perspective = CarryRenderHelper.getPerspective();
+		Pose pose = player.getPose();
+
+		applyGeneralTransformations(player, partialticks, matrix);
+
+		if (perspective == 2)
+			matrix.translate(0, -1.6, 0.65);
+		else
+			matrix.translate(0, -1.6, -0.65);
+		matrix.scale(1.666f, 1.666f, 1.666f);
+
+		float height = entity.getBbHeight();
+		float width = entity.getBbWidth();
+		float multiplier = height * width;
+		entity.yo = 0.0f;
+		entity.yRotO = 0.0f;
+		entity.setYHeadRot(0.0f);
+		entity.xo = 0.0f;
+		entity.xRotO = 0.0f;
+
+		if (perspective == 2)
+			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+
+		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
+		matrix.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
+
+		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
+		{
+			matrix.mulPose(Vector3f.XN.rotationDegrees(90));
+			matrix.translate(0, -0.2 * height, 0);
+
+			if (pose == Pose.FALL_FLYING)
+				matrix.translate(0, 0, 0.2);
+		}
+
+	}
+
+
+	public static void performScriptTransformation(PoseStack matrix, CarryOnScript script)
+	{
+		int perspective = getPerspective();
+
+		ScriptRender render = script.scriptRender();
+
+		Vec3 translation = render.renderTranslation().getVec();
+		Vec3 rotation = render.renderRotation().getVec();
+		Vec3 scale = render.renderscale().getVec(1);
+
+		Quaternion rot = Vector3f.XP.rotationDegrees((float) rotation.x);
+		rot.mul(Vector3f.YP.rotationDegrees((float) rotation.y));
+		rot.mul(Vector3f.ZP.rotationDegrees((float) rotation.z));
+		matrix.mulPose(rot);
+
+		matrix.translate(translation.x, translation.y, perspective == 1 && script.isBlock() ? -translation.z : translation.z);
+
+		matrix.scale((float) scale.x, (float) scale.y, (float) scale.z);
+	}
+
+
+
+	public static void renderBakedModel(ItemStack stack, PoseStack matrix, MultiBufferSource buffer, int light, BakedModel model)
 	{
 		ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
-//		if (ModelOverridesHandler.hasCustomOverrideModel(state, tag))
-//		{
-//			Object override = ModelOverridesHandler.getOverrideObject(state, tag);
-
-//			if (override instanceof ItemStack)
-//			{
-//				renderer.render((ItemStack) override, TransformType.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
-//				return;
-////			}
-//		}
-
 		renderer.render(stack, TransformType.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
 	}
+
+	public static BlockState getRenderState(Player player)
+	{
+		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		BlockState state = carry.getBlock().getBlock().defaultBlockState();
+		if(carry.getActiveScript().isPresent())
+		{
+			ScriptRender render = carry.getActiveScript().get().scriptRender();
+			if(render.renderNameBlock().isPresent())
+				state = Registry.BLOCK.get(render.renderNameBlock().get()).defaultBlockState();
+		}
+		return state;
+	}
+
+	public static BakedModel getRenderBlock(Player player)
+	{
+		BlockState state = getRenderState(player);
+
+		BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+
+		if(state.getRenderShape() != RenderShape.MODEL || model.isCustomRenderer() || model.getQuads(state, null, RandomSource.create()).size() <= 0) {
+			ItemStack stack = new ItemStack(state.getBlock());
+			model = Minecraft.getInstance().getItemRenderer().getModel(stack, player.level, player, 0);
+		}
+
+		return model;
+	}
+
+	public static Entity getRenderEntity(Player player)
+	{
+		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		Entity entity = carry.getEntity(player.level);
+
+		if(carry.getActiveScript().isPresent())
+		{
+			CarryOnScript script = carry.getActiveScript().get();
+			ScriptRender render = script.scriptRender();
+			if(render.renderNameEntity().isPresent())
+				entity = Registry.ENTITY_TYPE.get(render.renderNameEntity().get()).create(player.level);
+
+			if(render.renderNBT().isPresent())
+				entity.load(render.renderNBT().get());
+		}
+
+		return entity;
+	}
+
+	public static float getRenderWidth(Player player)
+	{
+		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		if(carry.isCarrying(CarryType.BLOCK))
+		{
+			VoxelShape shape = getRenderState(player).getShape(player.level, player.blockPosition());
+			if(shape == null)
+				return 1f;
+			float width = (float)Math.abs(shape.bounds().maxX - shape.bounds().minX);
+			return width;
+		}
+		else if(carry.isCarrying(CarryType.ENTITY))
+		{
+			Entity entity = getRenderEntity(player);
+			return entity.getBbWidth();
+		}
+		else
+			return 1f;
+	}
+
+	public static float getRenderHeight(Player player)
+	{
+		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		if(carry.isCarrying(CarryType.BLOCK))
+		{
+			VoxelShape shape = getRenderState(player).getShape(player.level, player.blockPosition());
+			if(shape == null)
+				return 1f;
+			float height = (float)Math.abs(shape.bounds().maxY - shape.bounds().minY);
+			return height;
+		}
+		else if(carry.isCarrying(CarryType.ENTITY))
+		{
+			Entity entity = getRenderEntity(player);
+			return entity.getBbHeight();
+		}
+		else
+			return 1f;
+	}
+
 
 	@SuppressWarnings("resource")
 	public static int getPerspective()
@@ -176,4 +329,10 @@ public class CarryRenderHelper
 
 		return player.isShiftKeyDown() || player.isCrouching();
 	}
+
+	public static boolean isChest(Block block)
+	{
+		return block == Blocks.CHEST || block == Blocks.ENDER_CHEST || block == Blocks.TRAPPED_CHEST;
+	}
+
 }

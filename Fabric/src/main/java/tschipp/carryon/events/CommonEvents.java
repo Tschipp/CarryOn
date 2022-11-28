@@ -1,15 +1,24 @@
 package tschipp.carryon.events;
 
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.InteractionResult;
+import tschipp.carryon.CarryOnCommon;
 import tschipp.carryon.common.carry.CarryOnData;
+import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.carry.PickupHandler;
 import tschipp.carryon.common.carry.PlacementHandler;
+import tschipp.carryon.common.scripting.ScriptReloadListener;
+import tschipp.carryon.scripting.IdentifiableScriptReloadListener;
 
 public class CommonEvents {
 
@@ -62,12 +71,30 @@ public class CommonEvents {
                     return InteractionResult.SUCCESS;
                 }
             }
-            else if(carry.isCarrying(CarryOnData.CarryType.ENTITY))
+            else if(carry.isCarrying(CarryOnData.CarryType.ENTITY) || carry.isCarrying(CarryType.PLAYER))
             {
-                //TODO: Stacking
+                PlacementHandler.tryStackEntity((ServerPlayer) player, entity);
             }
 
             return InteractionResult.PASS;
+        });
+
+
+        CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
+            CarryOnCommon.registerCommands(dispatcher);
+        }));
+
+
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new IdentifiableScriptReloadListener());
+
+
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
+            ScriptReloadListener.syncScriptsWithClient(player);
+        });
+
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            for(ServerPlayer player : server.getPlayerList().getPlayers())
+                PickupHandler.onCarryTick(player);
         });
 
     }

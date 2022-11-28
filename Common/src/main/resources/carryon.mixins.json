@@ -4,12 +4,13 @@
   "package": "tschipp.carryon.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "EntityMixin",
     "InventoryMixin",
     "PlayerMixin"
   ],
   "client": [
-    "MinecraftMixin",
-    "HumanoidModelMixin"
+    "HumanoidModelMixin",
+    "MinecraftMixin"
   ],
   "server": [
   ],

@@ -5,7 +5,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.player.Player;
-import org.apache.commons.lang3.ObjectUtils;
 
 public class CarryOnDataManager {
 
@@ -22,10 +21,7 @@ public class CarryOnDataManager {
     {
         CompoundTag nbt = data.getNbt();
         nbt.putInt("tick", player.tickCount);
-        System.out.println(player.getEntityData().isDirty());
-        System.out.println("Old: " + player.getEntityData().get(CARRY_DATA_KEY) + ", New: " + nbt + ", NotEqual: " + ObjectUtils.notEqual(player.getEntityData().get(CARRY_DATA_KEY), nbt));
         player.getEntityData().set(CARRY_DATA_KEY, nbt);
-        System.out.println(player.getEntityData().isDirty());
     }
 
 }
