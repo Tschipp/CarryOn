@@ -151,7 +151,9 @@ public class CarryConfig {
                     description = "Usually all the block state information is retained when placing a block that was picked up. But some information is changed to a modified property, like rotation or orientation. In this list, add additional properties that should NOT be saved and instead be updated when placed. Format: modid:block[propertyname]. Note: You don't need to add an entry for every subtype of a same block. For example, we only add an entry for one type of slab, but the change is applied to all slabs."
             )
             public String[] placementStateExceptions = {
-                    "minecraft:chest[type]"
+                    "minecraft:chest[type]",
+                    "minecraft:stone_button[face]",
+                    "minecraft:vine[north,east,south,west,up]"
             };
 
             @Property(
@@ -291,26 +293,8 @@ public class CarryConfig {
                 description = "Model Overrides based on NBT or Meta. Advanced users only! Read about the format here: https://github.com/Tschipp/CarryOn/wiki/Model-Override-Config"
         )
         public String[] modelOverrides = {
-                "minecraft:hopper->(block)minecraft:hopper",
-                "minecraft:comparator->(block)minecraft:comparator",
-                "minecraft:repeater->(block)minecraft:repeater",
-                "minecraft:cauldron->(block)minecraft:cauldron",
-                "minecraft:brewing_stand->(item)minecraft:brewing_stand",
-                "minecraft:flower_pot->(block)minecraft:flower_pot",
-                "minecraft:sugar_cane->(block)minecraft:sugar_cane",
                 "minecraft:redstone_wire->(item)minecraft:redstone",
-                "animania:block_nest->(block)animania:block_nest",
-                "animania:cheese_mold;0->(block)animania:cheese_mold;0",
-                "animania:cheese_mold;1->(block)animania:cheese_mold;1",
-                "animania:cheese_mold;2->(block)animania:cheese_mold;2",
-                "animania:cheese_mold;3->(block)animania:cheese_mold;3",
-                "animania:cheese_mold;4->(block)animania:cheese_mold;4",
-                "animania:cheese_mold;5->(block)animania:cheese_mold;5",
-                "animania:cheese_mold;6->(block)animania:cheese_mold;6",
-                "animania:cheese_mold;7->(block)animania:cheese_mold;7",
-                "animania:cheese_mold;8->(block)animania:cheese_mold;8",
-                "animania:cheese_mold;9->(block)animania:cheese_mold;9",
-                "animania:cheese_mold;10->(block)animania:cheese_mold;10"
+                "minecraft:bamboo_sapling->(block)minecraft:bamboo"
         };
     }
 

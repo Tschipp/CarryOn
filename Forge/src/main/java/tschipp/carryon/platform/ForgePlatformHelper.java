@@ -9,8 +9,8 @@ import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.network.PacketDistributor;
+import tschipp.carryon.CarryOnCommonClient;
 import tschipp.carryon.CarryOnForge;
-import tschipp.carryon.client.CarryOnClient;
 import tschipp.carryon.config.BuiltConfig;
 import tschipp.carryon.config.forge.ConfigLoaderImpl;
 import tschipp.carryon.networking.PacketBase;
@@ -70,7 +70,7 @@ public class ForgePlatformHelper implements IPlatformHelper {
             {
                 ctx.get().setPacketHandled(true);
                 ctx.get().enqueueWork(() -> {
-                    handler.accept(packet, CarryOnClient.getPlayer());
+                    handler.accept(packet, CarryOnCommonClient.getPlayer());
                 });
             }
         };

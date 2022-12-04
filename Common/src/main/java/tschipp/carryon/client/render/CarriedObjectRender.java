@@ -61,7 +61,7 @@ public class CarriedObjectRender
 
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
-		if (!Constants.CLIENT_CONFIG.facePlayer && CarryRenderHelper.isChest(state.getBlock())) {
+		if (Constants.CLIENT_CONFIG.facePlayer != CarryRenderHelper.isChest(state.getBlock())) {
 			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 			matrix.mulPose(Vector3f.XN.rotationDegrees(8));
 		} else {

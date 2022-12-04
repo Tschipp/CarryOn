@@ -9,6 +9,7 @@ public class ClientEvents {
 	{
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			CarryOnCommonClient.checkForKeybinds();
+			CarryOnCommonClient.onCarryClientTick();
 		});
 	}
 

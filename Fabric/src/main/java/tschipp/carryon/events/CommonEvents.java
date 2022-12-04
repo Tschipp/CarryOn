@@ -1,10 +1,10 @@
 package tschipp.carryon.events;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,7 +35,7 @@ public class CommonEvents {
             CarryOnData carry = CarryOnDataManager.getCarryData(player);
             if(!carry.isCarrying())
             {
-                if (PickupHandler.tryPickUpBlock((ServerPlayer) player, pos, world))
+                if (PickupHandler.tryPickUpBlock((ServerPlayer) player, pos, world, null))
                     return InteractionResult.SUCCESS;
                 return InteractionResult.PASS;
             }
@@ -67,7 +67,7 @@ public class CommonEvents {
 
             CarryOnData carry = CarryOnDataManager.getCarryData(player);
             if (!carry.isCarrying()) {
-                if (PickupHandler.tryPickupEntity((ServerPlayer) player, entity)) {
+                if (PickupHandler.tryPickupEntity((ServerPlayer) player, entity, null)) {
                     return InteractionResult.SUCCESS;
                 }
             }
@@ -92,11 +92,37 @@ public class CommonEvents {
             ScriptReloadListener.syncScriptsWithClient(player);
         });
 
+
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for(ServerPlayer player : server.getPlayerList().getPlayers())
-                PickupHandler.onCarryTick(player);
+                CarryOnCommon.onCarryTick(player);
         });
 
+
+        ServerPlayerEvents.COPY_FROM.register(((oldPlayer, newPlayer, alive) -> {
+            PlacementHandler.placeCarriedOnDeath(oldPlayer, newPlayer, !alive);
+        }));
+
+
+        PlayerBlockBreakEvents.BEFORE.register(((world, player, pos, state, blockEntity) -> {
+            if(!CarryOnCommon.onTryBreakBlock(player))
+                return false;
+            return true;
+        }));
+
+        AttackBlockCallback.EVENT.register(((player, world, hand, pos, direction) -> {
+            if(!CarryOnCommon.onTryBreakBlock(player))
+                return InteractionResult.SUCCESS;
+            return InteractionResult.PASS;
+        }));
+
+        AttackEntityCallback.EVENT.register(((player, world, hand, entity, hitResult) -> {
+            if(!CarryOnCommon.onAttackedByPlayer(player))
+                return InteractionResult.SUCCESS;
+            return InteractionResult.PASS;
+        }));
+
+        //TODO: drop carried when attacked
     }
 
 }

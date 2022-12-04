@@ -2,7 +2,9 @@ package tschipp.carryon.config;
 
 //Many Thanks to ThatGravyBoat for this template!
 
-import tschipp.carryon.common.carry.ListHandler;
+import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
+import tschipp.carryon.common.config.ListHandler;
+import tschipp.carryon.common.pickupcondition.PickupConditionHandler;
 import tschipp.carryon.config.annotations.Category;
 import tschipp.carryon.config.annotations.Config;
 import tschipp.carryon.config.annotations.Property;
@@ -33,6 +35,8 @@ public class ConfigLoader {
 
     public static void onConfigLoaded() {
         ListHandler.initConfigLists();
+        PickupConditionHandler.initPickupConditions();
+        ModelOverrideHandler.initModelOverrides();
     }
 
     public static BuiltCategory buildCategory(String categoryDesc, Object object) throws IllegalAccessException {

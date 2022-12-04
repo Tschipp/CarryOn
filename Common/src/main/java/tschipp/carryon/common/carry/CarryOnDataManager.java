@@ -19,6 +19,7 @@ public class CarryOnDataManager {
 
     public static void setCarryData(Player player, CarryOnData data)
     {
+        data.setSelected(player.getInventory().selected);
         CompoundTag nbt = data.getNbt();
         nbt.putInt("tick", player.tickCount);
         player.getEntityData().set(CARRY_DATA_KEY, nbt);

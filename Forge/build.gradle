@@ -18,6 +18,15 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
+apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
+
+if (project.hasProperty('secretFile')) {
+    loadSecrets(new File((String) findProperty('secretFile')))
+}
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "." + System.getenv('BUILD_NUMBER')
+}
+
 archivesBaseName = "${mod_id}-forge-${minecraft_version}"
 
 mixin {
@@ -88,9 +97,16 @@ minecraft {
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
+repositories {
+    maven {
+        url 'https://maven.blamejared.com'
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly project(":Common")
+    compileOnly fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
     annotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
 }
 

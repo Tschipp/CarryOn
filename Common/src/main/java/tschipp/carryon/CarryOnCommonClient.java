@@ -10,14 +10,15 @@ public class CarryOnCommonClient
 {
 	public static void checkForKeybinds()
 	{
-		Player player = Minecraft.getInstance().player;
+		Minecraft mc = Minecraft.getInstance();
+		Player player = mc.player;
 		if(player != null) {
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
-			if (CarryOnKeybinds.carryKey.isDown() && !carry.isKeyPressed()) {
+			if ((CarryOnKeybinds.carryKey.isUnbound() ? player.isShiftKeyDown() : CarryOnKeybinds.carryKey.isDown()) && !carry.isKeyPressed()) {
 				CarryOnKeybinds.onCarryKey(true);
 				carry.setKeyPressed(true);
 				CarryOnDataManager.setCarryData(player, carry);
-			} else if (!CarryOnKeybinds.carryKey.isDown() && carry.isKeyPressed()) {
+			} else if (!(CarryOnKeybinds.carryKey.isUnbound() ? player.isShiftKeyDown() : CarryOnKeybinds.carryKey.isDown()) && carry.isKeyPressed()) {
 				CarryOnKeybinds.onCarryKey(false);
 				carry.setKeyPressed(false);
 				CarryOnDataManager.setCarryData(player, carry);
@@ -25,4 +26,20 @@ public class CarryOnCommonClient
 		}
 	}
 
+	public static void onCarryClientTick()
+	{
+		Player player = Minecraft.getInstance().player;
+		if(player != null) {
+			CarryOnData carry = CarryOnDataManager.getCarryData(player);
+			if(carry.isCarrying())
+			{
+				player.getInventory().selected = carry.getSelected();
+			}
+		}
+	}
+
+	public static Player getPlayer()
+	{
+		return Minecraft.getInstance().player;
+	}
 }

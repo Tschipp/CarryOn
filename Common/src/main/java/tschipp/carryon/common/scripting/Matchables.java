@@ -17,10 +17,7 @@ import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 import tschipp.carryon.platform.Services;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class Matchables
 {
@@ -29,10 +26,18 @@ public final class Matchables
 		boolean matches(T elem);
 	}
 
-	private static float getValueFromString(String toGetFrom, String key, float defaultValue)
+	private static float getValueFromStringOrDefault(String toGetFrom, String key, float defaultVal)
+	{
+		Optional<Float> val = getValueFromString(toGetFrom, key);
+		if(val.isPresent())
+			return val.get();
+		return defaultVal;
+	}
+
+	private static Optional<Float> getValueFromString(String toGetFrom, String key)
 	{
 		if (toGetFrom == null || toGetFrom.isEmpty())
-			return defaultValue;
+			return Optional.empty();
 
 		String[] s = toGetFrom.split(",");
 		for (String string : s)
@@ -50,11 +55,11 @@ public final class Matchables
 				{
 				}
 
-				return numb;
+				return Optional.of(numb);
 			}
 		}
 
-		return defaultValue;
+		return Optional.empty();
 	}
 
 	public record NumberBoundCondition(String bounds) implements Matchable<Number>
@@ -203,14 +208,15 @@ public final class Matchables
 		public static final GamestageCondition NONE = new GamestageCondition("");
 
 		@Override
-		public boolean matches(ServerPlayer elem)
+		public boolean matches(ServerPlayer player)
 		{
 			if(!Services.PLATFORM.isModLoaded("gamestages"))
 				return true;
 
-			//TODO: Gamestages
+			if(gamestage == null || gamestage.isEmpty())
+				return true;
 
-			return true;
+			return Services.GAMESTAGES.hasStage(player, gamestage);
 		}
 	}
 
@@ -271,8 +277,8 @@ public final class Matchables
 			if (cond == null || cond.isEmpty())
 				return true;
 
-			BlockPos blockpos = new BlockPos(getValueFromString(cond, "x", 0), getValueFromString(cond, "y", 0), getValueFromString(cond, "z", 0));
-			BlockPos expand = new BlockPos(getValueFromString(cond, "dx", 0), getValueFromString(cond, "dy", 0), getValueFromString(cond, "dz", 0));
+			BlockPos blockpos = new BlockPos(getValueFromStringOrDefault(cond, "x", 0), getValueFromStringOrDefault(cond, "y", 0), getValueFromStringOrDefault(cond, "z", 0));
+			BlockPos expand = new BlockPos(getValueFromStringOrDefault(cond, "dx", 0), getValueFromStringOrDefault(cond, "dy", 0), getValueFromStringOrDefault(cond, "dz", 0));
 			BlockPos expanded = blockpos.offset(expand);
 			BlockPos pos = elem.blockPosition();
 
@@ -339,7 +345,7 @@ public final class Matchables
 					int idx = names.indexOf(name);
 					int lev = levels.get(idx);
 
-					if (lev == amp)
+					if (lev <= amp)
 						matches++;
 				}
 			}
@@ -372,12 +378,30 @@ public final class Matchables
 		String source;
 		Vec3 vec;
 
+		boolean x, y, z;
+
 		public OptionalVec3(String source)
 		{
 			this.source = source;
-			double x = getValueFromString(source, "x", 0);
-			double y = getValueFromString(source, "y", 0);
-			double z = getValueFromString(source, "z", 0);
+			Optional<Float> xOpt = getValueFromString(source, "x");
+			Optional<Float> yOpt = getValueFromString(source, "y");
+			Optional<Float> zOpt = getValueFromString(source, "z");
+
+			float x = 0, y = 0, z = 0;
+
+			if(xOpt.isPresent()) {
+				x = xOpt.get();
+				this.x = true;
+			}
+			if(yOpt.isPresent()) {
+				y = yOpt.get();
+				this.y = true;
+			}
+			if(zOpt.isPresent()) {
+				z = zOpt.get();
+				this.z = true;
+			}
+
 			vec = new Vec3(x, y, z);
 		}
 
@@ -386,16 +410,19 @@ public final class Matchables
 			return source;
 		}
 
+		/**
+		 * Gets the contained optional vector. Nonexisting numbers are set to 0.
+		 */
 		public Vec3 getVec()
 		{
 			return vec;
 		}
 
-		public Vec3 getVec(double defaultValue)
+		public Vec3 getVec(double dX, double dY, double dZ)
 		{
-			double x = vec.x == 0f ? defaultValue : vec.x;
-			double y = vec.y == 0f ? defaultValue : vec.y;
-			double z = vec.z == 0f ? defaultValue : vec.z;
+			double x = !this.x ? dX : vec.x;
+			double y = !this.y ? dY : vec.y;
+			double z = !this.z ? dZ : vec.z;
 			return new Vec3(x, y, z);
 		}
 	}

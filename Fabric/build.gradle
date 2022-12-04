@@ -6,6 +6,15 @@ plugins {
 
 archivesBaseName = "${mod_id}-fabric-${minecraft_version}"
 
+apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
+
+if (project.hasProperty('secretFile')) {
+    loadSecrets(new File((String) findProperty('secretFile')))
+}
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += "." + System.getenv('BUILD_NUMBER')
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.officialMojangMappings()

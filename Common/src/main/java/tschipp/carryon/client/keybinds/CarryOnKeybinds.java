@@ -1,5 +1,6 @@
 package tschipp.carryon.client.keybinds;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import tschipp.carryon.Constants;
 import tschipp.carryon.networking.serverbound.ServerboundCarryKeyPressedPacket;
@@ -13,7 +14,7 @@ public class CarryOnKeybinds
 
 	public static void registerKeybinds(Consumer<KeyMapping> registrar)
 	{
-		carryKey = new KeyMapping("key.carry.desc", 340, "key.carry.category");
+		carryKey = new ConflictFreeKeyMapping("key.carry.desc", Services.PLATFORM.getPlatformName().equals("Forge") ? InputConstants.KEY_LSHIFT : InputConstants.UNKNOWN.getValue(), "key.carry.category");
 		registrar.accept(carryKey);
 	}
 

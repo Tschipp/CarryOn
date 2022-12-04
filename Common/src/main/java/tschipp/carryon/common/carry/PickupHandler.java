@@ -19,13 +19,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import tschipp.carryon.Constants;
+import tschipp.carryon.common.config.ListHandler;
+import tschipp.carryon.common.pickupcondition.PickupCondition;
+import tschipp.carryon.common.pickupcondition.PickupConditionHandler;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.ScriptManager;
 import tschipp.carryon.networking.clientbound.ClientboundStartRidingPacket;
 import tschipp.carryon.platform.Services;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class PickupHandler {
 
@@ -57,7 +63,7 @@ public class PickupHandler {
     }
 
 
-    public static boolean tryPickUpBlock(ServerPlayer player, BlockPos pos, Level level)
+    public static boolean tryPickUpBlock(ServerPlayer player, BlockPos pos, Level level, @Nullable BiFunction<BlockState, BlockPos, Boolean> pickupCallback)
     {
         if(!canCarryGeneral(player, Vec3.atCenterOf(pos)))
             return false;
@@ -85,9 +91,16 @@ public class PickupHandler {
                 return false;
         }
 
-        //TODO: Gamestages conditions check
+        Optional<PickupCondition> cond = PickupConditionHandler.getPickupCondition(state);
+        if(cond.isPresent())
+        {
+            if(!cond.get().isFulfilled(player))
+                return false;
+        }
 
-        //TODO: Protections
+        boolean doPickup = pickupCallback == null ? true : pickupCallback.apply(state, pos);
+        if(!doPickup)
+            return false;
 
         Optional<CarryOnScript> result =  ScriptManager.inspectBlock(state, level, pos, nbt);
         if(result.isPresent())
@@ -116,7 +129,7 @@ public class PickupHandler {
 
 
 
-    public static boolean tryPickupEntity(ServerPlayer player, Entity entity)
+    public static boolean tryPickupEntity(ServerPlayer player, Entity entity, @Nullable Function<Entity, Boolean> pickupCallback)
     {
         if(!canCarryGeneral(player, entity.position()))
             return false;
@@ -149,10 +162,16 @@ public class PickupHandler {
                 return false;
         }
 
-        //TODO: Gamestages conditions check
+        Optional<PickupCondition> cond = PickupConditionHandler.getPickupCondition(entity);
+        if(cond.isPresent())
+        {
+            if(!cond.get().isFulfilled(player))
+                return false;
+        }
 
-        //TODO: Protections
-
+        boolean doPickup = pickupCallback == null ? true : pickupCallback.apply(entity);
+        if(!doPickup)
+            return false;
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
@@ -212,20 +231,6 @@ public class PickupHandler {
         CarryOnDataManager.setCarryData(player, carry);
         player.swing(InteractionHand.MAIN_HAND, true);
         return true;
-    }
-
-    public static void onCarryTick(ServerPlayer player)
-    {
-        CarryOnData carry = CarryOnDataManager.getCarryData(player);
-        if(carry.isCarrying())
-        {
-            if(carry.getActiveScript().isPresent())
-            {
-                String cmd = carry.getActiveScript().get().scriptEffects().commandLoop();
-                if(!cmd.isEmpty())
-                    player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
-            }
-        }
     }
 
 }

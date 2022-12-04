@@ -8,13 +8,20 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
 import tschipp.carryon.Constants;
+import tschipp.carryon.client.modeloverride.ModelOverride;
+import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
+import tschipp.carryon.common.pickupcondition.PickupCondition;
+import tschipp.carryon.common.pickupcondition.PickupConditionHandler;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 public class CommandCarryOn
 {
@@ -45,27 +52,32 @@ public class CommandCarryOn
 				CarryOnData carry = CarryOnDataManager.getCarryData(player);
 				if (carry.isCarrying(CarryType.BLOCK))
 				{
-					log(source,"Block: " + carry.getBlock().getBlock());
-					log(source,"BlockState: " + carry.getBlock());
+					BlockState block = carry.getBlock();
+					log(source,"Block: " + block.getBlock());
+					log(source,"BlockState: " + block);
 					log(source,"NBT: " + carry.getNbt());
 
-					//TODO
-//					if (ModelOverridesHandler.hasCustomOverrideModel(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main)))
-//						source.sendSuccess(Component.literal("Override Model: " + ModelOverridesHandler.getOverrideObject(ItemCarryonBlock.getBlockState(main), ItemCarryonBlock.getTileData(main))), true);
+					Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(block, carry.getContentNbt());
+					if(ov.isPresent())
+						log(source, "Override Model: " + ov.get().getRenderObject());
 
-//					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonBlock.getBlockState(main)))
-//						source.sendSuccess(Component.literal("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonBlock.getBlockState(main))), true);
+					Optional<PickupCondition> cond = PickupConditionHandler.getPickupCondition(block);
+					if(cond.isPresent())
+						log(source, "Custom Pickup Condition: " + cond.get().getCondition());
+
 
 					return 1;
 				}
 				else if (carry.isCarrying(CarryType.ENTITY))
 				{
-					log(source,"Entity: " + carry.getEntity(player.level));
-					log(source,"Entity Name: " + carry.getEntity(player.level).getType());
+					Entity entity = carry.getEntity(player.level);
+					log(source,"Entity: " + entity);
+					log(source,"Entity Name: " + entity.getType());
 					log(source,"NBT: " + carry.getNbt());
 
-//					if (CustomPickupOverrideHandler.hasSpecialPickupConditions(ItemCarryonEntity.getEntity(main, player.level)))
-//						source.sendSuccess(Component.literal("Custom Pickup Condition: " + CustomPickupOverrideHandler.getPickupCondition(ItemCarryonEntity.getEntity(main, player.level))), true);
+					Optional<PickupCondition> cond = PickupConditionHandler.getPickupCondition(entity);
+					if(cond.isPresent())
+						log(source, "Custom Pickup Condition: " + cond.get().getCondition());
 
 					return 1;
 				}

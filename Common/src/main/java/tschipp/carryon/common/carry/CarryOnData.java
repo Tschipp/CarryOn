@@ -23,6 +23,7 @@ public class CarryOnData {
     private CompoundTag nbt;
     private boolean keyPressed = false;
     private CarryOnScript activeScript;
+    private int selectedSlot = 0;
 
     public CarryOnData(CompoundTag data)
     {
@@ -41,6 +42,10 @@ public class CarryOnData {
             DataResult<CarryOnScript> res = CarryOnScript.CODEC.parse(NbtOps.INSTANCE, data.get("activeScript"));
             this.activeScript = res.getOrThrow(false, (s) -> {throw new RuntimeException("Failed to decode activeScript during CarryOnData serialization: " + s);});
         }
+
+        if(data.contains("selected"))
+            this.selectedSlot = data.getInt("selected");
+
     }
 
     public CompoundTag getNbt()
@@ -53,7 +58,17 @@ public class CarryOnData {
             Tag tag = res.getOrThrow(false, (s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
             nbt.put("activeScript", tag);
         }
+        nbt.putInt("selected", this.selectedSlot);
         return nbt;
+    }
+
+    public CompoundTag getContentNbt()
+    {
+        if(type == CarryType.BLOCK && nbt.contains("block"))
+            return nbt.getCompound("block");
+        else if(type == CarryType.ENTITY && nbt.contains("entity"))
+            return nbt.getCompound("entity");
+        return null;
     }
 
     public void setBlock(BlockState state, @Nullable BlockEntity tile)
@@ -140,6 +155,14 @@ public class CarryOnData {
     public void setKeyPressed(boolean val) {
         this.keyPressed = val;
         this.nbt.putBoolean("keyPressed", val);
+    }
+
+    public void setSelected(int selectedSlot) {
+        this.selectedSlot = selectedSlot;
+    }
+
+    public int getSelected() {
+        return this.selectedSlot;
     }
 
     public void clear()

@@ -24,11 +24,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import tschipp.carryon.Constants;
+import tschipp.carryon.client.modeloverride.ModelOverride;
+import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
+
+import java.util.Optional;
 
 public class CarryRenderHelper
 {
@@ -139,8 +143,9 @@ public class CarryRenderHelper
 
 		applyGeneralTransformations(player, partialticks, matrix);
 
-		if (!Constants.CLIENT_CONFIG.facePlayer && isChest(block))
+		if (Constants.CLIENT_CONFIG.facePlayer != CarryRenderHelper.isChest(block))
 		{
+			//TODO: RealFirstPersonRender
 			//if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 			//	matrix.translate(0, 0, -0.4);
 			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
@@ -148,6 +153,8 @@ public class CarryRenderHelper
 		//else if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 		//	matrix.translate(0, 0, 0.4);
 		//matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+
+
 
 		float height = getRenderHeight(player);
 		float offset = (height - 1f) / 1.2f;
@@ -202,7 +209,7 @@ public class CarryRenderHelper
 
 		Vec3 translation = render.renderTranslation().getVec();
 		Vec3 rotation = render.renderRotation().getVec();
-		Vec3 scale = render.renderscale().getVec(1);
+		Vec3 scale = render.renderscale().getVec(1, 1, 1);
 
 		Quaternion rot = Vector3f.XP.rotationDegrees((float) rotation.x);
 		rot.mul(Vector3f.YP.rotationDegrees((float) rotation.y));
@@ -232,18 +239,36 @@ public class CarryRenderHelper
 			if(render.renderNameBlock().isPresent())
 				state = Registry.BLOCK.get(render.renderNameBlock().get()).defaultBlockState();
 		}
+
+		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
+		if(ov.isPresent())
+		{
+			var renderObj = ov.get().getRenderObject();
+			if(renderObj.right().isPresent())
+				state = renderObj.right().get();
+		}
+
 		return state;
 	}
 
 	public static BakedModel getRenderBlock(Player player)
 	{
+		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
 		BlockState state = getRenderState(player);
-
 		BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
 
 		if(state.getRenderShape() != RenderShape.MODEL || model.isCustomRenderer() || model.getQuads(state, null, RandomSource.create()).size() <= 0) {
 			ItemStack stack = new ItemStack(state.getBlock());
-			model = Minecraft.getInstance().getItemRenderer().getModel(stack, player.level, player, 0);
+			model = renderer.getModel(stack, player.level, player, 0);
+		}
+
+		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
+		if(ov.isPresent())
+		{
+			var renderObj = ov.get().getRenderObject();
+			if(renderObj.left().isPresent())
+				model = renderer.getModel(renderObj.left().get(), player.level, player, 0);
 		}
 
 		return model;
@@ -273,9 +298,17 @@ public class CarryRenderHelper
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
-			VoxelShape shape = getRenderState(player).getShape(player.level, player.blockPosition());
+			BlockState state = getRenderState(player);
+			VoxelShape shape = state.getShape(player.level, player.blockPosition());
 			if(shape == null)
 				return 1f;
+			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
+			if(ov.isPresent())
+			{
+				var renderObj = ov.get().getRenderObject();
+				if(renderObj.left().isPresent())
+					return 0.8f;
+			}
 			float width = (float)Math.abs(shape.bounds().maxX - shape.bounds().minX);
 			return width;
 		}
@@ -293,9 +326,17 @@ public class CarryRenderHelper
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
-			VoxelShape shape = getRenderState(player).getShape(player.level, player.blockPosition());
+			BlockState state = getRenderState(player);
+			VoxelShape shape = state.getShape(player.level, player.blockPosition());
 			if(shape == null)
 				return 1f;
+			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
+			if(ov.isPresent())
+			{
+				var renderObj = ov.get().getRenderObject();
+				if(renderObj.left().isPresent())
+					return 0.5f;
+			}
 			float height = (float)Math.abs(shape.bounds().maxY - shape.bounds().minY);
 			return height;
 		}

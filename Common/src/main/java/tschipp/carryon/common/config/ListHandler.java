@@ -1,4 +1,4 @@
-package tschipp.carryon.common.carry;
+package tschipp.carryon.common.config;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -8,6 +8,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
 import tschipp.carryon.Constants;
+import tschipp.carryon.utils.StringHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -131,12 +132,13 @@ public class ListHandler {
             if(!propString.contains("[") || !propString.contains("]"))
                 continue;
             String name = propString.substring(0, propString.indexOf("["));
-            String propName = propString.substring(propString.indexOf("[") + 1, propString.indexOf("]"));
+            String props = propString.substring(propString.indexOf("[") + 1, propString.indexOf("]"));
             Block blk = Registry.BLOCK.get(new ResourceLocation(name));
-            for(Property<?> prop : blk.defaultBlockState().getProperties())
-            {
-                if(prop.getName().equals(propName))
-                    PROPERTY_EXCEPTION_CLASSES.add(prop.getValueClass());
+            for(String propName : props.split(",")) {
+                for (Property<?> prop : blk.defaultBlockState().getProperties()) {
+                    if (prop.getName().equals(propName))
+                        PROPERTY_EXCEPTION_CLASSES.add(prop.getValueClass());
+                }
             }
         }
 
@@ -164,6 +166,7 @@ public class ListHandler {
 
                     for (ResourceLocation key : keys)
                     {
+
                         if (containsAll(key.toString(), filter))
                         {
                             toAddTo.add(key.toString());
@@ -180,15 +183,7 @@ public class ListHandler {
 
     public static boolean containsAll(String str, String... strings)
     {
-        boolean containsAll = true;
-
-        for (String s : strings)
-        {
-            if (!str.contains(s))
-                containsAll = false;
-        }
-
-        return containsAll;
+        return StringHelper.matchesWildcards(str, strings);
     }
 
     public static void addForbiddenTiles(String toAdd)

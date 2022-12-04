@@ -4,6 +4,7 @@
     "package": "tschipp.carryon.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
+        "PlayerMixinFabric"
     ],
     "client": [
         "ItemInHandRendererMixin",

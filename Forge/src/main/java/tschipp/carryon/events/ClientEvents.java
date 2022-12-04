@@ -78,6 +78,7 @@ public class ClientEvents {
 		if(event.phase == Phase.END)
 		{
 			CarryOnCommonClient.checkForKeybinds();
+			CarryOnCommonClient.onCarryClientTick();
 		}
 
 	}
