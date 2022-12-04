@@ -26,7 +26,8 @@ pipeline {
     }
     post {
         always {
-            archive 'build/libs/**.jar'
+            archive 'Forge/build/libs/**.jar'
+            archive 'Fabric/build/libs/**.jar'
         }
     }
 }
