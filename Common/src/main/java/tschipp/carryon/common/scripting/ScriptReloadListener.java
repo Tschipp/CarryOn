@@ -14,6 +14,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import tschipp.carryon.Constants;
+import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.networking.clientbound.ClientboundSyncScriptsPacket;
 import tschipp.carryon.platform.Services;
 
@@ -37,10 +38,14 @@ public class ScriptReloadListener extends SimpleJsonResourceReloadListener
 		try {
 			objects.forEach((path, jsonElem) -> {
 				DataResult<CarryOnScript> res = CarryOnScript.CODEC.parse(JsonOps.INSTANCE, jsonElem);
-				CarryOnScript script = res.getOrThrow(false, (s) -> {throw new RuntimeException(s);});
-
-				if (script.isValid())
-					ScriptManager.SCRIPTS.add(script);
+				if(res.result().isPresent())
+				{
+					CarryOnScript script = res.result().get();
+					if (script.isValid())
+						ScriptManager.SCRIPTS.add(script);
+				}
+				else
+					Constants.LOG.warn("Error while parsing script: " + res.error().get().message());
 			});
 		}
 		catch (Exception e)

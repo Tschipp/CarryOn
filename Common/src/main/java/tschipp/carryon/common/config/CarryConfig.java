@@ -153,7 +153,11 @@ public class CarryConfig {
             public String[] placementStateExceptions = {
                     "minecraft:chest[type]",
                     "minecraft:stone_button[face]",
-                    "minecraft:vine[north,east,south,west,up]"
+                    "minecraft:vine[north,east,south,west,up]",
+                    "minecraft:creeper_head[rotation]",
+                    "minecraft:glow_lichen[north,east,south,west,up,down]",
+                    "minecraft:oak_sign[rotation]",
+                    "minecraft:oak_trapdoor[half]",
             };
 
             @Property(
@@ -294,7 +298,8 @@ public class CarryConfig {
         )
         public String[] modelOverrides = {
                 "minecraft:redstone_wire->(item)minecraft:redstone",
-                "minecraft:bamboo_sapling->(block)minecraft:bamboo"
+                "minecraft:bamboo_sapling->(block)minecraft:bamboo",
+                "minecraft:candle_cake->(block)minecraft:cake"
         };
     }
 

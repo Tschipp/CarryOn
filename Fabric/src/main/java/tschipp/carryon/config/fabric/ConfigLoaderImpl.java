@@ -34,6 +34,8 @@ public class ConfigLoaderImpl {
                 FileUtils.write(cfgFile, GSON.toJson(loadConfig(entry.getValue(), cfgJson)), StandardCharsets.UTF_8);
             }
         }
+
+        ConfigLoader.onConfigLoaded();
     }
 
     private static JsonObject loadConfig(BuiltCategory category, JsonObject config) {

@@ -150,6 +150,13 @@ public class CarryRenderHelper
 			//	matrix.translate(0, 0, -0.4);
 			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
 		}
+//		if(perspective == 1)
+//		{
+//			matrix.pushPose();
+//			//matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+//			matrix.popPose();
+//		}
+
 		//else if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 		//	matrix.translate(0, 0, 0.4);
 		//matrix.mulPose(Vector3f.YP.rotationDegrees(180));

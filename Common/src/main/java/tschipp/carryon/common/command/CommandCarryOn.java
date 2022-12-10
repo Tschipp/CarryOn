@@ -16,6 +16,7 @@ import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
+import tschipp.carryon.common.carry.PlacementHandler;
 import tschipp.carryon.common.pickupcondition.PickupCondition;
 import tschipp.carryon.common.pickupcondition.PickupConditionHandler;
 
@@ -35,7 +36,11 @@ public class CommandCarryOn
 
 				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermission(2)).executes(cmd -> handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target")))))
 
-		;
+				.then(Commands.literal("place").requires(src -> src.hasPermission(2)).executes(cmd -> handlePlace(cmd.getSource(), Collections.singleton(cmd.getSource().getPlayerOrException()))))
+
+				.then(Commands.literal("place").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermission(2)).executes(cmd -> handlePlace(cmd.getSource(), EntityArgument.getPlayers(cmd, "target")))))
+
+				;
 
 		dispatcher.register(builder);
 
@@ -112,6 +117,23 @@ public class CommandCarryOn
 			source.sendSuccess(Component.literal("Cleared " + cleared + " Items!"), true);
 		else
 			source.sendSuccess(Component.literal("Cleared " + cleared + " Item!"), true);
+
+		return 1;
+	}
+
+	private static int handlePlace(CommandSourceStack source, Collection<ServerPlayer> players)
+	{
+		int cleared = 0;
+		for (ServerPlayer player : players)
+		{
+			PlacementHandler.placeCarried(player);
+			cleared++;
+		}
+
+		if (cleared != 1)
+			source.sendSuccess(Component.literal("Placed " + cleared + " Items!"), true);
+		else
+			source.sendSuccess(Component.literal("Placed " + cleared + " Item!"), true);
 
 		return 1;
 	}

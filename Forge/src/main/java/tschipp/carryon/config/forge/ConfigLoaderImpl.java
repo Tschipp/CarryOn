@@ -95,7 +95,7 @@ public class ConfigLoaderImpl {
             case BOOLEAN -> builder.define(data.getId(), data.getBoolean());
             case INT -> builder.defineInRange(data.getId(), data.getInt(), annotationData.min(), annotationData.max());
             case DOUBLE -> builder.defineInRange(data.getId(), data.getDouble(), annotationData.minD(), annotationData.maxD());
-            case STRING_ARRAY -> builder.defineList(data.getId(), Arrays.asList(data.getStringArray()), obj -> obj instanceof String);
+            case STRING_ARRAY -> builder.defineList(data.getId(), Arrays.asList(data.getStringArray()), obj -> true);
             default -> throw new IllegalAccessException("Unknown property type.");
         }
     }

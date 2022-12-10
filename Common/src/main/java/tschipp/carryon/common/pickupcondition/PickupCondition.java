@@ -34,7 +34,7 @@ public class PickupCondition
 		if(!(str.contains("(") && str.endsWith(")")))
 			return DataResult.error("Error while parsing: "+ str +". Pickup Condition must contain proper brackets.");
 
-		String cond = str.substring(str.indexOf("("), str.length()-1);
+		String cond = str.substring(str.indexOf("(") + 1, str.length()-1);
 
 		String match = str.substring(0, str.indexOf("("));
 
