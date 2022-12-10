@@ -42,12 +42,19 @@ loom {
 }
 
 
+var refmap_target = archivesBaseName + "-"
+
 processResources {
     from project(":Common").sourceSets.main.resources
     inputs.property "version", project.version
+    inputs.property "refmap_target", refmap_target
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version
+    }
+
+    filesMatching("carryon.mixins.json") {
+        expand "refmap_target": refmap_target
     }
 }
 
