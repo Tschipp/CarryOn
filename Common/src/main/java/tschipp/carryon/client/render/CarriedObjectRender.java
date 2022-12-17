@@ -3,7 +3,7 @@ package tschipp.carryon.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
@@ -62,10 +62,10 @@ public class CarriedObjectRender
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
 		if (Constants.CLIENT_CONFIG.facePlayer != CarryRenderHelper.isChest(state.getBlock())) {
-			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
-			matrix.mulPose(Vector3f.XN.rotationDegrees(8));
+			matrix.mulPose(Axis.YP.rotationDegrees(180));
+			matrix.mulPose(Axis.XN.rotationDegrees(8));
 		} else {
-			matrix.mulPose(Vector3f.XP.rotationDegrees(8));
+			matrix.mulPose(Axis.XP.rotationDegrees(8));
 		}
 
 		if(carry.getActiveScript().isPresent())
@@ -101,7 +101,7 @@ public class CarriedObjectRender
 
 			matrix.pushPose();
 			matrix.scale(0.8f, 0.8f, 0.8f);
-			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+			matrix.mulPose(Axis.YP.rotationDegrees(180));
 			matrix.translate(0.0, -height - .1, width + 0.1);
 
 			manager.setRenderShadow(false);

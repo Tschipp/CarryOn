@@ -1,15 +1,14 @@
 package tschipp.carryon.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -23,6 +22,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Quaternionf;
 import tschipp.carryon.Constants;
 import tschipp.carryon.client.modeloverride.ModelOverride;
 import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
@@ -52,15 +52,15 @@ public class CarryRenderHelper
 			return -(entity.yBodyRotO + (entity.yBodyRot - entity.yBodyRotO) * partialticks);
 	}
 
-	public static Quaternion getExactBodyRotation(LivingEntity entity, float partialticks)
+	public static Quaternionf getExactBodyRotation(LivingEntity entity, float partialticks)
 	{
-		return Vector3f.YP.rotationDegrees(getExactBodyRotationDegrees(entity, partialticks));
+		return Axis.YP.rotationDegrees(getExactBodyRotationDegrees(entity, partialticks));
 	}
 
 	public static void applyGeneralTransformations(Player player, float partialticks, PoseStack matrix)
 	{
 		int perspective = CarryRenderHelper.getPerspective();
-		Quaternion playerrot = CarryRenderHelper.getExactBodyRotation(player, partialticks);
+		Quaternionf playerrot = CarryRenderHelper.getExactBodyRotation(player, partialticks);
 		Vec3 playerpos = CarryRenderHelper.getExactPos(player, partialticks);
 		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 		Vec3 offset = playerpos.subtract(cameraPos);
@@ -70,7 +70,7 @@ public class CarryRenderHelper
 		matrix.translate(offset.x, offset.y, offset.z);
 
 		if (perspective == 2)
-			playerrot.mul(Vector3f.YP.rotationDegrees(180));
+			playerrot.mul(Axis.YP.rotationDegrees(180));
 		matrix.mulPose(playerrot);
 
 		matrix.pushPose();
@@ -92,10 +92,10 @@ public class CarryRenderHelper
 			if (perspective == 2)
 			{
 				matrix.translate(0, 0, 1.35);
-				matrix.mulPose(Vector3f.XP.rotationDegrees(f4));
+				matrix.mulPose(Axis.XP.rotationDegrees(f4));
 			}
 			else
-				matrix.mulPose(Vector3f.XN.rotationDegrees(f4));
+				matrix.mulPose(Axis.XN.rotationDegrees(f4));
 
 			matrix.translate(0, -1.5, -1.848);
 			if (perspective == 2)
@@ -112,9 +112,9 @@ public class CarryRenderHelper
 					matrix.translate(0, 0, 1.35);
 
 				if (perspective == 2)
-					matrix.mulPose(Vector3f.XP.rotationDegrees(f2 * (-90.0F - player.xRotO)));
+					matrix.mulPose(Axis.XP.rotationDegrees(f2 * (-90.0F - player.xRotO)));
 				else
-					matrix.mulPose(Vector3f.XN.rotationDegrees(f2 * (-90.0F - player.xRotO)));
+					matrix.mulPose(Axis.XN.rotationDegrees(f2 * (-90.0F - player.xRotO)));
 			}
 
 			Vec3 viewVector = player.getViewVector(partialticks);
@@ -126,7 +126,7 @@ public class CarryRenderHelper
 				double d2 = (deltaMovement.x * viewVector.x + deltaMovement.z * viewVector.z) / (Math.sqrt(d0) * Math.sqrt(d1));
 				double d3 = deltaMovement.x * viewVector.z - deltaMovement.z * viewVector.x;
 
-				matrix.mulPose(Vector3f.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
+				matrix.mulPose(Axis.YP.rotation((float) (Math.signum(d3) * Math.acos(d2))));
 			}
 
 			if (perspective != 2)
@@ -148,18 +148,18 @@ public class CarryRenderHelper
 			//TODO: RealFirstPersonRender
 			//if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 			//	matrix.translate(0, 0, -0.4);
-			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+			matrix.mulPose(Axis.YP.rotationDegrees(180));
 		}
 //		if(perspective == 1)
 //		{
 //			matrix.pushPose();
-//			//matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+//			//matrix.mulPose(Axis.YP.rotationDegrees(180));
 //			matrix.popPose();
 //		}
 
 		//else if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 		//	matrix.translate(0, 0, 0.4);
-		//matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+		//matrix.mulPose(Axis.YP.rotationDegrees(180));
 
 
 
@@ -191,14 +191,14 @@ public class CarryRenderHelper
 		entity.xRotO = 0.0f;
 
 		if (perspective == 2)
-			matrix.mulPose(Vector3f.YP.rotationDegrees(180));
+			matrix.mulPose(Axis.YP.rotationDegrees(180));
 
 		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
 		matrix.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
 
 		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
 		{
-			matrix.mulPose(Vector3f.XN.rotationDegrees(90));
+			matrix.mulPose(Axis.XN.rotationDegrees(90));
 			matrix.translate(0, -0.2 * height, 0);
 
 			if (pose == Pose.FALL_FLYING)
@@ -218,9 +218,9 @@ public class CarryRenderHelper
 		Vec3 rotation = render.renderRotation().getVec();
 		Vec3 scale = render.renderscale().getVec(1, 1, 1);
 
-		Quaternion rot = Vector3f.XP.rotationDegrees((float) rotation.x);
-		rot.mul(Vector3f.YP.rotationDegrees((float) rotation.y));
-		rot.mul(Vector3f.ZP.rotationDegrees((float) rotation.z));
+		Quaternionf rot = Axis.XP.rotationDegrees((float) rotation.x);
+		rot.mul(Axis.YP.rotationDegrees((float) rotation.y));
+		rot.mul(Axis.ZP.rotationDegrees((float) rotation.z));
 		matrix.mulPose(rot);
 
 		matrix.translate(translation.x, translation.y, perspective == 1 && script.isBlock() ? -translation.z : translation.z);
@@ -244,7 +244,9 @@ public class CarryRenderHelper
 		{
 			ScriptRender render = carry.getActiveScript().get().scriptRender();
 			if(render.renderNameBlock().isPresent())
-				state = Registry.BLOCK.get(render.renderNameBlock().get()).defaultBlockState();
+			{
+				state = BuiltInRegistries.BLOCK.get(render.renderNameBlock().get()).defaultBlockState();
+			}
 		}
 
 		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
@@ -291,7 +293,7 @@ public class CarryRenderHelper
 			CarryOnScript script = carry.getActiveScript().get();
 			ScriptRender render = script.scriptRender();
 			if(render.renderNameEntity().isPresent())
-				entity = Registry.ENTITY_TYPE.get(render.renderNameEntity().get()).create(player.level);
+				entity = BuiltInRegistries.ENTITY_TYPE.get(render.renderNameEntity().get()).create(player.level);
 
 			if(render.renderNBT().isPresent())
 				entity.load(render.renderNBT().get());

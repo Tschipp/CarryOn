@@ -106,8 +106,8 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly project(":Common")
-    implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
-    implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.19.2:16.1.9")
+    //implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
+    //implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.19.3:17.0.2")
     annotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
 }
 

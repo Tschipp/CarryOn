@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.arguments.blocks.BlockStateParser.BlockResult;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,7 +51,7 @@ public class PickupCondition
 		{
 			String name = match.contains("[") ? match.substring(0, match.indexOf("[")) : match;
 			String[] split = name.replace("*", ",").split(",");
-			String stateName = Registry.BLOCK.getKey(state.getBlock()).toString();
+			String stateName = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
 
 			if(StringHelper.matchesWildcards(stateName, split))
 			{
@@ -76,7 +76,7 @@ public class PickupCondition
 
 	public boolean matches(Entity entity)
 	{
-		String entityName = Registry.ENTITY_TYPE.getKey(entity.getType()).toString();
+		String entityName = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
 		if(wildcards)
 		{
 			String[] split = match.replace("*", ",").split(",");
@@ -99,7 +99,7 @@ public class PickupCondition
 	private BlockResult parseState(String state)
 	{
 		try {
-			BlockResult result = BlockStateParser.parseForBlock(Registry.BLOCK, state, false);
+			BlockResult result = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), state, false);
 			return result;
 		} catch (CommandSyntaxException e) {
 			e.printStackTrace();

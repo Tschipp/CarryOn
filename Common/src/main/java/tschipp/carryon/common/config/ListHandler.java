@@ -1,6 +1,7 @@
 package tschipp.carryon.common.config;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
@@ -64,7 +65,7 @@ public class ListHandler {
 
     private static boolean doCheck(Block block, Set<String> regular, List<TagKey<Block>> tags)
     {
-        String name = Registry.BLOCK.getKey(block).toString();
+        String name = BuiltInRegistries.BLOCK.getKey(block).toString();
         if(regular.contains(name))
             return true;
         for(TagKey<Block> tag : tags)
@@ -75,7 +76,7 @@ public class ListHandler {
 
     private static boolean doCheck(Entity entity, Set<String> regular, List<TagKey<EntityType<?>>> tags)
     {
-        String name = Registry.ENTITY_TYPE.getKey(entity.getType()).toString();
+        String name = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
         if(regular.contains(name))
             return true;
         for(TagKey<EntityType<?>> tag : tags)
@@ -100,32 +101,32 @@ public class ListHandler {
         ALLOWED_TILES_TAGS.clear();
         PROPERTY_EXCEPTION_CLASSES.clear();
 
-        Map<ResourceLocation, TagKey<Block>> blocktags = Registry.BLOCK.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
-        Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = Registry.ENTITY_TYPE.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
+        Map<ResourceLocation, TagKey<Block>> blocktags = BuiltInRegistries.BLOCK.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
+        Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = BuiltInRegistries.ENTITY_TYPE.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
 
         List<String> forbidden = new ArrayList<>(List.of(Constants.COMMON_CONFIG.blacklist.forbiddenTiles));
         forbidden.add("#carryon:block_blacklist");
-        addWithWildcards(forbidden, FORBIDDEN_TILES, Registry.BLOCK, blocktags, FORBIDDEN_TILES_TAGS);
+        addWithWildcards(forbidden, FORBIDDEN_TILES, BuiltInRegistries.BLOCK, blocktags, FORBIDDEN_TILES_TAGS);
 
         List<String> forbiddenEntity = new ArrayList<>(List.of(Constants.COMMON_CONFIG.blacklist.forbiddenEntities));
         forbiddenEntity.add("#carryon:entity_blacklist");
-        addWithWildcards(forbiddenEntity, FORBIDDEN_ENTITIES, Registry.ENTITY_TYPE, entitytags, FORBIDDEN_ENTITIES_TAGS);
+        addWithWildcards(forbiddenEntity, FORBIDDEN_ENTITIES, BuiltInRegistries.ENTITY_TYPE, entitytags, FORBIDDEN_ENTITIES_TAGS);
 
         List<String> allowedEntities = new ArrayList<>(List.of(Constants.COMMON_CONFIG.whitelist.allowedEntities));
         allowedEntities.add("#carryon:entity_whitelist");
-        addWithWildcards(allowedEntities, ALLOWED_ENTITIES, Registry.ENTITY_TYPE, entitytags, ALLOWED_ENTITIES_TAGS);
+        addWithWildcards(allowedEntities, ALLOWED_ENTITIES, BuiltInRegistries.ENTITY_TYPE, entitytags, ALLOWED_ENTITIES_TAGS);
 
         List<String> allowedBlocks = new ArrayList<>(List.of(Constants.COMMON_CONFIG.whitelist.allowedBlocks));
         allowedBlocks.add("#carryon:block_whitelist");
-        addWithWildcards(allowedBlocks, ALLOWED_TILES, Registry.BLOCK, blocktags, ALLOWED_TILES_TAGS);
+        addWithWildcards(allowedBlocks, ALLOWED_TILES, BuiltInRegistries.BLOCK, blocktags, ALLOWED_TILES_TAGS);
 
         List<String> forbiddenStacking = new ArrayList<>(List.of(Constants.COMMON_CONFIG.blacklist.forbiddenStacking));
         forbiddenStacking.add("#carryon:stacking_blacklist");
-        addWithWildcards(forbiddenStacking, FORBIDDEN_STACKING, Registry.ENTITY_TYPE, entitytags, FORBIDDEN_STACKING_TAGS);
+        addWithWildcards(forbiddenStacking, FORBIDDEN_STACKING, BuiltInRegistries.ENTITY_TYPE, entitytags, FORBIDDEN_STACKING_TAGS);
 
         List<String> allowedStacking = new ArrayList<>(List.of(Constants.COMMON_CONFIG.whitelist.allowedStacking));
         allowedStacking.add("#carryon:stacking_whitelist");
-        addWithWildcards(allowedStacking, ALLOWED_STACKING, Registry.ENTITY_TYPE, entitytags, ALLOWED_STACKING_TAGS);
+        addWithWildcards(allowedStacking, ALLOWED_STACKING, BuiltInRegistries.ENTITY_TYPE, entitytags, ALLOWED_STACKING_TAGS);
 
         for(String propString : Constants.COMMON_CONFIG.settings.placementStateExceptions)
         {
@@ -133,7 +134,7 @@ public class ListHandler {
                 continue;
             String name = propString.substring(0, propString.indexOf("["));
             String props = propString.substring(propString.indexOf("[") + 1, propString.indexOf("]"));
-            Block blk = Registry.BLOCK.get(new ResourceLocation(name));
+            Block blk = BuiltInRegistries.BLOCK.get(new ResourceLocation(name));
             for(String propName : props.split(",")) {
                 for (Property<?> prop : blk.defaultBlockState().getProperties()) {
                     if (prop.getName().equals(propName))
