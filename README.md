@@ -9,16 +9,14 @@ repositories {
 }
 
 dependencies {
-	deobfCompile "tschipp.carryon:carryon-MCVERSION:MODVERSION" 
+	deobfCompile "tschipp.carryon:carryon-LOADER-MCVERSION:MODVERSION" 
 }
 ```
-Make sure to replace `MCVERSION` and `MODVERSION` with the appropriate versions.
+Make sure to replace `LOADER`, `MCVERSION` and `MODVERSION` with the appropriate versions. One example would be `tschipp.carryon:carryon-forge-1.19.2:2.0.0.5`  
 
 # Development
 
 This project provides a Gradle project template that can compile mods for both Forge and Fabric using a common sourceset. This project does not require any third party libraries or dependencies.
-
-## Getting Started
 
 ## IntelliJ IDEA
 This guide will show how to import the MultiLoader Template into IntelliJ IDEA. The setup process is roughly equivalent to setting up Forge and Fabric independently and should be very familiar to anyone who has worked with their MDKs.
