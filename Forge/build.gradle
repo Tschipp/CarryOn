@@ -101,6 +101,9 @@ repositories {
     maven {
         url 'https://maven.blamejared.com'
     }
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {
@@ -109,6 +112,16 @@ dependencies {
     implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
     implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.19.2:16.1.9")
     annotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
+
+    fileTree("libs").matching {
+    	include "*.jar"
+    }.each {
+    	String filename = it.getName();
+    	filename = filename.substring(0, filename.length() - 4);
+    	int lastDash = filename.lastIndexOf("-");
+    	filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
+    	implementation fg.deobf("blank:${filename}")
+    }
 }
 
 tasks.withType(JavaCompile) {
