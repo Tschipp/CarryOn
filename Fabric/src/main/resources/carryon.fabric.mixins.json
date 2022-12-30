@@ -7,7 +7,7 @@
         "PlayerMixinFabric"
     ],
     "client": [
-        "ItemInHandRendererMixin",
+      "ItemInHandRendererMixin",
         "LevelRendererMixin",
         "ScreenMixin"
     ],

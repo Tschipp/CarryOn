@@ -24,6 +24,7 @@ import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
+import tschipp.carryon.platform.Services;
 
 import java.util.Optional;
 
@@ -32,6 +33,9 @@ public class CarriedObjectRender
 
 	public static boolean drawFirstPerson(Player player, MultiBufferSource buffer, PoseStack matrix, int light, float partialTicks)
 	{
+		if(Services.PLATFORM.isModLoaded("firstperson") || Services.PLATFORM.isModLoaded("firstpersonmod"))
+			return false;
+
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if(carry.isCarrying(CarryType.BLOCK))
 			drawFirstPersonBlock(player, buffer, matrix, light, CarryRenderHelper.getRenderState(player));
@@ -116,7 +120,12 @@ public class CarriedObjectRender
 			if (entity instanceof LivingEntity)
 				((LivingEntity) entity).hurtTime = 0;
 
-			manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+			try {
+				manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+			}
+			catch (Exception e)
+			{
+			}
 			manager.setRenderShadow(true);
 		}
 
@@ -143,75 +152,74 @@ public class CarriedObjectRender
 
 		for (Player player : level.players())
 		{
-			CarryOnData carry = CarryOnDataManager.getCarryData(player);
+			try {
+				CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
-			if (perspective == 0 && player == mc.player)
-				continue;
+				if (perspective == 0 && player == mc.player && !(Services.PLATFORM.isModLoaded("firstperson") || Services.PLATFORM.isModLoaded("firstpersonmod")))
+					continue;
 
-			light = manager.getPackedLightCoords(player, partialticks);
+				light = manager.getPackedLightCoords(player, partialticks);
 
-			if (carry.isCarrying(CarryType.BLOCK))
-			{
-				BlockState state = CarryRenderHelper.getRenderState(player);
+				if (carry.isCarrying(CarryType.BLOCK)) {
+					BlockState state = CarryRenderHelper.getRenderState(player);
 
-				CarryRenderHelper.applyBlockTransformations(player, partialticks, matrix, state.getBlock());
+					CarryRenderHelper.applyBlockTransformations(player, partialticks, matrix, state.getBlock());
 
-				ItemStack tileItem = new ItemStack(state.getBlock().asItem());
-				BakedModel model = CarryRenderHelper.getRenderBlock(player);
+					ItemStack tileItem = new ItemStack(state.getBlock().asItem());
+					BakedModel model = CarryRenderHelper.getRenderBlock(player);
 
-				//ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, level, player) : tileItem.isEmpty() ? mc.getBlockRenderer().getBlockModel(state) : mc.getItemRenderer().getModel(tileItem, level, player, 0);
+					//ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, level, player) : tileItem.isEmpty() ? mc.getBlockRenderer().getBlockModel(state) : mc.getItemRenderer().getModel(tileItem, level, player, 0);
 //
-				Optional<CarryOnScript> res = carry.getActiveScript();
-				if(res.isPresent())
-				{
-					CarryOnScript script = res.get();
-					CarryRenderHelper.performScriptTransformation(matrix, script);
-				}
-
-				RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-				RenderSystem.enableCull();
-
-				PoseStack.Pose p = matrix.last();
-				PoseStack copy = new PoseStack();
-				copy.mulPoseMatrix(p.pose());
-				matrix.popPose();
-
-				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-				CarryRenderHelper.renderBakedModel(tileItem, copy, buffer, light, model);
-				buffer.endBatch();
-
-				matrix.popPose();
-			}
-			else if (carry.isCarrying(CarryType.ENTITY))
-			{
-				Entity entity = CarryRenderHelper.getRenderEntity(player);
-
-				if (entity != null)
-				{
-					CarryRenderHelper.applyEntityTransformations(player, partialticks, matrix, entity);
-
-					manager.setRenderShadow(false);
-
 					Optional<CarryOnScript> res = carry.getActiveScript();
-					if(res.isPresent())
-					{
+					if (res.isPresent()) {
 						CarryOnScript script = res.get();
 						CarryRenderHelper.performScriptTransformation(matrix, script);
 					}
 
-					if (entity instanceof LivingEntity le)
-						le.hurtTime = 0;
+					RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+					RenderSystem.enableCull();
+
+					PoseStack.Pose p = matrix.last();
+					PoseStack copy = new PoseStack();
+					copy.mulPoseMatrix(p.pose());
+					matrix.popPose();
 
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-					manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+					CarryRenderHelper.renderBakedModel(tileItem, copy, buffer, light, model);
 					buffer.endBatch();
 
 					matrix.popPose();
-					manager.setRenderShadow(true);
-					matrix.popPose();
+				} else if (carry.isCarrying(CarryType.ENTITY)) {
+					Entity entity = CarryRenderHelper.getRenderEntity(player);
+
+					if (entity != null) {
+						CarryRenderHelper.applyEntityTransformations(player, partialticks, matrix, entity);
+
+						manager.setRenderShadow(false);
+
+						Optional<CarryOnScript> res = carry.getActiveScript();
+						if (res.isPresent()) {
+							CarryOnScript script = res.get();
+							CarryRenderHelper.performScriptTransformation(matrix, script);
+						}
+
+						if (entity instanceof LivingEntity le)
+							le.hurtTime = 0;
+
+						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+						manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+						buffer.endBatch();
+
+						matrix.popPose();
+						manager.setRenderShadow(true);
+						matrix.popPose();
+					}
 				}
+			}
+			catch (Exception e)
+			{
 			}
 
 		}

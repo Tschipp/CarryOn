@@ -231,7 +231,7 @@ public class CarryConfig {
                     "magneticraft:multiblock_gap", "refinedstorage:*", "mcmultipart:*", "enderstorage:*",
                     "betterstorage:*", "practicallogistics2:*", "wearablebackpacks:*", "rftools:screen",
                     "rftools:creative_screen", "create:*", "magic_doorknob:*", "iceandfire:*", "ftbquests:*",
-                    "waystones:*"
+                    "waystones:*", "contact:*", "framedblocks:*"
             };
 
             @Property(
