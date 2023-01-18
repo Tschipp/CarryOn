@@ -316,7 +316,7 @@ public class CarryRenderHelper
 		{
 			BlockState state = getRenderState(player);
 			VoxelShape shape = state.getShape(player.level, player.blockPosition());
-			if(shape == null)
+			if(shape == null || shape.isEmpty())
 				return 1f;
 			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
 			if(ov.isPresent())
@@ -344,7 +344,7 @@ public class CarryRenderHelper
 		{
 			BlockState state = getRenderState(player);
 			VoxelShape shape = state.getShape(player.level, player.blockPosition());
-			if(shape == null)
+			if(shape == null || shape.isEmpty())
 				return 1f;
 			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
 			if(ov.isPresent())

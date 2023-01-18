@@ -110,9 +110,9 @@ public class CommonEvents
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if (!carry.isCarrying()) {
 			if (PickupHandler.tryPickupEntity((ServerPlayer) player, target, (toPickup) -> {
-				AttackEntityEvent attackEvent = new AttackEntityEvent(player, toPickup);
-				MinecraftForge.EVENT_BUS.post(attackEvent);
-				return !attackEvent.isCanceled();
+				EntityPickupEvent pickupEvent = new EntityPickupEvent((ServerPlayer) player, toPickup);
+				MinecraftForge.EVENT_BUS.post(pickupEvent);
+				return !pickupEvent.isCanceled();
 			})) {
 				event.setResult(Result.DENY);
 				event.setCancellationResult(InteractionResult.SUCCESS);

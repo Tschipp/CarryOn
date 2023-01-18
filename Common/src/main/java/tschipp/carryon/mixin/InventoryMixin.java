@@ -1,5 +1,7 @@
 package tschipp.carryon.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,15 +29,15 @@ public class InventoryMixin
 	@Shadow
 	public NonNullList<ItemStack> items;
 
-	@Redirect(method = "getFreeSlot()I", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/core/NonNullList;get(I)Ljava/lang/Object;"))
-	private <E> E getFreeSlotEmptyCheck(NonNullList<E> instance, int i)
+	@WrapOperation(method = "getFreeSlot()I", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/core/NonNullList;get(I)Ljava/lang/Object;"))
+	private Object getFreeSlotEmptyCheck(NonNullList<Object> instance, int slot, Operation<Object> original)
 	{
-		if(i == selected && CarryOnDataManager.getCarryData(player).isCarrying())
+		if(slot == selected && CarryOnDataManager.getCarryData(player).isCarrying())
 		{
-			return (E) DUMMY_STACK;
+			return DUMMY_STACK;
 		}
 		else
-			return instance.get(i);
+			return original.call(instance, slot);
 	}
 
 	@Inject(method = "setPickedItem(Lnet/minecraft/world/item/ItemStack;)V", at = @At("HEAD"), cancellable = true)

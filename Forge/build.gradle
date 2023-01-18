@@ -4,11 +4,13 @@ buildscript {
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
 		maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
 		classpath 'org.parchmentmc:librarian:1.+'
+        classpath 'gradle.plugin.com.github.johnrengelman:shadow:7.1.2'
     }
 }
 apply plugin: 'java'
@@ -17,6 +19,7 @@ apply plugin: 'eclipse'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'maven-publish'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
 
@@ -97,6 +100,11 @@ minecraft {
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
+configurations {
+    shade
+    implementation.extendsFrom shade
+}
+
 repositories {
     maven {
         url 'https://maven.blamejared.com'
@@ -104,14 +112,19 @@ repositories {
     flatDir {
         dirs 'libs'
     }
+    maven { url 'https://jitpack.io' }
+
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly project(":Common")
+    minecraftLibrary("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
+    annotationProcessor("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
     //implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
     //implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.19.3:17.0.2")
     annotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
+    shade("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
 
     fileTree("libs").matching {
     	include "*.jar"
@@ -122,6 +135,19 @@ dependencies {
     	filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
     	implementation fg.deobf("blank:${filename}")
     }
+}
+
+shadowJar {
+    configurations = [project.configurations.shade]
+    relocate 'com.github.llamalad7.mixinextras', 'tschipp.carryon.shaded.mixinextras'
+    finalizedBy 'reobfShadowJar'
+    classifier = ""
+}
+
+assemble.dependsOn shadowJar
+
+reobf {
+    shadowJar {}
 }
 
 tasks.withType(JavaCompile) {
