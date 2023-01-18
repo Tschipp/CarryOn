@@ -12,6 +12,10 @@ pluginManagement {
 
         maven { url 'https://jitpack.io' }
 
+        maven {
+            name = 'ParchmentMC'
+            url = 'https://maven.parchmentmc.org'
+        }
     }
 }
 

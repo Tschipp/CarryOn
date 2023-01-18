@@ -2,7 +2,7 @@ package tschipp.carryon.common.scripting;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -83,7 +83,7 @@ public record CarryOnScript(
 
 			public static final Codec<ScriptObjectBlock> CODEC = RecordCodecBuilder.create(instance ->
 					instance.group(
-							ResourceKey.codec(Registry.BLOCK_REGISTRY).optionalFieldOf("name").forGetter(ScriptObjectBlock::typeNameBlock),
+							ResourceKey.codec(Registries.BLOCK).optionalFieldOf("name").forGetter(ScriptObjectBlock::typeNameBlock),
 							MaterialCondition.CODEC.optionalFieldOf("material", MaterialCondition.NONE).forGetter(ScriptObjectBlock::typeMaterial),
 							NumberBoundCondition.CODEC.optionalFieldOf("hardness", NumberBoundCondition.NONE).forGetter(ScriptObjectBlock::typeHardness),
 							NumberBoundCondition.CODEC.optionalFieldOf("resistance", NumberBoundCondition.NONE).forGetter(ScriptObjectBlock::typeResistance),
@@ -103,7 +103,7 @@ public record CarryOnScript(
 
 			public static final Codec<ScriptObjectEntity> CODEC = RecordCodecBuilder.create(instance ->
 					instance.group(
-							ResourceKey.codec(Registry.ENTITY_TYPE_REGISTRY).optionalFieldOf("name").forGetter(ScriptObjectEntity::typeNameEntity),
+							ResourceKey.codec(Registries.ENTITY_TYPE).optionalFieldOf("name").forGetter(ScriptObjectEntity::typeNameEntity),
 							NumberBoundCondition.CODEC.optionalFieldOf("health", NumberBoundCondition.NONE).forGetter(ScriptObjectEntity::typeHealth),
 							NumberBoundCondition.CODEC.optionalFieldOf("height", NumberBoundCondition.NONE).forGetter(ScriptObjectEntity::typeHeight),
 							NumberBoundCondition.CODEC.optionalFieldOf("width", NumberBoundCondition.NONE).forGetter(ScriptObjectEntity::typeWidth),
@@ -153,8 +153,8 @@ public record CarryOnScript(
 
 		public static final Codec<ScriptRender> CODEC = RecordCodecBuilder.create(instance ->
 				instance.group(
-						ResourceKey.codec(Registry.BLOCK_REGISTRY).optionalFieldOf("name_block").forGetter(ScriptRender::renderNameBlock),
-						ResourceKey.codec(Registry.ENTITY_TYPE_REGISTRY).optionalFieldOf("name_entity").forGetter(ScriptRender::renderNameEntity),
+						ResourceKey.codec(Registries.BLOCK).optionalFieldOf("name_block").forGetter(ScriptRender::renderNameBlock),
+						ResourceKey.codec(Registries.ENTITY_TYPE).optionalFieldOf("name_entity").forGetter(ScriptRender::renderNameEntity),
 						CompoundTag.CODEC.optionalFieldOf("nbt").forGetter(ScriptRender::renderNBT),
 						OptionalVec3.CODEC.optionalFieldOf("translation", OptionalVec3.NONE).forGetter(ScriptRender::renderTranslation),
 						OptionalVec3.CODEC.optionalFieldOf("rotation", OptionalVec3.NONE).forGetter(ScriptRender::renderRotation),

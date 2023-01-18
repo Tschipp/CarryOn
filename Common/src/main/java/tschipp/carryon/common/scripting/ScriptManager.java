@@ -1,7 +1,7 @@
 package tschipp.carryon.common.scripting;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -67,7 +67,7 @@ public class ScriptManager
 
 		boolean matchname = true;
 		if(scEntity.typeNameEntity().isPresent())
-			matchname = entity.getType().equals(Registry.ENTITY_TYPE.get(scEntity.typeNameEntity().get()));
+			matchname = entity.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(scEntity.typeNameEntity().get()));
 		boolean matchheight = scEntity.typeHeight().matches(height);
 		boolean matchwidth = scEntity.typeWidth().matches(width);
 		boolean matchhealth = scEntity.typeHealth().matches(health);
@@ -82,7 +82,7 @@ public class ScriptManager
 
 		boolean matchblock = true;
 		if(scBlock.typeNameBlock().isPresent())
-			matchblock = block == Registry.BLOCK.get(scBlock.typeNameBlock().get());
+			matchblock = block == BuiltInRegistries.BLOCK.get(scBlock.typeNameBlock().get());
 		boolean matchnbt = scBlock.typeBlockTag().matches(nbt);
 		boolean matchmaterial = scBlock.typeMaterial().matches(material);
 		boolean matchhardness = scBlock.typeHardness().matches(hardness);
