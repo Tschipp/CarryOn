@@ -1,5 +1,6 @@
 package tschipp.carryon.common.config;
 
+import com.mojang.datafixers.kinds.Const;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -141,8 +142,6 @@ public class ListHandler {
                 }
             }
         }
-
-
     }
 
     private static <T> void addTag(String tag, Map<ResourceLocation, TagKey<T>> tagMap, List<TagKey<T>> tags) {

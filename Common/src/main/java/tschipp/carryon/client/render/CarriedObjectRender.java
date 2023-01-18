@@ -37,10 +37,16 @@ public class CarriedObjectRender
 			return false;
 
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
-		if(carry.isCarrying(CarryType.BLOCK))
-			drawFirstPersonBlock(player, buffer, matrix, light, CarryRenderHelper.getRenderState(player));
-		else if (carry.isCarrying(CarryType.ENTITY))
-			drawFirstPersonEntity(player, buffer, matrix, light, partialTicks);
+		try {
+			if (carry.isCarrying(CarryType.BLOCK))
+				drawFirstPersonBlock(player, buffer, matrix, light, CarryRenderHelper.getRenderState(player));
+			else if (carry.isCarrying(CarryType.ENTITY))
+				drawFirstPersonEntity(player, buffer, matrix, light, partialTicks);
+		}
+		catch (Exception e)
+		{
+			//hehe
+		}
 
 		if(carry.getActiveScript().isPresent())
 		{

@@ -1,5 +1,6 @@
 package tschipp.carryon.mixin;
 
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,10 +11,9 @@ import tschipp.carryon.common.carry.CarryOnDataManager;
 @Mixin(Minecraft.class)
 public class MinecraftMixin
 {
-	@Redirect(method = "handleKeybinds()V", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Inventory;selected:I", ordinal = 0, opcode = 181)) //Opcode for PUTFIELD
-	private void onSlotSelected(Inventory inv,int slot)
+	@WrapWithCondition(method = "handleKeybinds()V", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Inventory;selected:I", ordinal = 0, opcode = 181)) //Opcode for PUTFIELD
+	private boolean allowSlotSelection(Inventory inv,int slot)
 	{
-		if(!CarryOnDataManager.getCarryData(inv.player).isCarrying())
-			inv.selected = slot;
+		return !CarryOnDataManager.getCarryData(inv.player).isCarrying();
 	}
 }

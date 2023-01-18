@@ -14,6 +14,10 @@ if (project.hasProperty('secretFile')) {
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
@@ -22,6 +26,8 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":Common")
+    include implementation("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
+    annotationProcessor("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
 }
 
 loom {
