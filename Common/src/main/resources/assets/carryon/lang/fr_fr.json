@@ -1,16 +1,16 @@
 {
-  "carryon.category.settings": "Paramètres",
-  "carryon.category.blacklist": "Liste noire",
-  "carryon.category.modeloverrides": "Modèle de Remplacement (Avancé)",
-  "carryon.category.custompickupconditions": "Conditions de ramassage personalisés (Avancé)",
-  "carryon.category.whitelist": "Liste blanche",
+    "carryon.category.settings": "Paramètres",
+    "carryon.category.blacklist": "Liste noire",
+    "carryon.category.modeloverrides": "Modèle de Remplacement (Avancé)",
+    "carryon.category.custompickupconditions": "Conditions de ramassage personalisés (Avancé)",
+    "carryon.category.whitelist": "Liste blanche",
 
-  "carryon.general.modeloverrides.modeloverrides": "Modèle de Remplacement",
-  "carryon.general.blacklist.forbiddenentities": "Entités que le joueur ne peut pas saisir",
-  "carryon.general.blacklist.forbiddentiles": "Blocs que le joueur ne peut pas saisir",
-  "carryon.category.custompickupconditions.custompickupconditionsblocks": "Conditions de ramassage de blocs personalisés",
-  "carryon.category.custompickupconditions.custompickupconditionsentities": "Conditions de ramassage d'entités personalisés",
+    "carryon.general.modeloverrides.modeloverrides": "Modèle de Remplacement",
+    "carryon.general.blacklist.forbiddenentities": "Entités que le joueur ne peut pas saisir",
+    "carryon.general.blacklist.forbiddentiles": "Blocs que le joueur ne peut pas saisir",
+    "carryon.category.custompickupconditions.custompickupconditionsblocks": "Conditions de ramassage de blocs personalisés",
+    "carryon.category.custompickupconditions.custompickupconditionsentities": "Conditions de ramassage d'entités personalisés",
 
-  "key.carry.desc": "Saisir",
-  "key.carry.category": "Carry On"
+    "key.carry.desc": "Saisir",
+    "key.carry.category": "Carry On"
 }

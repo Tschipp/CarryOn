@@ -2,6 +2,7 @@ package tschipp.carryon.common.carry;
 
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
@@ -93,7 +94,7 @@ public class CarryOnData {
         if(this.type != CarryType.BLOCK)
             throw new IllegalStateException("Called getBlock on data that contained " + this.type);
 
-        return NbtUtils.readBlockState(nbt.getCompound("block"));
+        return NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), nbt.getCompound("block"));
     }
 
     @Nullable

@@ -3,7 +3,7 @@ package tschipp.carryon.common.scripting;
 import com.mojang.serialization.Codec;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -338,7 +338,7 @@ public final class Matchables
 			for (MobEffectInstance effect : fx)
 			{
 				int amp = effect.getAmplifier();
-				String name = Registry.MOB_EFFECT.getKey(effect.getEffect()).toString();
+				String name = BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect()).toString();
 
 				if (names.contains(name))
 				{
