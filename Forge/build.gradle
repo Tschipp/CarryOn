@@ -30,6 +30,8 @@ if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
 
+jarJar.enable()
+
 archivesBaseName = "${mod_id}-forge-${minecraft_version}"
 
 mixin {
@@ -100,11 +102,6 @@ minecraft {
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
-configurations {
-    shade
-    implementation.extendsFrom shade
-}
-
 repositories {
     maven {
         url 'https://maven.blamejared.com'
@@ -121,7 +118,9 @@ dependencies {
     compileOnly project(":Common")
     implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
     implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.19.2:16.1.9")
-    minecraftLibrary(annotationProcessor(shade(("com.github.LlamaLad7:MixinExtras:${mixinextras_version}"))))
+    minecraftLibrary("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
+    jarJar(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "[${mixinextras_version},)")
+    annotationProcessor("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
     annotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
 
     fileTree("libs").matching {
@@ -135,17 +134,8 @@ dependencies {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.shade]
-    relocate 'com.llamalad7.mixinextras', 'tschipp.carryon.shaded.mixinextras'
-    finalizedBy 'reobfShadowJar'
-    archiveClassifier = ""
-}
-
-assemble.dependsOn shadowJar
-
 reobf {
-    shadowJar {}
+    jarJar {}
 }
 
 tasks.withType(JavaCompile) {
