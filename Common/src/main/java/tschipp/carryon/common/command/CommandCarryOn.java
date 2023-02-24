@@ -30,9 +30,9 @@ public class CommandCarryOn
 	{
 		LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("carryon")
 
-				.then(Commands.literal("debug").executes(cmd -> handleDebug(cmd.getSource())))
+				.then(Commands.literal("debug").requires(src -> src.hasPermission(2)).executes(cmd -> handleDebug(cmd.getSource())))
 
-				.then(Commands.literal("clear").executes(cmd -> handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().getPlayerOrException()))))
+				.then(Commands.literal("clear").requires(src -> src.hasPermission(2)).executes(cmd -> handleClear(cmd.getSource(), Collections.singleton(cmd.getSource().getPlayerOrException()))))
 
 				.then(Commands.literal("clear").then(Commands.argument("target", EntityArgument.players()).requires(src -> src.hasPermission(2)).executes(cmd -> handleClear(cmd.getSource(), EntityArgument.getPlayers(cmd, "target")))))
 
