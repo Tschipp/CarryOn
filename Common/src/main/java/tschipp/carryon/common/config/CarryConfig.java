@@ -231,7 +231,7 @@ public class CarryConfig {
                     "magneticraft:multiblock_gap", "refinedstorage:*", "mcmultipart:*", "enderstorage:*",
                     "betterstorage:*", "practicallogistics2:*", "wearablebackpacks:*", "rftools:screen",
                     "rftools:creative_screen", "create:*", "magic_doorknob:*", "iceandfire:*", "ftbquests:*",
-                    "waystones:*", "contact:*", "framedblocks:*", "securitycraft:*", "easy_npc:*"
+                    "waystones:*", "contact:*", "framedblocks:*", "securitycraft:*"
             };
 
             @Property(
@@ -244,7 +244,7 @@ public class CarryConfig {
                     "minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet",
                     "animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
                     "animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
-                    "securitycraft:*"
+                    "securitycraft:*", "easy_npc:*"
             };
 
             @Property(
