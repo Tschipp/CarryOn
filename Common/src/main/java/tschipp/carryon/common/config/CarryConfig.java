@@ -165,6 +165,12 @@ public class CarryConfig {
                     description = "Whether Players can be picked up. Creative players can't be picked up in Survival Mode"
             )
             public boolean pickupPlayers = true;
+
+            @Property(
+                    type = PropertyType.BOOLEAN,
+                    description = "Whether players in Survival Mode can pick up unbreakable blocks. Creative players always can."
+            )
+            public boolean pickupUnbreakableBlocks = false;
         }
 
         @Property(
