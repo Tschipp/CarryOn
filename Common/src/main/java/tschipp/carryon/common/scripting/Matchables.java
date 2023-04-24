@@ -29,9 +29,7 @@ public final class Matchables
 	private static float getValueFromStringOrDefault(String toGetFrom, String key, float defaultVal)
 	{
 		Optional<Float> val = getValueFromString(toGetFrom, key);
-		if(val.isPresent())
-			return val.get();
-		return defaultVal;
+		return val.orElse(defaultVal);
 	}
 
 	private static Optional<Float> getValueFromString(String toGetFrom, String key)
@@ -240,9 +238,9 @@ public final class Matchables
 			int iG = cond.indexOf(">");
 			int iL = cond.indexOf("<");
 
-			if (iG == -1 ? true : iE < iG && iL == -1 ? true : iE < iL && iE != -1)
+			if (iG == -1 || (iE < iG && iL == -1 || iE < iL && iE != -1))
 				numb = cond.substring(iE);
-			else if (iE == -1 ? true : iG < iE && iL == -1 ? true : iG < iL && iG != -1)
+			else if (iE == -1 || (iG < iE && iL == -1 || iG < iL && iG != -1))
 				numb = cond.substring(iG);
 			else
 				numb = cond.substring(iL);
@@ -277,8 +275,8 @@ public final class Matchables
 			if (cond == null || cond.isEmpty())
 				return true;
 
-			BlockPos blockpos = new BlockPos(getValueFromStringOrDefault(cond, "x", 0), getValueFromStringOrDefault(cond, "y", 0), getValueFromStringOrDefault(cond, "z", 0));
-			BlockPos expand = new BlockPos(getValueFromStringOrDefault(cond, "dx", 0), getValueFromStringOrDefault(cond, "dy", 0), getValueFromStringOrDefault(cond, "dz", 0));
+			BlockPos blockpos = new BlockPos((int) getValueFromStringOrDefault(cond, "x", 0), (int) getValueFromStringOrDefault(cond, "y", 0), (int) getValueFromStringOrDefault(cond, "z", 0));
+			BlockPos expand = new BlockPos((int) getValueFromStringOrDefault(cond, "dx", 0), (int) getValueFromStringOrDefault(cond, "dy", 0), (int) getValueFromStringOrDefault(cond, "dz", 0));
 			BlockPos expanded = blockpos.offset(expand);
 			BlockPos pos = elem.blockPosition();
 

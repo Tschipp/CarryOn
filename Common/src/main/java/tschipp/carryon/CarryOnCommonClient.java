@@ -14,16 +14,22 @@ public class CarryOnCommonClient
 		Player player = mc.player;
 		if(player != null) {
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
-			if ((CarryOnKeybinds.carryKey.isUnbound() ? player.isShiftKeyDown() : CarryOnKeybinds.carryKey.isDown()) && !carry.isKeyPressed()) {
+			if ((CarryOnKeybinds.carryKey.isUnbound() ? player.isShiftKeyDown() : (CarryOnKeybinds.carryKey.isDown() || checkMouse())) && !carry.isKeyPressed()) {
 				CarryOnKeybinds.onCarryKey(true);
 				carry.setKeyPressed(true);
 				CarryOnDataManager.setCarryData(player, carry);
-			} else if (!(CarryOnKeybinds.carryKey.isUnbound() ? player.isShiftKeyDown() : CarryOnKeybinds.carryKey.isDown()) && carry.isKeyPressed()) {
+			} else if (!(CarryOnKeybinds.carryKey.isUnbound() ? player.isShiftKeyDown() : (CarryOnKeybinds.carryKey.isDown() || checkMouse()) ) && carry.isKeyPressed()) {
 				CarryOnKeybinds.onCarryKey(false);
 				carry.setKeyPressed(false);
 				CarryOnDataManager.setCarryData(player, carry);
 			}
 		}
+	}
+
+	private static boolean checkMouse()
+	{
+		Minecraft mc = Minecraft.getInstance();
+		return (CarryOnKeybinds.carryKey.matchesMouse(0) && mc.mouseHandler.isLeftPressed()) || (CarryOnKeybinds.carryKey.matchesMouse(1) && mc.mouseHandler.isRightPressed()) || (CarryOnKeybinds.carryKey.matchesMouse(3) && mc.mouseHandler.isMiddlePressed());
 	}
 
 	public static void onCarryClientTick()

@@ -11,10 +11,7 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import tschipp.carryon.config.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ConfigLoaderImpl {
 
@@ -95,7 +92,14 @@ public class ConfigLoaderImpl {
             case BOOLEAN -> builder.define(data.getId(), data.getBoolean());
             case INT -> builder.defineInRange(data.getId(), data.getInt(), annotationData.min(), annotationData.max());
             case DOUBLE -> builder.defineInRange(data.getId(), data.getDouble(), annotationData.minD(), annotationData.maxD());
-            case STRING_ARRAY -> builder.defineList(data.getId(), Arrays.asList(data.getStringArray()), obj -> true);
+            case STRING_ARRAY -> builder.defineListAllowEmpty(List.of(data.getId()), () -> {
+                try {
+                    return Arrays.asList(data.getStringArray());
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                return new ArrayList<>();
+            }, obj -> obj instanceof String);
             default -> throw new IllegalAccessException("Unknown property type.");
         }
     }

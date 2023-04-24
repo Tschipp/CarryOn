@@ -1,12 +1,9 @@
 package tschipp.carryon.client.render;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
@@ -17,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -236,7 +234,7 @@ public class CarryRenderHelper
 	{
 		try {
 			ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
-			renderer.render(stack, TransformType.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
+			renderer.render(stack, ItemDisplayContext.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
 		}
 		catch (Exception e)
 		{

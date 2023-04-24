@@ -1,7 +1,6 @@
 package tschipp.carryon.common.carry;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -29,6 +28,8 @@ import tschipp.carryon.common.config.ListHandler;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptEffects;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -284,10 +285,11 @@ public class PlacementHandler
 
 	private static BlockPos getDeathPlacementPos(BlockState state, ServerPlayer player)
 	{
-		MutableBlockPos pos = new MutableBlockPos();
 		BlockPos p = player.blockPosition();
 
 		int DISTANCE = 15;
+
+		List<BlockPos> potentialPositions = new ArrayList<>();
 
 		for (int j = 0; j < DISTANCE * 2; j++) {
 			for (int i = 0; i < DISTANCE * 2; i++) {
@@ -295,17 +297,20 @@ public class PlacementHandler
 					int x = i % 2 == 0 ? i / 2 : -(i / 2);
 					int y = j % 2 == 0 ? j / 2 : -(j / 2);
 					int z = k % 2 == 0 ? k / 2 : -(k / 2);
-
-					pos.set(p.getX() + x, p.getY() + y, p.getZ() + z);
-
-					BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY, BlockHitResult.miss(Vec3.atCenterOf(pos), Direction.DOWN, pos));
-
-					boolean canPlace = state.canSurvive(player.level, pos) && player.level.getBlockState(pos).canBeReplaced(context) && player.level.isUnobstructed(state, pos, CollisionContext.of(player));
-
-					if (canPlace)
-						return pos;
+					potentialPositions.add(new BlockPos(p.getX() + x, p.getY() + y, p.getZ() + z));
 				}
 			}
+		}
+
+		potentialPositions.sort(Comparator.comparingDouble(posA -> player.distanceToSqr(posA.getCenter())));
+
+		for(BlockPos potential : potentialPositions)
+		{
+			BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY, BlockHitResult.miss(Vec3.atCenterOf(potential), Direction.DOWN, potential));
+			boolean canPlace = state.canSurvive(player.level, potential) && player.level.getBlockState(potential).canBeReplaced(context) && player.level.isUnobstructed(state, potential, CollisionContext.of(player));
+
+			if (canPlace)
+				return potential;
 		}
 
 		return p;

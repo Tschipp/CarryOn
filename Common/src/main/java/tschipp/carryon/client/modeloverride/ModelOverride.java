@@ -52,7 +52,7 @@ public class ModelOverride
 	public static DataResult<ModelOverride> of(String str)
 	{
 		if(!str.contains("->"))
-			return DataResult.error(str + " must contain -> Arrow!");
+			return DataResult.error(() -> str + " must contain -> Arrow!");
 		String[] split = str.split("->");
 		String from = split[0];
 		String to = split[1];
@@ -62,7 +62,7 @@ public class ModelOverride
 		try {
 			res = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), from, true);
 		} catch (Exception e) {
-			return DataResult.error("Error while parsing " + from + ":" + e.getMessage());
+			return DataResult.error(() -> "Error while parsing " + from + ":" + e.getMessage());
 		}
 
 		Type type = Type.ITEM;
@@ -82,7 +82,8 @@ public class ModelOverride
 			else
 				either = Either.right(BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), to, true));
 		}catch (CommandSyntaxException e) {
-			return DataResult.error("Error while parsing " + to + ":" + e.getMessage());
+			String finalTo = to;
+			return DataResult.error(() -> "Error while parsing " + finalTo + ":" + e.getMessage());
 		}
 
 		return DataResult.success(new ModelOverride(str, res, type, either));

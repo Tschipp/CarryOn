@@ -7,12 +7,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import tschipp.carryon.Constants;
 import tschipp.carryon.common.scripting.CarryOnScript;
 
 import javax.annotation.Nullable;
@@ -122,7 +124,13 @@ public class CarryOnData {
         if(this.type != CarryType.ENTITY)
             throw new IllegalStateException("Called getEntity on data that contained " + this.type);
 
-        return EntityType.create(nbt.getCompound("entity"), level).orElseThrow(() -> new IllegalStateException("Called EntityType#create even though no entity data was present. Data: " + nbt.toString()));
+        var optionalEntity = EntityType.create(nbt.getCompound("entity"), level);
+        if(optionalEntity.isPresent())
+            return optionalEntity.get();
+
+        Constants.LOG.error("Called EntityType#create even though no entity data was present. Data: " + nbt.toString());
+        this.clear();
+        return new AreaEffectCloud(level, 0, 0, 0);
     }
 
     public Optional<CarryOnScript> getActiveScript()

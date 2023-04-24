@@ -1,13 +1,16 @@
 package tschipp.carryon.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
@@ -26,6 +29,7 @@ import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
 import tschipp.carryon.platform.Services;
 
+import java.util.Map;
 import java.util.Optional;
 
 public class CarriedObjectRender
@@ -133,10 +137,11 @@ public class CarriedObjectRender
 			{
 			}
 			manager.setRenderShadow(true);
+			matrix.popPose();
+
 		}
 
 		// RenderSystem.disableAlphaTest();
-		matrix.popPose();
 	}
 
 	/**
@@ -147,7 +152,6 @@ public class CarriedObjectRender
 	public static void drawThirdPerson(float partialticks, PoseStack matrix) {
 		Minecraft mc = Minecraft.getInstance();
 		Level level = mc.level;
-		BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 		int light = 0;
 		int perspective = CarryRenderHelper.getPerspective();
 		EntityRenderDispatcher manager = mc.getEntityRenderDispatcher();
@@ -155,10 +159,19 @@ public class CarriedObjectRender
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();
+		Map<RenderType, BufferBuilder> builders = Map.of(
+				RenderType.glint(), new BufferBuilder(RenderType.glint().bufferSize()),
+				RenderType.glintDirect(), new BufferBuilder(RenderType.glintDirect().bufferSize()),
+				RenderType.glintTranslucent(), new BufferBuilder(RenderType.glintTranslucent().bufferSize()),
+				RenderType.entityGlint(), new BufferBuilder(RenderType.entityGlint().bufferSize()),
+				RenderType.entityGlintDirect(), new BufferBuilder(RenderType.entityGlintDirect().bufferSize())
+		);
+		BufferSource buffer = MultiBufferSource.immediateWithBuffers(builders, Tesselator.getInstance().getBuilder());
 
 		for (Player player : level.players())
 		{
 			try {
+
 				CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
 				if (perspective == 0 && player == mc.player && !(Services.PLATFORM.isModLoaded("firstperson") || Services.PLATFORM.isModLoaded("firstpersonmod")))
@@ -193,7 +206,6 @@ public class CarriedObjectRender
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 					CarryRenderHelper.renderBakedModel(tileItem, copy, buffer, light, model);
-					buffer.endBatch();
 
 					matrix.popPose();
 				} else if (carry.isCarrying(CarryType.ENTITY)) {
@@ -216,19 +228,26 @@ public class CarriedObjectRender
 						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 						manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
-						buffer.endBatch();
-
 						matrix.popPose();
 						manager.setRenderShadow(true);
 						matrix.popPose();
 					}
 				}
+
+
 			}
 			catch (Exception e)
 			{
 			}
 
 		}
+		buffer.endLastBatch();
+
+		buffer.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
+		buffer.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+		buffer.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+		buffer.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
+
 		RenderSystem.enableDepthTest();
 		RenderSystem.enableCull();
 		RenderSystem.disableBlend();
