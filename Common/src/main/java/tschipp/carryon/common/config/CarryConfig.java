@@ -163,12 +163,18 @@ public class CarryConfig
 					"minecraft:oak_trapdoor[half]",
 			};
 
-			@Property(
-					type = PropertyType.BOOLEAN,
-					description = "Whether Players can be picked up. Creative players can't be picked up in Survival Mode"
-			)
-			public boolean pickupPlayers = true;
-		}
+            @Property(
+                    type = PropertyType.BOOLEAN,
+                    description = "Whether Players can be picked up. Creative players can't be picked up in Survival Mode"
+            )
+            public boolean pickupPlayers = true;
+
+            @Property(
+                    type = PropertyType.BOOLEAN,
+                    description = "Whether players in Survival Mode can pick up unbreakable blocks. Creative players always can."
+            )
+            public boolean pickupUnbreakableBlocks = false;
+        }
 
 		@Property(
 				type = PropertyType.CATEGORY,
@@ -252,7 +258,7 @@ public class CarryConfig
 					"minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet",
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
-					"securitycraft:*", "taterzens:npc"
+					"securitycraft:*", "taterzens:npc", "easy_npc:*"
 			};
 
 			@Property(
