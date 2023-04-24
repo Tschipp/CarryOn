@@ -206,7 +206,9 @@ public class Configs {
     					"integrateddynamics:*",
     					"bloodmagic:*",
     					"rftools:screen",
-						"rftools:creative_screen",
+					"rftools:creative_screen",
+					"movingelevators:elevator_block",
+					"movingelevators:display_block",
     					
     			};
 		
