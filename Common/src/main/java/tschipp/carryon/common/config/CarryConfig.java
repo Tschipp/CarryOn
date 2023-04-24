@@ -244,7 +244,7 @@ public class CarryConfig {
                     "minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet",
                     "animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
                     "animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
-                    "securitycraft:*"
+                    "securitycraft:*", "easy_npc:*"
             };
 
             @Property(
