@@ -78,7 +78,7 @@ public class PickupHandler {
         if(!ListHandler.isPermitted(state.getBlock()))
             return false;
 
-        if(state.getDestroySpeed(level, pos) == -1 && !player.isCreative())
+        if(state.getDestroySpeed(level, pos) == -1 && !player.isCreative() && !Constants.COMMON_CONFIG.settings.pickupUnbreakableBlocks)
             return false;
 
         if(blockEntity == null && !Constants.COMMON_CONFIG.settings.pickupAllBlocks)
