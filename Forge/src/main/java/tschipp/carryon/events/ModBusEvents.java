@@ -5,7 +5,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.InterModComms.IMCMessage;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import tschipp.carryon.Constants;
 import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
 import tschipp.carryon.common.config.ListHandler;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 public class ModBusEvents {
 
 	@SubscribeEvent(priority = EventPriority.LOW)
-	public void serverLoad(FMLDedicatedServerSetupEvent event)
+	public static void serverLoad(FMLCommonSetupEvent event)
 	{
 		Stream<IMCMessage> messages = InterModComms.getMessages(Constants.MOD_ID);
 

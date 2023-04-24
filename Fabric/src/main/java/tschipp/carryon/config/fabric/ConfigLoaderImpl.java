@@ -31,6 +31,11 @@ public class ConfigLoaderImpl {
                 FileUtils.write(cfgFile, GSON.toJson(entry.getKey()), StandardCharsets.UTF_8);
             } else {
                 JsonObject cfgJson = GSON.fromJson(FileUtils.readFileToString(cfgFile, StandardCharsets.UTF_8), JsonObject.class);
+                if(cfgJson == null)
+                {
+                    cfgPath.toFile().mkdirs();
+                    FileUtils.write(cfgFile, GSON.toJson(entry.getKey()), StandardCharsets.UTF_8);
+                }
                 FileUtils.write(cfgFile, GSON.toJson(loadConfig(entry.getValue(), cfgJson)), StandardCharsets.UTF_8);
             }
         }

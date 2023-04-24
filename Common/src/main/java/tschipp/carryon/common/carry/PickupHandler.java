@@ -137,6 +137,9 @@ public class PickupHandler {
         if (entity.invulnerableTime != 0)
             return false;
 
+        if(entity.isRemoved())
+            return false;
+
         if (entity instanceof TamableAnimal tame)
         {
             UUID owner = tame.getOwnerUUID();
