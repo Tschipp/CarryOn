@@ -1,9 +1,5 @@
 package tschipp.carryon.common.handler;
 
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.AgeableEntity;
 import net.minecraft.entity.Entity;
@@ -18,13 +14,16 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.eventbus.api.Event;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.helper.CarryonGamestageHelper;
 import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
+
+import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class PickupHandler
 {
@@ -192,11 +191,14 @@ public class PickupHandler
 		}		
 	}
 	
-	public static class PickUpEntityEvent extends AttackEntityEvent
+	public static class PickUpEntityEvent extends Event
 	{
+		public final PlayerEntity player;
+		public final Entity target;
 		public PickUpEntityEvent(PlayerEntity player, Entity target)
 		{
-			super(player, target);
+			this.player = player;
+			this.target = target;
 		}
 	}
 	

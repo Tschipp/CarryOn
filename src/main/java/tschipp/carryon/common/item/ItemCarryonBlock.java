@@ -1,11 +1,6 @@
 package tschipp.carryon.common.item;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.CharMatcher;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -41,6 +36,9 @@ import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 public class ItemCarryonBlock extends Item
 {
@@ -187,7 +185,11 @@ public class ItemCarryonBlock extends Item
 								{
 									CompoundNBT data = getTileData(stack);
 									updateTileLocation(data, pos2);
-									tile.load(actualState, data);
+									try {
+										tile.load(actualState, data);
+									}
+									catch (Exception e)
+									{}
 								}
 								clearTileData(stack);
 								player.playSound(actualState.getSoundType(world, pos2, player).getPlaceSound(), 1.0f, 0.5f);

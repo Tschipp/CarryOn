@@ -15,14 +15,12 @@ public class PositionProvider implements ICapabilitySerializable<CompoundNBT>
 
 	private IPosition instance = POSITION_CAPABILITY.getDefaultInstance();
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side)
 	{
 		if (cap == POSITION_CAPABILITY)
-			return (LazyOptional<T>) LazyOptional.of(() -> {
-				return new TEPosition();
-			});
+			return (LazyOptional<T>) LazyOptional.of(TEPosition::new);
+
 		return LazyOptional.empty();
 	}
 

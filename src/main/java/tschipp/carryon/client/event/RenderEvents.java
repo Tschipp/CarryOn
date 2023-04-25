@@ -1,12 +1,9 @@
 package tschipp.carryon.client.event;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -14,6 +11,7 @@ import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.IRenderTypeBuffer.Impl;
 import net.minecraft.client.renderer.RenderType;
@@ -49,7 +47,6 @@ import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedInEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -60,7 +57,6 @@ import tschipp.carryon.CarryOn;
 import tschipp.carryon.client.helper.CarryRenderHelper;
 import tschipp.carryon.client.keybinds.CarryOnKeybinds;
 import tschipp.carryon.common.config.Configs.Settings;
-import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.helper.KeyboardCallbackWrapper.KeyPressedEvent;
@@ -72,6 +68,10 @@ import tschipp.carryon.common.item.ItemCarryonEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.network.server.SyncKeybindPacket;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.Optional;
 
 public class RenderEvents
 {
@@ -242,7 +242,7 @@ public class RenderEvents
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) && perspective == 0 && !f1)
 		{
-			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
+			if (ModList.get().isLoaded("firstperson") || ModList.get().isLoaded("firstpersonmod"))
 				return;
 
 			Block block = ItemCarryonBlock.getBlock(stack);
@@ -299,13 +299,13 @@ public class RenderEvents
 			matrix.popPose();
 		}
 	}
-	
+
 //	@SubscribeEvent
 //	public void onJoinServer(LoggedInEvent event)
 //	{
 //		ListHandler.initConfigLists();
 //	}
-	
+
 
 	/*
 	 * Render blocks and entities in third person
@@ -317,118 +317,128 @@ public class RenderEvents
 	{
 		World world = Minecraft.getInstance().level;
 		float partialticks = event.getPartialTicks();
-		Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
 		MatrixStack matrix = event.getMatrixStack();
 		int light = 0;
 		int perspective = CarryRenderHelper.getPerspective();
 		EntityRendererManager manager = Minecraft.getInstance().getEntityRenderDispatcher();
-		
+
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();
+		Map<RenderType, BufferBuilder> builders = new ImmutableMap.Builder<RenderType, BufferBuilder>()
+				.put(RenderType.glint(), new BufferBuilder(RenderType.glint().bufferSize()))
+				.put(RenderType.glintDirect(), new BufferBuilder(RenderType.glintDirect().bufferSize()))
+				.put(RenderType.glintTranslucent(), new BufferBuilder(RenderType.glintTranslucent().bufferSize()))
+				.put(RenderType.entityGlint(), new BufferBuilder(RenderType.entityGlint().bufferSize()))
+				.put(RenderType.entityGlintDirect(), new BufferBuilder(RenderType.entityGlintDirect().bufferSize()))
+				.build();
+		Impl buffer = IRenderTypeBuffer.immediateWithBuffers(builders, Tessellator.getInstance().getBuilder());
 
-		for (PlayerEntity player : world.players())
-		{
-			if (perspective == 0 && player == Minecraft.getInstance().player)
-				continue;
 
-			light = Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(player, partialticks);
-			ItemStack stack = player.getMainHandItem();
+		for (PlayerEntity player : world.players()) {
+			try {
 
-			if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack))
-			{
-				Block block = ItemCarryonBlock.getBlock(stack);
-				BlockState state = ItemCarryonBlock.getBlockState(stack);
-				CompoundNBT tag = ItemCarryonBlock.getTileData(stack);
-				ItemStack tileItem = ItemCarryonBlock.getItemStack(stack);
+				if (perspective == 0 && player == Minecraft.getInstance().player && !(ModList.get().isLoaded("firstperson") || ModList.get().isLoaded("firstpersonmod")))
+					continue;
 
-				applyBlockTransformations(player, partialticks, matrix, block);
 
-				IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player));
+				light = Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(player, partialticks);
+				ItemStack stack = player.getMainHandItem();
 
-				CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
-				if (carryOverride != null)
-				{
-					CarryRenderHelper.performOverrideTransformation(matrix, carryOverride);
+				if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack)) {
+					Block block = ItemCarryonBlock.getBlock(stack);
+					BlockState state = ItemCarryonBlock.getBlockState(stack);
+					CompoundNBT tag = ItemCarryonBlock.getTileData(stack);
+					ItemStack tileItem = ItemCarryonBlock.getItemStack(stack);
 
-					if (!carryOverride.getRenderNameBlock().isEmpty())
-					{
-						Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
-						if (b != null)
-						{
-							ItemStack s = new ItemStack(b, 1);
-							s.setTag(carryOverride.getRenderNBT());
-							model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player);
-						}
-					}
-				}
+					applyBlockTransformations(player, partialticks, matrix, block);
 
-				Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
-				CarryRenderHelper.renderItem(state, tag, stack, tileItem, matrix, buffer, light, model);
-				buffer.endBatch();
-
-				matrix.popPose();
-
-				drawArms(player, partialticks, matrix, buffer, light);
-
-				matrix.popPose();
-			}
-			else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
-			{
-				Entity entity = RenderEntityEvents.getEntity(stack, world);
-
-				if (entity != null)
-				{
-					applyEntityTransformations(player, partialticks, matrix, entity);
-
-					manager.setRenderShadow(false);
+					IBakedModel model = ModelOverridesHandler.hasCustomOverrideModel(state, tag) ? ModelOverridesHandler.getCustomOverrideModel(state, tag, world, player) : (tileItem.isEmpty() ? Minecraft.getInstance().getBlockRenderer().getBlockModel(state) : Minecraft.getInstance().getItemRenderer().getModel(tileItem, world, player));
 
 					CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
-					if (carryOverride != null)
-					{
+					if (carryOverride != null) {
 						CarryRenderHelper.performOverrideTransformation(matrix, carryOverride);
 
-						String entityname = carryOverride.getRenderNameEntity();
-						if (entityname != null)
-						{
-							Entity newEntity = null;
-
-							Optional<EntityType<?>> type = EntityType.byString(entityname);
-							if (type.isPresent())
-								newEntity = type.get().create(world);
-
-							if (newEntity != null)
-							{
-								CompoundNBT nbttag = carryOverride.getRenderNBT();
-								if (nbttag != null)
-									newEntity.deserializeNBT(nbttag);
-								entity = newEntity;
-								entity.yRot = 0.0f;
-								entity.yRotO = 0.0f;
-								entity.setYHeadRot(0.0f);
-								entity.xRot = 0.0f;
-								entity.xRotO = 0.0f;
+						if (!carryOverride.getRenderNameBlock().isEmpty()) {
+							Block b = StringParser.getBlock(carryOverride.getRenderNameBlock());
+							if (b != null) {
+								ItemStack s = new ItemStack(b, 1);
+								s.setTag(carryOverride.getRenderNBT());
+								model = Minecraft.getInstance().getItemRenderer().getModel(s, world, player);
 							}
 						}
 					}
 
-					if (entity instanceof LivingEntity)
-						((LivingEntity) entity).hurtTime = 0;
-
-					manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+					Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+					CarryRenderHelper.renderItem(state, tag, stack, tileItem, matrix, buffer, light, model);
 					buffer.endBatch();
 
 					matrix.popPose();
 
 					drawArms(player, partialticks, matrix, buffer, light);
 
-					manager.setRenderShadow(true);
-
 					matrix.popPose();
-				}
-			}
+				} else if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)) {
+					Entity entity = RenderEntityEvents.getEntity(stack, world);
 
+					if (entity != null) {
+						applyEntityTransformations(player, partialticks, matrix, entity);
+
+						manager.setRenderShadow(false);
+
+						CarryOnOverride carryOverride = ScriptChecker.getOverride(player);
+						if (carryOverride != null) {
+							CarryRenderHelper.performOverrideTransformation(matrix, carryOverride);
+
+							String entityname = carryOverride.getRenderNameEntity();
+							if (entityname != null) {
+								Entity newEntity = null;
+
+								Optional<EntityType<?>> type = EntityType.byString(entityname);
+								if (type.isPresent())
+									newEntity = type.get().create(world);
+
+								if (newEntity != null) {
+									CompoundNBT nbttag = carryOverride.getRenderNBT();
+									if (nbttag != null)
+										newEntity.deserializeNBT(nbttag);
+									entity = newEntity;
+									entity.yRot = 0.0f;
+									entity.yRotO = 0.0f;
+									entity.setYHeadRot(0.0f);
+									entity.xRot = 0.0f;
+									entity.xRotO = 0.0f;
+								}
+							}
+						}
+
+						if (entity instanceof LivingEntity)
+							((LivingEntity) entity).hurtTime = 0;
+
+						manager.render(entity, 0, 0, 0, 0f, 0, matrix, buffer, light);
+						buffer.endBatch();
+
+						matrix.popPose();
+
+						drawArms(player, partialticks, matrix, buffer, light);
+
+						manager.setRenderShadow(true);
+
+						matrix.popPose();
+					}
+				}
+
+			} catch (Exception e) {
+
+			}
 		}
+		buffer.endBatch();
+
+		buffer.endBatch(RenderType.entitySolid(AtlasTexture.LOCATION_BLOCKS));
+		buffer.endBatch(RenderType.entityCutout(AtlasTexture.LOCATION_BLOCKS));
+		buffer.endBatch(RenderType.entityCutoutNoCull(AtlasTexture.LOCATION_BLOCKS));
+		buffer.endBatch(RenderType.entitySmoothCutout(AtlasTexture.LOCATION_BLOCKS));
+
 		RenderSystem.enableDepthTest();
 		RenderSystem.enableCull();
 		RenderSystem.disableBlend();

@@ -77,7 +77,7 @@ public class ItemEvents
 		{
 			player.getPersistentData().remove("carrySlot");
 			event.setUseBlock(Result.DENY);
-			
+
 			if (!player.level.isClientSide)
 			{
 				CarryOnOverride override = ScriptChecker.getOverride(player);
@@ -92,7 +92,7 @@ public class ItemEvents
 		}
 
 	}
-	
+
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onItemDropped(EntityJoinWorldEvent event)
 	{
@@ -141,7 +141,7 @@ public class ItemEvents
 		}
 
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerLoggedInEvent event)
 	{
@@ -184,17 +184,18 @@ public class ItemEvents
 	{
 		CommandCarryOn.register(event.getDispatcher());
 	}
-	
+
 	@SubscribeEvent
 	public void serverLoad(FMLServerStartingEvent event)
 	{
 		CustomPickupOverrideHandler.initPickupOverrides();
 	}
-	
+
 	@SubscribeEvent
 	public void reloadTags(TagsUpdatedEvent event)
 	{
 		ListHandler.initConfigLists();
+		CustomPickupOverrideHandler.initPickupOverrides();
 	}
 
 	@SubscribeEvent
@@ -292,7 +293,7 @@ public class ItemEvents
 	public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		PlayerEntity player = event.getPlayer();
-		
+
 		if(event.isCanceled())
 			return;
 
@@ -484,8 +485,8 @@ public class ItemEvents
 						int slotBlock = getSlot(player, RegistrationHandler.itemTile);
 						int slotEntity = getSlot(player, RegistrationHandler.itemEntity);
 
-						
-						
+
+
 						ItemEntity item = null;
 						if (slotBlock != -1)
 						{

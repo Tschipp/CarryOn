@@ -1,12 +1,11 @@
 package tschipp.carryon.common.helper;
 
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWScrollCallback;
-
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWScrollCallback;
 
 //Thanks to gigaherz for the help!
 public class ScrollCallbackWrapper
