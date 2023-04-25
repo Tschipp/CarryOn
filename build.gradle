@@ -19,9 +19,7 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
 apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
-//import net.minecraftforge.gradle.common.task.SignJar                      
-import groovy.json.JsonSlurper                       
-import groovy.json.JsonOutput
+//import net.minecraftforge.gradle.common.task.SignJar
 
 if (project.hasProperty('secretFile')) {
     loadSecrets(new File((String) findProperty('secretFile')))
@@ -117,19 +115,19 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 	
-	//implementation fg.deobf("net.darkhax.gamestages:GameStages-1.16.4:6.0.1")
-	//implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.18")
+	implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.18.2:8.1.3")
+	implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.18.2:13.2.53")
 	//implementation fg.deobf("curse.maven:obfuscate-289380:3169370")
 	
-	//fileTree("libs").matching {
-	//	include "*.jar"
-	//}.each {
-	//	String filename = it.getName();
-	//	filename = filename.substring(0, filename.length() - 4);
-	//	int lastDash = filename.lastIndexOf("-");
-	//	filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
-	//	implementation fg.deobf("blank:${filename}")
-	//}
+	fileTree("libs").matching {
+		include "*.jar"
+	}.each {
+		String filename = it.getName();
+		filename = filename.substring(0, filename.length() - 4);
+		int lastDash = filename.lastIndexOf("-");
+		filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
+		implementation fg.deobf("blank:${filename}")
+	}
 
 }
 

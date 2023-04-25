@@ -1,11 +1,6 @@
 package tschipp.carryon.common.item;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.CharMatcher;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,11 +37,14 @@ import tschipp.carryon.common.event.ItemEvents;
 import tschipp.carryon.common.handler.CustomPickupOverrideHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 
+import javax.annotation.Nullable;
+import java.util.Set;
+
 public class ItemCarryonBlock extends Item
 {
 
 	public static final String TILE_DATA_KEY = "tileData";
-	public static final String[] FACING_KEYS = { "rotation", "rot", "facing", "face", "direction", "dir", "front", "forward" };
+	public static final String[] FACING_KEYS = {"rotation", "rot", "facing", "face", "direction", "dir", "front", "forward"};
 
 	public ItemCarryonBlock()
 	{
@@ -57,18 +55,15 @@ public class ItemCarryonBlock extends Item
 	@Override
 	public Component getName(ItemStack stack)
 	{
-		if (hasTileData(stack))
-		{
+		if (hasTileData(stack)) {
 			BlockState state = getBlockState(stack);
 			CompoundTag nbt = getTileData(stack);
 
-			if (ModelOverridesHandler.hasCustomOverrideModel(state, nbt))
-			{
+			if (ModelOverridesHandler.hasCustomOverrideModel(state, nbt)) {
 				Object override = ModelOverridesHandler.getOverrideObject(state, nbt);
 				if (override instanceof ItemStack)
 					return ((ItemStack) override).getHoverName();
-				else
-				{
+				else {
 					BlockState ostate = (BlockState) override;
 					return ostate.getBlock().getName();
 				}
@@ -92,26 +87,21 @@ public class ItemCarryonBlock extends Item
 		if (ModList.get().isLoaded("betterplacement") && CarryOnKeybinds.isKeyPressed(player))
 			return InteractionResult.FAIL;
 
-		if (hasTileData(stack))
-		{
-			try
-			{
+		if (hasTileData(stack)) {
+			try {
 				Vec3 vec = player.getLookAngle();
 				Direction facing2 = Direction.getNearest((float) vec.x, 0f, (float) vec.z);
 				BlockPos pos2 = pos;
 				Block containedblock = getBlock(stack);
 				BlockState containedstate = getBlockState(stack);
-				if (!level.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)))
-				{
+				if (!level.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context))) {
 					pos2 = pos.relative(facing);
 				}
 
-				if (level.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)) && containedblock != null)
-				{
+				if (level.getBlockState(pos2).canBeReplaced(new BlockPlaceContext(context)) && containedblock != null) {
 					boolean canPlace = containedstate.canSurvive(level, pos2);
 
-					if (canPlace && player.mayUseItemAt(pos, facing, stack) && level.mayInteract(player, pos2))
-					{
+					if (canPlace && player.mayUseItemAt(pos, facing, stack) && level.mayInteract(player, pos2)) {
 
 						BlockState placementState = containedblock.getStateForPlacement(new BlockPlaceContext(context));
 
@@ -142,37 +132,32 @@ public class ItemCarryonBlock extends Item
 						EntityPlaceEvent event = new EntityPlaceEvent(snapshot, level.getBlockState(pos), player);
 						MinecraftForge.EVENT_BUS.post(event);
 
-						if (!event.isCanceled())
-						{
+						if (!event.isCanceled()) {
 							level.setBlockAndUpdate(pos2, actualState);
 
 							// If the blockstate doesn't handle rotation,
 							// try to
 							// change rotation via NBT
-							if (!getTileData(stack).isEmpty())
-							{
+							if (!getTileData(stack).isEmpty()) {
 								CompoundTag tag = getTileData(stack);
 								Set<String> keys = tag.getAllKeys();
-								keytester: for (String key : keys)
-								{
-									for (String facingKey : FACING_KEYS)
-									{
-										if (key.toLowerCase().equals(facingKey))
-										{
+								keytester:
+								for (String key : keys) {
+									for (String facingKey : FACING_KEYS) {
+										if (key.toLowerCase().equals(facingKey)) {
 											byte type = tag.getTagType(key);
-											switch (type)
-											{
-											case 8:
-												tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
-												break;
-											case 3:
-												tag.putInt(key, facing2.getOpposite().get3DDataValue());
-												break;
-											case 1:
-												tag.putByte(key, (byte) facing2.getOpposite().get3DDataValue());
-												break;
-											default:
-												break;
+											switch (type) {
+												case 8:
+													tag.putString(key, CharMatcher.javaUpperCase().matchesAllOf(tag.getString(key)) ? facing2.getOpposite().getName().toUpperCase() : facing2.getOpposite().getName());
+													break;
+												case 3:
+													tag.putInt(key, facing2.getOpposite().get3DDataValue());
+													break;
+												case 1:
+													tag.putByte(key, (byte) facing2.getOpposite().get3DDataValue());
+													break;
+												default:
+													break;
 											}
 
 											break keytester;
@@ -182,11 +167,12 @@ public class ItemCarryonBlock extends Item
 							}
 
 							BlockEntity tile = level.getBlockEntity(pos2);
-							if (tile != null)
-							{
+							if (tile != null) {
 								CompoundTag data = getTileData(stack);
 								updateTileLocation(data, pos2);
-								tile.load(data);
+								try {
+									tile.load(data);
+								} catch (Exception e) {}
 							}
 							clearTileData(stack);
 							player.playSound(actualState.getSoundType(level, pos2, player).getPlaceSound(), 1.0f, 0.5f);
@@ -198,13 +184,10 @@ public class ItemCarryonBlock extends Item
 						}
 					}
 				}
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 
-				if (level != null && level.isClientSide)
-				{
+				if (level != null && level.isClientSide) {
 					CarryOn.LOGGER.info("Block: " + ItemCarryonBlock.getBlock(stack));
 					CarryOn.LOGGER.info("BlockState: " + ItemCarryonBlock.getBlockState(stack));
 					// CarryOn.LOGGER.info("Meta: " + ItemTile.getMeta(stack));
@@ -232,26 +215,21 @@ public class ItemCarryonBlock extends Item
 	@Override
 	public void inventoryTick(ItemStack stack, Level level, Entity entity, int itemSlot, boolean isSelected)
 	{
-		if (hasTileData(stack))
-		{
-			if (entity instanceof LivingEntity)
-			{
+		if (hasTileData(stack)) {
+			if (entity instanceof LivingEntity) {
 				if (entity instanceof Player && Settings.slownessInCreative.get() ? false : ((Player) entity).isCreative())
 					return;
 
 				((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, potionLevel(stack), false, false));
 			}
-		}
-		else
-		{
+		} else {
 			stack = ItemStack.EMPTY;
 		}
 	}
 
 	public static boolean hasTileData(ItemStack stack)
 	{
-		if (stack.hasTag())
-		{
+		if (stack.hasTag()) {
 			CompoundTag tag = stack.getTag();
 			return tag.contains(TILE_DATA_KEY) && tag.contains("block") && tag.contains("stateid");
 		}
@@ -293,8 +271,7 @@ public class ItemCarryonBlock extends Item
 
 	public static void clearTileData(ItemStack stack)
 	{
-		if (stack.hasTag())
-		{
+		if (stack.hasTag()) {
 			CompoundTag tag = stack.getTag();
 			tag.remove(TILE_DATA_KEY);
 			tag.remove("block");
@@ -304,8 +281,7 @@ public class ItemCarryonBlock extends Item
 
 	public static CompoundTag getTileData(ItemStack stack)
 	{
-		if (stack.hasTag())
-		{
+		if (stack.hasTag()) {
 			CompoundTag tag = stack.getTag();
 			return tag.getCompound(TILE_DATA_KEY);
 		}
@@ -314,8 +290,7 @@ public class ItemCarryonBlock extends Item
 
 	public static Block getBlock(ItemStack stack)
 	{
-		if (stack.hasTag())
-		{
+		if (stack.hasTag()) {
 			CompoundTag tag = stack.getTag();
 			int id = tag.getInt("stateid");
 			return Block.stateById(id).getBlock();
@@ -341,8 +316,7 @@ public class ItemCarryonBlock extends Item
 
 	public static BlockState getBlockState(ItemStack stack)
 	{
-		if (stack.hasTag())
-		{
+		if (stack.hasTag()) {
 			CompoundTag tag = stack.getTag();
 			int id = tag.getInt("stateid");
 			return Block.stateById(id);
@@ -353,8 +327,7 @@ public class ItemCarryonBlock extends Item
 	public static boolean isLocked(BlockPos pos, Level level)
 	{
 		BlockEntity te = level.getBlockEntity(pos);
-		if (te != null)
-		{
+		if (te != null) {
 			CompoundTag tag = new CompoundTag();
 			te.saveWithId();
 			return tag.contains("Lock") ? !tag.getString("Lock").equals("") : false;

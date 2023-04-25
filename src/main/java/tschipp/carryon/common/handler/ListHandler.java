@@ -1,10 +1,5 @@
 package tschipp.carryon.common.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -14,6 +9,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 import tschipp.carryon.common.config.Configs.Blacklist;
 import tschipp.carryon.common.config.Configs.WhiteList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ListHandler
 {
@@ -51,7 +51,7 @@ public class ListHandler
 
 			for (TagKey<Block> tag : FORBIDDEN_TILES_TAGS)
 			{
-				if (block.defaultBlockState().m_204336_(tag))
+				if (block.defaultBlockState().is(tag))
 					return true;
 			}
 
@@ -66,7 +66,7 @@ public class ListHandler
 
 		for (TagKey<EntityType<?>> tag : FORBIDDEN_ENTITIES_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -80,7 +80,7 @@ public class ListHandler
 
 		for (TagKey<EntityType<?>> tag : ALLOWED_ENTITIES_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -94,7 +94,7 @@ public class ListHandler
 
 		for (TagKey<EntityType<?>> tag : FORBIDDEN_STACKING_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -108,7 +108,7 @@ public class ListHandler
 
 		for (TagKey<EntityType<?>> tag : ALLOWED_STACKING_TAGS)
 		{
-			if (entity.getType().m_204039_(tag))
+			if (entity.getType().is(tag))
 				return true;
 		}
 
@@ -135,7 +135,7 @@ public class ListHandler
 
 			for (TagKey<Block> tag : ALLOWED_TILES_TAGS)
 			{
-				if (block.defaultBlockState().m_204336_(tag))
+				if (block.defaultBlockState().is(tag))
 					return true;
 			}
 
@@ -277,8 +277,8 @@ public class ListHandler
 			}
 		}
 
-		Map<ResourceLocation, TagKey<Block>> blocktags = Registry.BLOCK.m_203613_().collect(Collectors.toMap(t -> t.f_203868_(), t -> t));
-		Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = Registry.ENTITY_TYPE.m_203613_().collect(Collectors.toMap(t -> t.f_203868_(), t -> t));
+		Map<ResourceLocation, TagKey<Block>> blocktags = Registry.BLOCK.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
+		Map<ResourceLocation, TagKey<EntityType<?>>> entitytags = Registry.ENTITY_TYPE.getTagNames().collect(Collectors.toMap(t -> t.location(), t -> t));
 
 		
 		

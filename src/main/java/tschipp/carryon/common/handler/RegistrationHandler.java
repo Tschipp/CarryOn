@@ -39,7 +39,6 @@ public class RegistrationHandler
 		MinecraftForge.EVENT_BUS.register(new ItemEvents());
 		MinecraftForge.EVENT_BUS.register(new ItemEntityEvents());
 		MinecraftForge.EVENT_BUS.register(new PositionCommonEvents());
-		MinecraftForge.EVENT_BUS.register(new IMCEvents());
 	}
 
 	public static void regClientEvents()

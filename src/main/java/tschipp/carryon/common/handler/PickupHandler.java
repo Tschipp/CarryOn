@@ -1,9 +1,5 @@
 package tschipp.carryon.common.handler;
 
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,13 +14,17 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.eventbus.api.Cancelable;
+import net.minecraftforge.eventbus.api.Event;
 import tschipp.carryon.common.config.Configs.Settings;
 import tschipp.carryon.common.helper.CarryonGamestageHelper;
 import tschipp.carryon.common.item.ItemCarryonBlock;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
+
+import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class PickupHandler
 {
@@ -90,6 +90,9 @@ public class PickupHandler
 		Vec3 pos = toPickUp.position();
 
 		if (toPickUp instanceof Player)
+			return false;
+
+		if(toPickUp.isRemoved())
 			return false;
 
 		CarryOnOverride override = ScriptChecker.inspectEntity(toPickUp);
@@ -164,11 +167,16 @@ public class PickupHandler
 		}
 	}
 
-	public static class PickUpEntityEvent extends AttackEntityEvent
+	@Cancelable
+	public static class PickUpEntityEvent extends Event
 	{
+		public final Player player;
+		public final Entity target;
+
 		public PickUpEntityEvent(Player player, Entity target)
 		{
-			super(player, target);
+			this.player = player;
+			this.target = target;
 		}
 	}
 

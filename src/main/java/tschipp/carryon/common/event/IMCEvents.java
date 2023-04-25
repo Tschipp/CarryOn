@@ -1,21 +1,24 @@
 package tschipp.carryon.common.event;
 
-import java.util.stream.Stream;
-
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.InterModComms.IMCMessage;
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
 
+import java.util.stream.Stream;
+
+@EventBusSubscriber(modid = CarryOn.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class IMCEvents
 {
 
 	@SubscribeEvent(priority = EventPriority.LOW)
-	public void serverLoad(FMLDedicatedServerSetupEvent event)
+	public static void serverLoad(FMLCommonSetupEvent event)
 	{
 		Stream<IMCMessage> messages = InterModComms.getMessages(CarryOn.MODID);
 

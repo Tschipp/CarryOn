@@ -1,14 +1,14 @@
 package tschipp.carryon.network.client;
 
-import java.util.function.Supplier;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
-import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.scripting.ScriptChecker;
+import tschipp.carryon.proxy.ClientProxy;
+
+import java.util.function.Supplier;
 
 public class CarrySlotPacket
 {
@@ -49,7 +49,7 @@ public class CarrySlotPacket
 		{
 			ctx.get().enqueueWork(() -> {
 
-				Level level = CarryOn.proxy.getLevel();
+				Level level = ClientProxy.getLevel();
 
 				if (level != null)
 				{

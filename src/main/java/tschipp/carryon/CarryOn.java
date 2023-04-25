@@ -1,16 +1,9 @@
 package tschipp.carryon;
 
-import java.io.File;
-import java.util.Optional;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -21,21 +14,21 @@ import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tschipp.carryon.common.config.Configs;
 import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.network.client.CarrySlotPacket;
 import tschipp.carryon.network.client.ScriptReloadPacket;
 import tschipp.carryon.network.server.SyncKeybindPacket;
-import tschipp.carryon.proxy.ClientProxy;
-import tschipp.carryon.proxy.IProxy;
-import tschipp.carryon.proxy.ServerProxy;
+
+import java.io.File;
+import java.util.Optional;
 
 @Mod(CarryOn.MODID)
 @EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CarryOn
 {
-
-	public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 
 	public static final String MODID = "carryon";
 	public static final Logger LOGGER = LogManager.getFormatterLogger("CarryOn");
@@ -75,8 +68,6 @@ public class CarryOn
 
 		// Init
 		RegistrationHandler.regOverrideList();
-
-		proxy.setup(event);
 	}
 
 	@SubscribeEvent

@@ -76,7 +76,7 @@ public class RenderEntityEvents
 
 		if (!stack.isEmpty() && stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack))
 		{
-			if (ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr"))
+			if (ModList.get().isLoaded("firstperson") || ModList.get().isLoaded("firstpersonmod"))
 				return;
 
 			Entity entity = getEntity(stack, level);

@@ -1,11 +1,7 @@
 package tschipp.carryon.common.config;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
@@ -18,6 +14,9 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.handler.ListHandler;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Mod.EventBusSubscriber(modid = CarryOn.MODID, bus = Bus.MOD)
 public class Configs
 {
@@ -28,8 +27,7 @@ public class Configs
 	public static final ForgeConfigSpec SERVER_CONFIG;
 	public static final ForgeConfigSpec CLIENT_CONFIG;
 
-	static
-	{
+	static {
 
 		Settings.init(SERVER_BUILDER, CLIENT_BUILDER);
 		Blacklist.init(SERVER_BUILDER, CLIENT_BUILDER);
@@ -44,8 +42,7 @@ public class Configs
 	@SubscribeEvent
 	public static void onLoad(final ModConfigEvent.Loading event)
 	{
-		if (event.getConfig().getModId().equals(CarryOn.MODID))
-		{
+		if (event.getConfig().getModId().equals(CarryOn.MODID)) {
 			ListHandler.initConfigLists();
 
 			CommentedConfig cfg = event.getConfig().getConfigData();
@@ -58,8 +55,7 @@ public class Configs
 	@SubscribeEvent
 	public static void onConfigChanged(ModConfigEvent.Reloading event)
 	{
-		if (event.getConfig().getModId().equals(CarryOn.MODID))
-		{
+		if (event.getConfig().getModId().equals(CarryOn.MODID)) {
 			ListHandler.initConfigLists();
 
 			CommentedConfig cfg = event.getConfig().getConfigData();
@@ -206,9 +202,11 @@ public class Configs
 		{
 			s.comment("Blacklist. Read about the format here: https://github.com/Tschipp/CarryOn/wiki/Black---and-Whitelist-Config");
 
-			forbiddenTiles = s.comment("Blocks that cannot be picked up").defineList("blacklist.forbiddenTiles", Arrays.asList("#forge:immovable", "#forge:relocation_not_supported", "minecraft:end_portal", "minecraft:end_gateway", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:peony", "minecraft:rose_bush", "minecraft:lilac", "minecraft:sunflower", "minecraft:*_bed", "minecraft:oak_door", "minecraft:iron_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:jungle_door", "minecraft:acacia_door", "minecraft:dark_oak_door", "minecraft:waterlily", "minecraft:cake", "minecraft:nether_portal", "minecraft:tall_seagrass", "animania:block_trough", "animania:block_invisiblock", "colossalchests:*", "ic2:*", "bigreactors:*", "forestry:*", "tconstruct:*", "rustic:*", "botania:*", "astralsorcery:*", "quark:colored_bed_*", "immersiveengineering:*", "embers:block_furnace", "embers:ember_bore", "embers:ember_activator", "embers:mixer", "embers:heat_coil", "embers:large_tank", "embers:crystal_cell", "embers:alchemy_pedestal", "embers:boiler", "embers:combustor", "embers:catalzyer", "embers:field_chart", "embers:inferno_forge", "storagedrawers:framingtable", "skyresources:*", "lootbags:*", "exsartagine:*", "aquamunda:tank", "opencomputers:*", "malisisdoors:*", "industrialforegoing:*", "minecolonies:*", "thaumcraft:pillar*", "thaumcraft:infernal_furnace", "thaumcraft:placeholder*", "thaumcraft:infusion_matrix", "thaumcraft:golem_builder", "thaumcraft:thaumatorium*", "magneticraft:oil_heater", "magneticraft:solar_panel", "magneticraft:steam_engine", "magneticraft:shelving_unit", "magneticraft:grinder", "magneticraft:sieve", "magneticraft:solar_tower", "magneticraft:solar_mirror", "magneticraft:container", "magneticraft:pumpjack", "magneticraft:solar_panel", "magneticraft:refinery", "magneticraft:oil_heater", "magneticraft:hydraulic_press", "magneticraft:multiblock_gap", "refinedstorage:*", "mcmultipart:*", "enderstorage:*", "betterstorage:*", "practicallogistics2:*", "wearablebackpacks:*", "rftools:screen", "rftools:creative_screen", "create:*", "magic_doorknob:*", "iceandfire:*", "ftbquests:*", "waystones:*"), obj -> obj instanceof String);
+			forbiddenTiles = s.comment("Blocks that cannot be picked up").defineList("blacklist.forbiddenTiles", Arrays.asList("#forge:immovable", "#forge:relocation_not_supported", "minecraft:end_portal", "minecraft:end_gateway", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:peony", "minecraft:rose_bush", "minecraft:lilac", "minecraft:sunflower", "minecraft:*_bed", "minecraft:oak_door", "minecraft:iron_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:jungle_door", "minecraft:acacia_door", "minecraft:dark_oak_door", "minecraft:waterlily", "minecraft:cake", "minecraft:nether_portal", "minecraft:tall_seagrass", "animania:block_trough", "animania:block_invisiblock", "colossalchests:*", "ic2:*", "bigreactors:*", "forestry:*", "tconstruct:*", "rustic:*", "botania:*", "astralsorcery:*", "quark:colored_bed_*", "immersiveengineering:*", "embers:block_furnace", "embers:ember_bore", "embers:ember_activator", "embers:mixer", "embers:heat_coil", "embers:large_tank", "embers:crystal_cell", "embers:alchemy_pedestal", "embers:boiler", "embers:combustor", "embers:catalzyer", "embers:field_chart", "embers:inferno_forge", "storagedrawers:framingtable", "skyresources:*", "lootbags:*", "exsartagine:*", "aquamunda:tank", "opencomputers:*", "malisisdoors:*", "industrialforegoing:*", "minecolonies:*", "thaumcraft:pillar*", "thaumcraft:infernal_furnace", "thaumcraft:placeholder*", "thaumcraft:infusion_matrix", "thaumcraft:golem_builder", "thaumcraft:thaumatorium*", "magneticraft:oil_heater", "magneticraft:solar_panel", "magneticraft:steam_engine", "magneticraft:shelving_unit", "magneticraft:grinder", "magneticraft:sieve", "magneticraft:solar_tower", "magneticraft:solar_mirror", "magneticraft:container", "magneticraft:pumpjack", "magneticraft:solar_panel", "magneticraft:refinery", "magneticraft:oil_heater", "magneticraft:hydraulic_press", "magneticraft:multiblock_gap", "refinedstorage:*", "mcmultipart:*", "enderstorage:*", "betterstorage:*", "practicallogistics2:*", "wearablebackpacks:*", "rftools:screen", "rftools:creative_screen", "create:*", "magic_doorknob:*", "iceandfire:*", "ftbquests:*", "waystones:*", "framedblocks:*", "securitycraft:*", "forgemultipartcbe:*", "integrateddynamics:cable",
+					"mekanismgenerators:wind_generator"), obj -> obj instanceof String);
 
-			forbiddenEntities = s.comment("Entities that cannot be picked up").defineList("blacklist.forbiddenEntities", Arrays.asList("minecraft:end_crystal", "minecraft:ender_dragon", "minecraft:ghast", "minecraft:shulker", "minecraft:leash_knot", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet", "animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart", "animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*"), obj -> obj instanceof String ? true : false);
+			forbiddenEntities = s.comment("Entities that cannot be picked up").defineList("blacklist.forbiddenEntities", Arrays.asList("minecraft:end_crystal", "minecraft:ender_dragon", "minecraft:ghast", "minecraft:shulker", "minecraft:leash_knot", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet", "animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart", "animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
+					"securitycraft:*", "taterzens:npc", "easy_npc:*", "minecolonies:*"), obj -> obj instanceof String ? true : false);
 
 			forbiddenStacking = s.comment("Entities that cannot have other entities stacked on top of them").defineList("blacklist.forbiddenStacking", Arrays.asList("minecraft:horse"), obj -> obj instanceof String ? true : false);
 		}

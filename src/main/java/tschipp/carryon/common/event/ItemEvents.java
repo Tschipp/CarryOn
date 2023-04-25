@@ -1,7 +1,5 @@
 package tschipp.carryon.common.event;
 
-import java.util.Optional;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -61,6 +59,8 @@ import tschipp.carryon.common.scripting.ScriptChecker;
 import tschipp.carryon.common.scripting.ScriptReader;
 import tschipp.carryon.network.client.CarrySlotPacket;
 import tschipp.carryon.network.client.ScriptReloadPacket;
+
+import java.util.Optional;
 
 @EventBusSubscriber(modid = CarryOn.MODID)
 public class ItemEvents
@@ -196,6 +196,7 @@ public class ItemEvents
 	public void reloadTags(TagsUpdatedEvent event)
 	{
 		ListHandler.initConfigLists();
+		CustomPickupOverrideHandler.initPickupOverrides();
 	}
 
 	@SubscribeEvent
