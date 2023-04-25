@@ -211,7 +211,8 @@ public class Configs {
 						"movingelevators:display_block",
 					    "forgemultipartcbe:*",
 					    "integrateddynamics:cable",
-					    "mekanismgenerators:wind_generator"
+					    "mekanismgenerators:wind_generator",
+					    "stackable:*"
     			};
 		
 		@Comment("Entities that cannot be picked up")
