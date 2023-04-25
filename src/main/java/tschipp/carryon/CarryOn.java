@@ -1,30 +1,27 @@
 package tschipp.carryon;
 
-import java.io.File;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms.IMCEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms.IMCMessage;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLInterModComms.IMCEvent;
-import net.minecraftforge.fml.common.event.FMLInterModComms.IMCMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tschipp.carryon.common.CommonProxy;
 import tschipp.carryon.common.command.CommandCarryOn;
 import tschipp.carryon.common.command.CommandCarryOnReload;
 import tschipp.carryon.common.handler.ListHandler;
 import tschipp.carryon.common.handler.ModelOverridesHandler;
+
+import java.io.File;
 
 @EventBusSubscriber
 @Mod(modid = CarryOn.MODID, name = CarryOn.NAME, version = CarryOn.VERSION, guiFactory = "tschipp.carryon.client.gui.GuiFactoryCarryOn", dependencies = CarryOn.DEPENDENCIES, updateJSON = CarryOn.UPDATE_JSON, acceptedMinecraftVersions = CarryOn.ACCEPTED_VERSIONS, certificateFingerprint = CarryOn.CERTIFICATE_FINGERPRINT)
@@ -72,13 +69,6 @@ public class CarryOn {
 	{
 		event.registerServerCommand(new CommandCarryOn());
 		event.registerServerCommand(new CommandCarryOnReload());
-	}
-	
-	@EventHandler
-    public void onFingerprintViolation(FMLFingerprintViolationEvent event) {
-        
-		LOGGER.error("WARNING! Invalid fingerprint detected! The file " + event.getSource().getName() + " may have been tampered with! If you didn't download the file from https://minecraft.curseforge.com/projects/carry-on or through any kind of mod launcher, immediately delete the file and re-download it from https://minecraft.curseforge.com/projects/carry-on");
-		FINGERPRINT_VIOLATED = true;
 	}
 	
 	@EventHandler

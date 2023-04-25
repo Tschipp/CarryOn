@@ -1,13 +1,7 @@
 package tschipp.carryon.common.handler;
 
-import java.lang.reflect.Method;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EnumCreatureType;
@@ -18,16 +12,18 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
 import tschipp.carryon.common.item.ItemTile;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.UUID;
 
 public class PickupHandler
 {
@@ -133,6 +129,9 @@ public class PickupHandler
 		BlockPos pos = toPickUp.getPosition();
 
 		if (toPickUp instanceof EntityPlayer)
+			return false;
+
+		if(toPickUp.isDead)
 			return false;
 
 		CarryOnOverride override = ScriptChecker.inspectEntity(toPickUp);

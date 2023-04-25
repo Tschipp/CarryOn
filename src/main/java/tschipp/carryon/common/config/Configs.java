@@ -206,10 +206,12 @@ public class Configs {
     					"integrateddynamics:*",
     					"bloodmagic:*",
     					"rftools:screen",
-					"rftools:creative_screen",
-					"movingelevators:elevator_block",
-					"movingelevators:display_block",
-    					
+						"rftools:creative_screen",
+						"movingelevators:elevator_block",
+						"movingelevators:display_block",
+					    "forgemultipartcbe:*",
+					    "integrateddynamics:cable",
+					    "mekanismgenerators:wind_generator"
     			};
 		
 		@Comment("Entities that cannot be picked up")
@@ -236,7 +238,10 @@ public class Configs {
 						"mocreatures:*",
 						"pixelmon:*",
 					    "thebetweenlands:draeton**",
-		    	        "mysticalworld:*"
+		    	        "mysticalworld:*",
+						"securitycraft:*",
+						"taterzens:npc",
+						"minecolonies:*"
 				};
 		
 		

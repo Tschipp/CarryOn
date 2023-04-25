@@ -1,23 +1,17 @@
 package tschipp.carryon.common.scripting;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-
+import com.google.gson.*;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.CarryOnConfig;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ScriptReader
 {
@@ -28,7 +22,7 @@ public class ScriptReader
 
 	public static void preInit(FMLPreInitializationEvent event)
 	{
-		CarryOn.CONFIGURATION_FILE = new File(event.getModConfigurationDirectory(), "carryon-scripts/");
+		CarryOn.CONFIGURATION_FILE = new File(event.getModConfigurationDirectory(), "carryon-scripts" + File.separator);
 		
 		if (!CarryOn.CONFIGURATION_FILE.exists())
 			CarryOn.CONFIGURATION_FILE.mkdir();

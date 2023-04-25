@@ -1,7 +1,5 @@
 package tschipp.carryon.common.event;
 
-import java.util.List;
-
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -36,6 +34,8 @@ import tschipp.carryon.common.handler.RegistrationHandler;
 import tschipp.carryon.common.item.ItemEntity;
 import tschipp.carryon.common.scripting.CarryOnOverride;
 import tschipp.carryon.common.scripting.ScriptChecker;
+
+import java.util.List;
 
 public class ItemEntityEvents
 {
@@ -86,6 +86,21 @@ public class ItemEntityEvents
 			}
 		}
 	}
+	@SubscribeEvent(priority = EventPriority.HIGH)
+	public void onEntityRightClickSpecific(PlayerInteractEvent.EntityInteractSpecific event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+
+		if (player instanceof EntityPlayerMP)
+		{
+			ItemStack main = player.getHeldItemMainhand();
+			if (!main.isEmpty() && (main.getItem() == RegistrationHandler.itemTile || main.getItem() == RegistrationHandler.itemEntity))
+			{
+				event.setCanceled(true);
+				event.setCancellationResult(EnumActionResult.SUCCESS);
+			}
+		}
+	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onEntityRightClick(PlayerInteractEvent.EntityInteract event)
@@ -132,10 +147,11 @@ public class ItemEntityEvents
 							if (entity instanceof EntityLiving)
 								((EntityLiving) entity).setHealth(0);
 
+							entity.setPosition(entity.posX, -200, entity.posZ);
 							entity.setDead();
 							player.setHeldItem(EnumHand.MAIN_HAND, stack);
 							event.setCanceled(true);
-							event.setCancellationResult(EnumActionResult.FAIL);
+							event.setCancellationResult(EnumActionResult.SUCCESS);
 						}
 					}
 				}
@@ -191,11 +207,13 @@ public class ItemEntityEvents
 									player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
 									ItemEvents.sendPacket(player, 9, 0);
 									event.setCanceled(true);
-									event.setCancellationResult(EnumActionResult.FAIL);
+									event.setCancellationResult(EnumActionResult.SUCCESS);
 									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_HORSE_SADDLE, SoundCategory.PLAYERS, 0.5F, 1.5F);
 								}
 								else
 								{
+									event.setCanceled(true);
+									event.setCancellationResult(EnumActionResult.SUCCESS);
 									world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 									return;
 								}
@@ -203,6 +221,8 @@ public class ItemEntityEvents
 						}
 						else
 						{
+							event.setCanceled(true);
+							event.setCancellationResult(EnumActionResult.SUCCESS);
 							world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_BASS, SoundCategory.PLAYERS, 0.5F, 1.5F);
 							return;
 						}
@@ -210,6 +230,14 @@ public class ItemEntityEvents
 
 				}
 
+				event.setCanceled(true);
+				event.setCancellationResult(EnumActionResult.SUCCESS);
+
+			}
+			else if (!main.isEmpty() && main.getItem() == RegistrationHandler.itemTile)
+			{
+				event.setCanceled(true);
+				event.setCancellationResult(EnumActionResult.SUCCESS);
 			}
 		}
 
