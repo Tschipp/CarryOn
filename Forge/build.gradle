@@ -118,9 +118,13 @@ dependencies {
     compileOnly project(":Common")
     implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
     implementation fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-1.19.2:16.1.9")
-    minecraftLibrary("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
-    jarJar(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "[${mixinextras_version},)")
-    annotationProcessor("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
+    //minecraftLibrary("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
+    //jarJar(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "[${mixinextras_version},)")
+    //annotationProcessor("com.github.LlamaLad7:MixinExtras:${mixinextras_version}")
+    implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-common:${mixinextras_version}"))
+    implementation(jarJar("com.github.llamalad7.mixinextras:mixinextras-forge:${mixinextras_version}")) {
+        jarJar.ranged(it, "[${mixinextras_version},)")
+    }
     annotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
 
     fileTree("libs").matching {
