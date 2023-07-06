@@ -14,7 +14,11 @@ public class CarryOnKeybinds
 
 	public static void registerKeybinds(Consumer<KeyMapping> registrar)
 	{
-		carryKey = new ConflictFreeKeyMapping("key.carry.desc", Services.PLATFORM.getPlatformName().equals("Forge") ? InputConstants.KEY_LSHIFT : InputConstants.UNKNOWN.getValue(), "key.carry.category");
+		if(Services.PLATFORM.isModLoaded("amecsapi"))
+			carryKey = new ConflictFreeKeyMapping("key.carry.desc", InputConstants.KEY_LSHIFT, "key.carry.category");
+		else
+			carryKey = new ConflictFreeKeyMapping("key.carry.desc", Services.PLATFORM.getPlatformName().equals("Forge") ? InputConstants.KEY_LSHIFT : InputConstants.UNKNOWN.getValue(), "key.carry.category");
+
 		registrar.accept(carryKey);
 	}
 

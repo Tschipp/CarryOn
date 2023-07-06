@@ -6,6 +6,7 @@ import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.InterModComms.IMCMessage;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import tschipp.carryon.Constants;
 import tschipp.carryon.client.modeloverride.ModelOverrideHandler;
 import tschipp.carryon.common.config.ListHandler;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 public class ModBusEvents {
 
 	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void serverLoad(FMLCommonSetupEvent event)
+	public static void serverLoad(InterModProcessEvent event)
 	{
 		Stream<IMCMessage> messages = InterModComms.getMessages(Constants.MOD_ID);
 
@@ -27,6 +28,7 @@ public class ModBusEvents {
 
 			if (!(obj instanceof String str))
 				return;
+
 
 			switch (method) {
 				case "blacklistBlock":

@@ -1,6 +1,7 @@
 package tschipp.carryon;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
