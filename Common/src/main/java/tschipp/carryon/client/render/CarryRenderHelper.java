@@ -274,7 +274,7 @@ public class CarryRenderHelper
 
 		if(state.getRenderShape() != RenderShape.MODEL || model.isCustomRenderer() || model.getQuads(state, null, RandomSource.create()).size() <= 0) {
 			ItemStack stack = new ItemStack(state.getBlock());
-			model = renderer.getModel(stack, player.level, player, 0);
+			model = renderer.getModel(stack, player.level(), player, 0);
 		}
 
 		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
@@ -282,7 +282,7 @@ public class CarryRenderHelper
 		{
 			var renderObj = ov.get().getRenderObject();
 			if(renderObj.left().isPresent())
-				model = renderer.getModel(renderObj.left().get(), player.level, player, 0);
+				model = renderer.getModel(renderObj.left().get(), player.level(), player, 0);
 		}
 
 		return model;
@@ -291,14 +291,14 @@ public class CarryRenderHelper
 	public static Entity getRenderEntity(Player player)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
-		Entity entity = carry.getEntity(player.level);
+		Entity entity = carry.getEntity(player.level());
 
 		if(carry.getActiveScript().isPresent())
 		{
 			CarryOnScript script = carry.getActiveScript().get();
 			ScriptRender render = script.scriptRender();
 			if(render.renderNameEntity().isPresent())
-				entity = BuiltInRegistries.ENTITY_TYPE.get(render.renderNameEntity().get()).create(player.level);
+				entity = BuiltInRegistries.ENTITY_TYPE.get(render.renderNameEntity().get()).create(player.level());
 
 			if(render.renderNBT().isPresent())
 				entity.load(render.renderNBT().get());
@@ -313,7 +313,7 @@ public class CarryRenderHelper
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
 			BlockState state = getRenderState(player);
-			VoxelShape shape = state.getShape(player.level, player.blockPosition());
+			VoxelShape shape = state.getShape(player.level(), player.blockPosition());
 			if(shape == null || shape.isEmpty())
 				return 1f;
 			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
@@ -341,7 +341,7 @@ public class CarryRenderHelper
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
 			BlockState state = getRenderState(player);
-			VoxelShape shape = state.getShape(player.level, player.blockPosition());
+			VoxelShape shape = state.getShape(player.level(), player.blockPosition());
 			if(shape == null || shape.isEmpty())
 				return 1f;
 			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());

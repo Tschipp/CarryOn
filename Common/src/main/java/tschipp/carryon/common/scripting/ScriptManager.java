@@ -8,7 +8,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import tschipp.carryon.Constants;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptObject.ScriptObjectBlock;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptObject.ScriptObjectEntity;
@@ -28,13 +27,12 @@ public class ScriptManager
 			return Optional.empty();
 
 		Block block = state.getBlock();
-		Material material = state.getMaterial();
 		float hardness = state.getDestroySpeed(level, pos);
 		float resistance = block.getExplosionResistance();
 
 		for (CarryOnScript script : SCRIPTS)
 		{
-			if (script.isBlock() && matchesAll(script, block, material, hardness, resistance, tag))
+			if (script.isBlock() && matchesAll(script, block, hardness, resistance, tag))
 				return Optional.of(script);
 		}
 
@@ -76,7 +74,7 @@ public class ScriptManager
 		return matchname && matchheight && matchwidth && matchhealth && matchnbt;
 	}
 
-	private static boolean matchesAll(CarryOnScript script, Block block, Material material, float hardness, float resistance, CompoundTag nbt)
+	private static boolean matchesAll(CarryOnScript script, Block block, float hardness, float resistance, CompoundTag nbt)
 	{
 		ScriptObjectBlock scBlock = script.scriptObject().block();
 
@@ -84,10 +82,9 @@ public class ScriptManager
 		if(scBlock.typeNameBlock().isPresent())
 			matchblock = block == BuiltInRegistries.BLOCK.get(scBlock.typeNameBlock().get());
 		boolean matchnbt = scBlock.typeBlockTag().matches(nbt);
-		boolean matchmaterial = scBlock.typeMaterial().matches(material);
 		boolean matchhardness = scBlock.typeHardness().matches(hardness);
 		boolean matchresistance = scBlock.typeResistance().matches(resistance);
 
-		return matchnbt && matchblock && matchmaterial && matchhardness && matchresistance;
+		return matchnbt && matchblock && matchhardness && matchresistance;
 	}
 }

@@ -159,7 +159,7 @@ public class CommonEvents
 	@SubscribeEvent
 	public static void onClone(Clone event)
 	{
-		if (!event.getOriginal().level.isClientSide)
+		if (!event.getOriginal().level().isClientSide)
 			PlacementHandler.placeCarriedOnDeath((ServerPlayer) event.getOriginal(), (ServerPlayer) event.getEntity(), event.isWasDeath());
 	}
 

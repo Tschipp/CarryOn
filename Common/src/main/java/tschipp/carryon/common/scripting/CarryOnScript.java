@@ -74,17 +74,15 @@ public record CarryOnScript(
 
 		public record ScriptObjectBlock(
 				Optional<ResourceKey<Block>> typeNameBlock,
-				MaterialCondition typeMaterial,
 				NumberBoundCondition typeHardness,
 				NumberBoundCondition typeResistance,
 				NBTCondition typeBlockTag
 				){
-			public static final ScriptObjectBlock EMPTY = new ScriptObjectBlock(Optional.empty(), MaterialCondition.NONE, NumberBoundCondition.NONE, NumberBoundCondition.NONE, NBTCondition.NONE);
+			public static final ScriptObjectBlock EMPTY = new ScriptObjectBlock(Optional.empty(), NumberBoundCondition.NONE, NumberBoundCondition.NONE, NBTCondition.NONE);
 
 			public static final Codec<ScriptObjectBlock> CODEC = RecordCodecBuilder.create(instance ->
 					instance.group(
 							ResourceKey.codec(Registries.BLOCK).optionalFieldOf("name").forGetter(ScriptObjectBlock::typeNameBlock),
-							MaterialCondition.CODEC.optionalFieldOf("material", MaterialCondition.NONE).forGetter(ScriptObjectBlock::typeMaterial),
 							NumberBoundCondition.CODEC.optionalFieldOf("hardness", NumberBoundCondition.NONE).forGetter(ScriptObjectBlock::typeHardness),
 							NumberBoundCondition.CODEC.optionalFieldOf("resistance", NumberBoundCondition.NONE).forGetter(ScriptObjectBlock::typeResistance),
 							NBTCondition.CODEC.optionalFieldOf("nbt", NBTCondition.NONE).forGetter(ScriptObjectBlock::typeBlockTag)

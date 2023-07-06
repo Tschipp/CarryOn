@@ -82,7 +82,7 @@ public class CarryOnCommon
 		    if (!Constants.COMMON_CONFIG.settings.slownessInCreative && player.isCreative())
 			    return;
 
-		    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, potionLevel(carry, player.level), false, false));
+		    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1, potionLevel(carry, player.level()), false, false));
 
 		    Inventory inv = player.getInventory();
 			inv.selected = carry.getSelected();
@@ -119,7 +119,7 @@ public class CarryOnCommon
 
 	public static void onPlayerAttacked(Player player)
 	{
-		if (Constants.COMMON_CONFIG.settings.dropCarriedWhenHit && !player.level.isClientSide)
+		if (Constants.COMMON_CONFIG.settings.dropCarriedWhenHit && !player.level().isClientSide)
 		{
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
 			if (carry.isCarrying())

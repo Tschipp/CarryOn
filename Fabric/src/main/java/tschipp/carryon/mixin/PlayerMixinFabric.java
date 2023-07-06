@@ -21,7 +21,7 @@ public class PlayerMixinFabric
 		{
 			Player player = ((Player)(Object)this);
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
-			if(carry.isCarrying() && !player.level.isClientSide)
+			if(carry.isCarrying() && !player.level().isClientSide)
 				PlacementHandler.placeCarried((ServerPlayer)player);
 		}
 

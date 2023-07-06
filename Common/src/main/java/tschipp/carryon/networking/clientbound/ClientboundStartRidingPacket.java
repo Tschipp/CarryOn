@@ -32,7 +32,7 @@ public class ClientboundStartRidingPacket extends PacketBase
 	@Override
 	public void handle(Player player)
 	{
-		Entity otherPlayer = player.level.getEntity(this.entityId);
+		Entity otherPlayer = player.level().getEntity(this.entityId);
 		if(otherPlayer != null)
 			if(ride)
 				otherPlayer.startRiding(player);

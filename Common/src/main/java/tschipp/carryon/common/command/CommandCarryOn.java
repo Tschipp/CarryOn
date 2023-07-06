@@ -75,7 +75,7 @@ public class CommandCarryOn
 				}
 				else if (carry.isCarrying(CarryType.ENTITY))
 				{
-					Entity entity = carry.getEntity(player.level);
+					Entity entity = carry.getEntity(player.level());
 					log(source,"Entity: " + entity);
 					log(source,"Entity Name: " + entity.getType());
 					log(source,"NBT: " + carry.getNbt());
@@ -112,11 +112,14 @@ public class CommandCarryOn
 
 			cleared++;
 		}
+		int finalCleared = cleared;
 
-		if (cleared != 1)
-			source.sendSuccess(Component.literal("Cleared " + cleared + " Items!"), true);
-		else
-			source.sendSuccess(Component.literal("Cleared " + cleared + " Item!"), true);
+		if (cleared != 1) {
+			source.sendSuccess(() -> Component.literal("Cleared " + finalCleared + " Items!"), true);
+		}
+		else {
+			source.sendSuccess(() -> Component.literal("Cleared " + finalCleared + " Item!"), true);
+		}
 
 		return 1;
 	}
@@ -129,18 +132,20 @@ public class CommandCarryOn
 			PlacementHandler.placeCarried(player);
 			cleared++;
 		}
+		int finalCleared = cleared;
 
-		if (cleared != 1)
-			source.sendSuccess(Component.literal("Placed " + cleared + " Items!"), true);
+		if (cleared != 1) {
+			source.sendSuccess(() -> Component.literal("Placed " + finalCleared + " Items!"), true);
+		}
 		else
-			source.sendSuccess(Component.literal("Placed " + cleared + " Item!"), true);
+			source.sendSuccess(() -> Component.literal("Placed " + finalCleared + " Item!"), true);
 
 		return 1;
 	}
 
 	private static void log(CommandSourceStack source, String toLog)
 	{
-		source.sendSuccess(Component.literal(toLog), true);
+		source.sendSuccess(() -> Component.literal(toLog), true);
 		Constants.LOG.info(toLog);
 	}
 }

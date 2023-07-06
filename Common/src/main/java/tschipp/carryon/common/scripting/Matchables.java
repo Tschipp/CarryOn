@@ -10,7 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
@@ -93,91 +92,6 @@ public final class Matchables
 			catch (Exception e)
 			{
 				throw new RuntimeException("Error while parsing Number bound for string: "+ bounds + ". Error: " + e.getMessage());
-			}
-		}
-	}
-
-	public record MaterialCondition(String material) implements Matchable<Material>
-	{
-		public static final Codec<MaterialCondition> CODEC = Codec.STRING.xmap(MaterialCondition::new, MaterialCondition::material);
-
-		public static final MaterialCondition NONE = new MaterialCondition("");
-
-		@Override
-		public boolean matches(Material material)
-		{
-			if (this.material == null || this.material.isEmpty())
-				return true;
-
-			switch (this.material) {
-				case "air":
-					return material == Material.AIR;
-				case "anvil":
-					return material == Material.HEAVY_METAL;
-				case "barrier":
-					return material == Material.BARRIER;
-				case "cactus":
-					return material == Material.CACTUS;
-				case "cake":
-					return material == Material.CAKE;
-				case "carpet":
-					return material == Material.CLOTH_DECORATION;
-				case "clay":
-					return material == Material.CLAY;
-				case "cloth":
-					return material == Material.WOOL;
-				case "dragon_egg":
-					return material == Material.EGG;
-				case "fire":
-					return material == Material.FIRE;
-				case "glass":
-					return material == Material.GLASS;
-				case "gourd":
-					return material == Material.VEGETABLE;
-				case "grass":
-					return material == Material.GRASS;
-				case "ground":
-					return material == Material.GRASS;
-				case "ice":
-					return material == Material.ICE;
-				case "iron":
-					return material == Material.METAL;
-				case "lava":
-					return material == Material.LAVA;
-				case "leaves":
-					return material == Material.LEAVES;
-				case "packed_ice":
-					return material == Material.ICE_SOLID;
-				case "piston":
-					return material == Material.PISTON;
-				case "plants":
-					return material == Material.PLANT;
-				case "portal":
-					return material == Material.PORTAL;
-				case "redstone_light":
-					return material == Material.BUILDABLE_GLASS;
-				case "rock":
-					return material == Material.STONE;
-				case "sand":
-					return material == Material.SAND;
-				case "snow":
-					return material == Material.TOP_SNOW;
-				case "sponge":
-					return material == Material.SPONGE;
-				case "structure_void":
-					return material == Material.STRUCTURAL_AIR;
-				case "tnt":
-					return material == Material.EXPLOSIVE;
-				case "vine":
-					return material == Material.PLANT;
-				case "water":
-					return material == Material.WATER;
-				case "web":
-					return material == Material.WEB;
-				case "wood":
-					return material == Material.WOOD;
-				default:
-					return false;
 			}
 		}
 	}

@@ -45,7 +45,7 @@ public class PlacementHandler
 		if (player.tickCount == carry.getTick())
 			return false;
 
-		Level level = player.getLevel();
+		Level level = player.level();
 		BlockState state = carry.getBlock();
 
 		BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY, BlockHitResult.miss(player.position(), facing, pos));
@@ -106,7 +106,7 @@ public class PlacementHandler
 			}
 		}
 
-		BlockState updatedState = Block.updateFromNeighbourShapes(state, player.level, pos);
+		BlockState updatedState = Block.updateFromNeighbourShapes(state, player.level(), pos);
 		if (updatedState.getBlock() == state.getBlock())
 			state = updatedState;
 
@@ -132,7 +132,7 @@ public class PlacementHandler
 		if (player.tickCount == carry.getTick())
 			return false;
 
-		Level level = player.getLevel();
+		Level level = player.level();
 
 		BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY, BlockHitResult.miss(player.position(), facing, pos));
 		if (!level.getBlockState(pos).canBeReplaced(context))
@@ -185,7 +185,7 @@ public class PlacementHandler
 		if (!carry.isCarrying(CarryType.ENTITY) && !carry.isCarrying(CarryType.PLAYER))
 			return;
 
-		Level level = player.level;
+		Level level = player.level();
 		Entity entityHeld;
 		if (carry.isCarrying(CarryType.ENTITY))
 			entityHeld = carry.getEntity(level);
@@ -250,7 +250,7 @@ public class PlacementHandler
 	public static void placeCarriedOnDeath(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean died)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(oldPlayer);
-		if (oldPlayer.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || !died) {
+		if (oldPlayer.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || !died) {
 			if (!carry.isCarrying(CarryType.PLAYER)) {
 				CarryOnDataManager.setCarryData(newPlayer, carry);
 				newPlayer.getInventory().selected = oldPlayer.getInventory().selected;
@@ -265,17 +265,17 @@ public class PlacementHandler
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if (carry.isCarrying(CarryType.ENTITY)) {
-			Entity entity = carry.getEntity(player.level);
+			Entity entity = carry.getEntity(player.level());
 			entity.setPos(player.position());
-			player.level.addFreshEntity(entity);
+			player.level().addFreshEntity(entity);
 		} else if (carry.isCarrying(CarryType.BLOCK)) {
 			BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY, BlockHitResult.miss(Vec3.atCenterOf(player.blockPosition()), Direction.DOWN, player.blockPosition()));
 			BlockState state = getPlacementState(carry.getBlock(), player, context, player.blockPosition());
 			BlockPos pos = getDeathPlacementPos(state, player);
 			BlockEntity blockEntity = carry.getBlockEntity(pos);
-			player.level.setBlock(pos, state, 3);
+			player.level().setBlock(pos, state, 3);
 			if (blockEntity != null)
-				player.level.setBlockEntity(blockEntity);
+				player.level().setBlockEntity(blockEntity);
 		} else if (carry.isCarrying(CarryType.PLAYER)) {
 			player.ejectPassengers();
 		}
@@ -307,7 +307,7 @@ public class PlacementHandler
 		for(BlockPos potential : potentialPositions)
 		{
 			BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY, BlockHitResult.miss(Vec3.atCenterOf(potential), Direction.DOWN, potential));
-			boolean canPlace = state.canSurvive(player.level, potential) && player.level.getBlockState(potential).canBeReplaced(context) && player.level.isUnobstructed(state, potential, CollisionContext.of(player));
+			boolean canPlace = state.canSurvive(player.level(), potential) && player.level().getBlockState(potential).canBeReplaced(context) && player.level().isUnobstructed(state, potential, CollisionContext.of(player));
 
 			if (canPlace)
 				return potential;
