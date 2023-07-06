@@ -30,7 +30,6 @@ public class ListHandler {
     private static List<TagKey<EntityType<?>>> FORBIDDEN_STACKING_TAGS = new ArrayList<>();
     private static List<TagKey<EntityType<?>>> ALLOWED_STACKING_TAGS = new ArrayList<>();
 
-
     private static Set<Class<?>> PROPERTY_EXCEPTION_CLASSES = new HashSet<>();
 
     public static boolean isPermitted(Block block)
@@ -141,7 +140,6 @@ public class ListHandler {
                 }
             }
         }
-
     }
 
     private static <T> void addTag(String tag, Map<ResourceLocation, TagKey<T>> tagMap, List<TagKey<T>> tags) {

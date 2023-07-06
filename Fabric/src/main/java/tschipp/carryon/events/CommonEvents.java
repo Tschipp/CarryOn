@@ -19,6 +19,7 @@ import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.carry.PickupHandler;
 import tschipp.carryon.common.carry.PlacementHandler;
 import tschipp.carryon.common.scripting.ScriptReloadListener;
+import tschipp.carryon.compat.ArchitecturyCompat;
 import tschipp.carryon.config.ConfigLoader;
 import tschipp.carryon.scripting.IdentifiableScriptReloadListener;
 
@@ -42,7 +43,10 @@ public class CommonEvents {
             CarryOnData carry = CarryOnDataManager.getCarryData(player);
             if(!carry.isCarrying())
             {
-                if (PickupHandler.tryPickUpBlock((ServerPlayer) player, pos, world, null))
+                if (PickupHandler.tryPickUpBlock((ServerPlayer) player, pos, world, (pState, pPos) -> {
+                    boolean success = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pPos, pState, world.getBlockEntity(pPos));
+                    return success;
+                }))
                     return InteractionResult.SUCCESS;
                 return InteractionResult.PASS;
             }
@@ -50,7 +54,9 @@ public class CommonEvents {
             {
                 if(carry.isCarrying(CarryOnData.CarryType.BLOCK))
                 {
-                    if(PlacementHandler.tryPlaceBlock((ServerPlayer) player, pos, facing, null))
+                    if(PlacementHandler.tryPlaceBlock((ServerPlayer) player, pos, facing, (pState, pPos) -> {
+                        return ArchitecturyCompat.sendPlaceEvent(world, pState, pPos, player);
+                    }))
                         return InteractionResult.SUCCESS;
                 }
                 else
