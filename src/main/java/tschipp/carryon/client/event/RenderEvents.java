@@ -166,7 +166,8 @@ public class RenderEvents
 
 				if (!stack.isEmpty() && (stack.getItem() == RegistrationHandler.itemTile && ItemCarryonBlock.hasTileData(stack) || stack.getItem() == RegistrationHandler.itemEntity && ItemCarryonEntity.hasEntityData(stack)))
 				{
-					Minecraft.getInstance().player.closeContainer();
+					event.setCanceled(true);
+					//Minecraft.getInstance().player.closeContainer();
 					Minecraft.getInstance().screen = null;
 					Minecraft.getInstance().mouseHandler.grabMouse();
 

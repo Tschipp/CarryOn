@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -49,6 +50,8 @@ public class CarryOn
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Configs.SERVER_CONFIG);
 
 		info = ModLoadingContext.get().getActiveContainer().getModInfo();
+
+		InterModComms.sendTo("carryon", "blacklistBlock", () -> "minecraft:chest");
 	}
 
 	private void setup(final FMLCommonSetupEvent event)

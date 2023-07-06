@@ -6,7 +6,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.registries.ForgeRegistries;
+import tschipp.carryon.CarryOn;
 import tschipp.carryon.common.config.Configs.Blacklist;
 import tschipp.carryon.common.config.Configs.WhiteList;
 
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ListHandler
 {
@@ -30,6 +33,7 @@ public class ListHandler
 	public static List<TagKey<Block>> ALLOWED_TILES_TAGS = new ArrayList<>();
 	public static List<TagKey<EntityType<?>>> FORBIDDEN_STACKING_TAGS = new ArrayList<>();
 	public static List<TagKey<EntityType<?>>> ALLOWED_STACKING_TAGS = new ArrayList<>();
+	public static List<Runnable> IMCMessages = new ArrayList<>();
 
 	public static boolean isForbidden(Block block)
 	{
@@ -144,6 +148,11 @@ public class ListHandler
 
 	}
 
+	private static void processIMC() {
+		for(Runnable r : IMCMessages)
+			r.run();
+	}
+
 	@SuppressWarnings("deprecation")
 	public static void initConfigLists()
 	{
@@ -160,9 +169,10 @@ public class ListHandler
 		ALLOWED_TILES.clear();
 		ALLOWED_TILES_TAGS.clear();
 
+		processIMC();
+
 		List<String> forbidden = new ArrayList<>(Blacklist.forbiddenTiles.get());
 		forbidden.add("#carryon:block_blacklist");
-		FORBIDDEN_TILES = new ArrayList<>();
 
 		for (int i = 0; i < forbidden.size(); i++)
 		{
@@ -172,7 +182,6 @@ public class ListHandler
 
 		List<String> forbiddenEntity = new ArrayList<>(Blacklist.forbiddenEntities.get());
 		forbiddenEntity.add("#carryon:entity_blacklist");
-		FORBIDDEN_ENTITIES = new ArrayList<>();
 
 		for (int i = 0; i < forbiddenEntity.size(); i++)
 		{
@@ -197,7 +206,6 @@ public class ListHandler
 
 		List<String> allowedEntities = new ArrayList<>(WhiteList.allowedEntities.get());
 		allowedEntities.add("#carryon:entity_whitelist");
-		ALLOWED_ENTITIES = new ArrayList<>();
 		for (int i = 0; i < allowedEntities.size(); i++)
 		{
 			if (!allowedEntities.get(i).startsWith("#"))
@@ -221,7 +229,6 @@ public class ListHandler
 
 		List<String> allowedBlocks = new ArrayList<>(WhiteList.allowedBlocks.get());
 		allowedBlocks.add("#carryon:block_whitelist");
-		ALLOWED_TILES = new ArrayList<>();
 		for (int i = 0; i < allowedBlocks.size(); i++)
 		{
 			if (!allowedBlocks.get(i).startsWith("#"))
@@ -230,7 +237,6 @@ public class ListHandler
 
 		List<String> forbiddenStacking = new ArrayList<>(Blacklist.forbiddenStacking.get());
 		forbiddenStacking.add("#carryon:stacking_blacklist");
-		FORBIDDEN_STACKING = new ArrayList<>();
 
 		for (int i = 0; i < forbiddenStacking.size(); i++)
 		{
@@ -255,7 +261,6 @@ public class ListHandler
 
 		List<String> allowedStacking = new ArrayList<>(WhiteList.allowedStacking.get());
 		allowedStacking.add("#carryon:stacking_whitelist");
-		ALLOWED_STACKING = new ArrayList<>();
 		for (int i = 0; i < allowedStacking.size(); i++)
 		{
 			if (!allowedStacking.get(i).startsWith("#"))
