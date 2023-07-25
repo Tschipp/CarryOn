@@ -33,8 +33,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":Common")
-    modImplementation "de.siphalor:amecsapi-1.19:1.5.0+mc22w17a"
-    include "de.siphalor:amecsapi-1.19:1.5.0+mc22w17a"
+    modRuntimeOnly  "de.siphalor:amecsapi-1.19:1.5.0+mc22w17a"
     include implementation("com.github.llamalad7.mixinextras:mixinextras-fabric:${mixinextras_version}")
     annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${mixinextras_version}")
 }
