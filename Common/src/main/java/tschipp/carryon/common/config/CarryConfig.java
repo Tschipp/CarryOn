@@ -245,7 +245,10 @@ public class CarryConfig
 					"betterstorage:*", "practicallogistics2:*", "wearablebackpacks:*", "rftools:screen",
 					"rftools:creative_screen", "create:*", "magic_doorknob:*", "iceandfire:*", "ftbquests:*",
 					"waystones:*", "contact:*", "framedblocks:*", "securitycraft:*", "forgemultipartcbe:*", "integrateddynamics:cable",
-					"mekanismgenerators:wind_generator"
+					"mekanismgenerators:wind_generator", "cookingforblockheads:cabinet", "cookingforblockheads:corner", "cookingforblockheads:counter",
+					"cookingforblockheads:oven", "cookingforblockheads:toaster", "cookingforblockheads:milk_jar", "cookingforblockheads:cow_jar",
+					"cookingforblockheads:fruit_basket", "cookingforblockheads:cooking_table", "cookingforblockheads:fridge", "cookingforblockheads:sink",
+					"powah:*"
 			};
 
 			@Property(
