@@ -78,8 +78,11 @@ public class PlacementHandler
 		}
 
 		level.setBlockAndUpdate(pos, state);
-		if (blockEntity != null)
+		if (blockEntity != null) {
+			blockEntity.setBlockState(state);
 			level.setBlockEntity(blockEntity);
+		}
+
 		level.updateNeighborsAt(pos.relative(Direction.DOWN), level.getBlockState(pos.relative(Direction.DOWN)).getBlock());
 		carry.clear();
 		CarryOnDataManager.setCarryData(player, carry);

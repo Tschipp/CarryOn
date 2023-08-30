@@ -29,7 +29,7 @@ public class ListHandler {
     private static List<TagKey<EntityType<?>>> FORBIDDEN_STACKING_TAGS = new ArrayList<>();
     private static List<TagKey<EntityType<?>>> ALLOWED_STACKING_TAGS = new ArrayList<>();
 
-    private static Set<Class<?>> PROPERTY_EXCEPTION_CLASSES = new HashSet<>();
+    private static Set<Property<?>> PROPERTY_EXCEPTION_CLASSES = new HashSet<>();
 
     public static boolean isPermitted(Block block)
     {
@@ -57,7 +57,7 @@ public class ListHandler {
 
     public static boolean isPropertyException(Property<?> prop)
     {
-        return PROPERTY_EXCEPTION_CLASSES.contains(prop.getValueClass());
+        return PROPERTY_EXCEPTION_CLASSES.contains(prop);
     }
 
     private static boolean doCheck(Block block, Set<String> regular, List<TagKey<Block>> tags)
@@ -135,7 +135,7 @@ public class ListHandler {
             for(String propName : props.split(",")) {
                 for (Property<?> prop : blk.defaultBlockState().getProperties()) {
                     if (prop.getName().equals(propName))
-                        PROPERTY_EXCEPTION_CLASSES.add(prop.getValueClass());
+                        PROPERTY_EXCEPTION_CLASSES.add(prop);
                 }
             }
         }
