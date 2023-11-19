@@ -77,7 +77,7 @@ public class CommonEvents
 			} else {
 				PlacementHandler.tryPlaceEntity((ServerPlayer) player, pos, event.getFace(), (pPos, toPlace) -> {
 					if (toPlace instanceof Mob mob) {
-						FinalizeSpawn checkSpawn = new FinalizeSpawn(mob, (ServerLevelAccessor) level, pPos.x, pPos.y, pPos.z, null, MobSpawnType.EVENT, null, null, null);
+						FinalizeSpawn checkSpawn = new FinalizeSpawn(mob, (ServerLevelAccessor) level, pPos.x, pPos.y, pPos.z, level.getCurrentDifficultyAt(new BlockPos((int) pPos.x, (int) pPos.y, (int) pPos.z)), MobSpawnType.EVENT, null, null, null);
 						MinecraftForge.EVENT_BUS.post(checkSpawn);
 						return event.getResult() != Result.DENY;
 					}

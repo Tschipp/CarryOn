@@ -248,7 +248,7 @@ public class CarryConfig
 					"mekanismgenerators:wind_generator", "cookingforblockheads:cabinet", "cookingforblockheads:corner", "cookingforblockheads:counter",
 					"cookingforblockheads:oven", "cookingforblockheads:toaster", "cookingforblockheads:milk_jar", "cookingforblockheads:cow_jar",
 					"cookingforblockheads:fruit_basket", "cookingforblockheads:cooking_table", "cookingforblockheads:fridge", "cookingforblockheads:sink",
-					"powah:*"
+					"powah:*", "advancementtrophies:trophy", "mekanismgenerators:heat_generator", "mna:filler_block"
 			};
 
 			@Property(
@@ -261,7 +261,7 @@ public class CarryConfig
 					"minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet",
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
-					"securitycraft:*", "taterzens:npc", "easy_npc:*"
+					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body"
 			};
 
 			@Property(
