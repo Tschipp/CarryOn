@@ -72,8 +72,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Optional;
 
+
+
 public class RenderEvents
 {
+	private static Map<RenderType, BufferBuilder> builders = Map.of(
+			RenderType.glint(), new BufferBuilder(RenderType.glint().bufferSize()),
+			RenderType.glintDirect(), new BufferBuilder(RenderType.glintDirect().bufferSize()),
+			RenderType.glintTranslucent(), new BufferBuilder(RenderType.glintTranslucent().bufferSize()),
+			RenderType.entityGlint(), new BufferBuilder(RenderType.entityGlint().bufferSize()),
+			RenderType.entityGlintDirect(), new BufferBuilder(RenderType.entityGlintDirect().bufferSize())
+	);
+
 	/*
 	 * Prevents the Player from scrolling
 	 */
@@ -328,13 +338,6 @@ public class RenderEvents
 		RenderSystem.enableBlend();
 		RenderSystem.disableCull();
 		RenderSystem.disableDepthTest();
-		Map<RenderType, BufferBuilder> builders = Map.of(
-				RenderType.glint(), new BufferBuilder(RenderType.glint().bufferSize()),
-				RenderType.glintDirect(), new BufferBuilder(RenderType.glintDirect().bufferSize()),
-				RenderType.glintTranslucent(), new BufferBuilder(RenderType.glintTranslucent().bufferSize()),
-				RenderType.entityGlint(), new BufferBuilder(RenderType.entityGlint().bufferSize()),
-				RenderType.entityGlintDirect(), new BufferBuilder(RenderType.entityGlintDirect().bufferSize())
-		);
 		BufferSource buffer = MultiBufferSource.immediateWithBuffers(builders, Tesselator.getInstance().getBuilder());
 
 
