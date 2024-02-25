@@ -50,8 +50,6 @@ public class CarryOn
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Configs.SERVER_CONFIG);
 
 		info = ModLoadingContext.get().getActiveContainer().getModInfo();
-
-		InterModComms.sendTo("carryon", "blacklistBlock", () -> "minecraft:chest");
 	}
 
 	private void setup(final FMLCommonSetupEvent event)
