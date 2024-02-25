@@ -161,7 +161,7 @@ public class Configs
 
 			stackableEntities = s.comment("Allows entities to be stacked using Carry On").define("stackableEntities", true);
 
-			entitySizeMattersStacking = s.comment("Whether entities' size matters when stacking or not").define("stackableEntities", true);
+			entitySizeMattersStacking = s.comment("Whether entities' size matters when stacking or not").define("entitySizeMattersStacking", true);
 
 			s.pop();
 			c.pop();
