@@ -6,29 +6,24 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import tschipp.carryon.Constants;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.ScriptManager;
 import tschipp.carryon.networking.PacketBase;
 
 import java.util.List;
 
-public class ClientboundSyncScriptsPacket extends PacketBase
+public record ClientboundSyncScriptsPacket(Tag serialized) implements PacketBase
 {
-	private Tag serialized;
-
 	public ClientboundSyncScriptsPacket(FriendlyByteBuf buf)
 	{
-		this.serialized = buf.readNbt().get("data");
-	}
-
-	public ClientboundSyncScriptsPacket(Tag serialized)
-	{
-		this.serialized = serialized;
+		this(buf.readNbt().get("data"));
 	}
 
 	@Override
-	public void toBytes(FriendlyByteBuf buf)
+	public void write(FriendlyByteBuf buf)
 	{
 		CompoundTag tag = new CompoundTag();
 		tag.put("data", serialized);
@@ -42,5 +37,10 @@ public class ClientboundSyncScriptsPacket extends PacketBase
 		List<CarryOnScript> scripts = res.getOrThrow(false, (s) -> {throw new RuntimeException("Failed deserializing carry on scripts on the client: " + s);});
 		ScriptManager.SCRIPTS.clear();
 		ScriptManager.SCRIPTS.addAll(scripts);
+	}
+
+	@Override
+	public ResourceLocation id() {
+		return Constants.PACKET_ID_SYNC_SCRIPTS;
 	}
 }

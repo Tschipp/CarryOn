@@ -1,21 +1,26 @@
 plugins {
-    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'java'
     id 'maven-publish'
     id 'idea'
+    id 'fabric-loom' version '1.5-SNAPSHOT'
+}
+base {
+    archivesName = "${mod_id}-fabric-${minecraft_version}"
 }
 
-archivesBaseName = "${mod_id}-fabric-${minecraft_version}"
-
+/*
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/22e7d543a18cd30675277fbfa3669e3d9e206010/generic/secrets.gradle'
 
 if (project.hasProperty('secretFile')) {
     loadSecrets(new File((String) findProperty('secretFile')))
 }
+*/
+
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
+
 repositories {
-    maven { url 'https://jitpack.io' }
     maven {
         url "https://maven.siphalor.de/"
         name "Siphalor's Maven"
@@ -33,13 +38,17 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":Common")
-    include implementation("com.github.llamalad7.mixinextras:mixinextras-fabric:${mixinextras_version}")
-    annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${mixinextras_version}")
 
-    modRuntimeOnly "de.siphalor:amecsapi-1.20:1.5.0+mc1.20-pre1"
+    modRuntimeOnly "de.siphalor:amecsapi-1.20:1.5.6+mc1.20.2"
 }
 
 loom {
+    if (project(":Common").file("src/main/resources/${mod_id}.accesswidener").exists()) {
+        accessWidenerPath.set(project(":Common").file("src/main/resources/${mod_id}.accesswidener"))
+    }
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
     runs {
         client {
             client()
@@ -56,37 +65,27 @@ loom {
     }
 }
 
-
-var refmap_target = archivesBaseName + "-"
+tasks.withType(JavaCompile).configureEach {
+    source(project(":Common").sourceSets.main.allSource)
+}
+tasks.withType(Javadoc).configureEach {
+    source(project(":Common").sourceSets.main.allJava)
+}
+tasks.named("sourcesJar", Jar) {
+    from(project(":Common").sourceSets.main.allSource)
+}
 
 processResources {
     from project(":Common").sourceSets.main.resources
-    inputs.property "version", project.version
-    inputs.property "refmap_target", refmap_target
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
-
-    filesMatching("carryon.mixins.json") {
-        expand "refmap_target": refmap_target
-    }
-}
-
-tasks.withType(JavaCompile) {
-    source(project(":Common").sourceSets.main.allSource)
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId project.group
-            artifactId project.archivesBaseName
-            version project.version
+            artifactId base.archivesName.get()
             from components.java
         }
     }
-
     repositories {
         maven {
             url "file://" + System.getenv("local_maven")

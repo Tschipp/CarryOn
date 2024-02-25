@@ -4,10 +4,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.network.PacketDistributor;
 import tschipp.carryon.CarryOnCommonClient;
 import tschipp.carryon.CarryOnForge;
@@ -16,10 +16,8 @@ import tschipp.carryon.config.forge.ConfigLoaderImpl;
 import tschipp.carryon.networking.PacketBase;
 import tschipp.carryon.platform.services.IPlatformHelper;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ForgePlatformHelper implements IPlatformHelper {
 
@@ -47,47 +45,55 @@ public class ForgePlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public <T extends PacketBase> void registerServerboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler)
+    public <T extends PacketBase> void registerServerboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler, Object... args)
     {
-        BiConsumer<T, Supplier<Context>> serverHandler = (packet, ctx) -> {
-            if(ctx.get().getDirection().getReceptionSide().isServer())
+        BiConsumer<T, CustomPayloadEvent.Context> serverHandler = (packet, ctx) -> {
+            if(ctx.getDirection().getReceptionSide().isServer())
             {
-                ctx.get().setPacketHandled(true);
-                ctx.get().enqueueWork(() -> {
-                   handler.accept(packet, ctx.get().getSender());
+                ctx.setPacketHandled(true);
+                ctx.enqueueWork(() -> {
+                   handler.accept(packet, ctx.getSender());
                 });
             }
         };
 
-        CarryOnForge.network.registerMessage(numericalId, clazz, writer, reader, serverHandler, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CarryOnForge.network.messageBuilder(clazz, numericalId, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(writer)
+                .decoder(reader)
+                .consumerMainThread(serverHandler)
+                .add();
     }
 
     @Override
-    public <T extends PacketBase> void registerClientboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler)
+    public <T extends PacketBase> void registerClientboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler, Object... args)
     {
-        BiConsumer<T, Supplier<Context>> clientHandler = (packet, ctx) -> {
-            if(ctx.get().getDirection().getReceptionSide().isClient())
+        BiConsumer<T, CustomPayloadEvent.Context> clientHandler = (packet, ctx) -> {
+            if(ctx.getDirection().getReceptionSide().isClient())
             {
-                ctx.get().setPacketHandled(true);
-                ctx.get().enqueueWork(() -> {
+                ctx.setPacketHandled(true);
+                ctx.enqueueWork(() -> {
                     handler.accept(packet, CarryOnCommonClient.getPlayer());
                 });
             }
         };
 
-        CarryOnForge.network.registerMessage(numericalId, clazz, writer, reader, clientHandler, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CarryOnForge.network.messageBuilder(clazz, numericalId, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(writer)
+                .decoder(reader)
+                .consumerMainThread(clientHandler)
+                .add();
     }
 
 
     @Override
     public void sendPacketToServer(ResourceLocation id, PacketBase packet)
     {
-        CarryOnForge.network.sendToServer(packet);
+        CarryOnForge.network.send(packet, PacketDistributor.SERVER.noArg());
     }
 
     @Override
     public void sendPacketToPlayer(ResourceLocation id, PacketBase packet, ServerPlayer player)
     {
-        CarryOnForge.network.send(PacketDistributor.PLAYER.with(() -> player), packet);
+        CarryOnForge.network.send(packet, PacketDistributor.PLAYER.with(player));
     }
 }

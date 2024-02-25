@@ -1,11 +1,11 @@
 {
     "schemaVersion": 1,
-    "id": "carryon",
+    "id": "${mod_id}",
     "version": "${version}",
-    "name": "Carry On",
-    "description": "Carry On is a simple mod that improves game interaction by allowing players to pick up, carry, and place single block Tile Entities using only their empty hands.",
+    "name": "${mod_name}",
+    "description": "${description}",
     "authors": [
-      "Tschipp", "Purplicious_Cow", "cy4n"
+      "Tschipp", "Purplicious_Cow"
     ],
     "contact": {
       "homepage": "https://tschipp.ch/",
@@ -13,7 +13,7 @@
       "issues": "https://github.com/Tschipp/CarryOn/issues"
     },
   
-    "license": "GNU LGPLv3",
+    "license": "${license}",
     "icon": "logo.png",
   
     "environment": "*",
@@ -31,9 +31,9 @@
     ],
   
     "depends": {
-      "fabricloader": ">=0.14",
+      "fabricloader": ">=${fabric_loader_version}",
       "fabric-api": "*",
-      "minecraft": ">=1.20",
+      "minecraft": "${minecraft_version}",
       "java": ">=17"
     }
   }

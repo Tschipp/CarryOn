@@ -1,13 +1,12 @@
 package tschipp.carryon;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.SimpleChannel;
 import tschipp.carryon.config.forge.ConfigLoaderImpl;
 
 @Mod(Constants.MOD_ID)
@@ -31,7 +30,7 @@ public class CarryOnForge {
 
     private void setup(final FMLCommonSetupEvent event)
     {
-        network = NetworkRegistry.newSimpleChannel(new ResourceLocation(Constants.MOD_ID, "carryonpackets"), () -> "1.0", "1.0"::equals, "1.0"::equals);
+        network = ChannelBuilder.named(new ResourceLocation(Constants.MOD_ID, "carryonpackets")).simpleChannel();
 
         CarryOnCommon.registerServerPackets();
         CarryOnCommon.registerClientPackets();

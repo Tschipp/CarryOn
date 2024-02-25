@@ -41,7 +41,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public <T extends PacketBase> void registerServerboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler)
+    public <T extends PacketBase> void registerServerboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler, Object... args)
     {
         ServerPlayNetworking.registerGlobalReceiver(id, (server, player, packetHandler, buf, responseSender) -> {
             T packet = reader.apply(buf);
@@ -52,7 +52,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public <T extends PacketBase> void registerClientboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler)
+    public <T extends PacketBase> void registerClientboundPacket(ResourceLocation id, int numericalId, Class<T> clazz, BiConsumer<T, FriendlyByteBuf> writer, Function<FriendlyByteBuf, T> reader, BiConsumer<T, Player> handler, Object... args)
     {
         CarryOnFabricClientMod.registerClientboundPacket(id, reader, handler);
     }
@@ -67,7 +67,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
     public void sendPacketToPlayer(ResourceLocation id, PacketBase packet, ServerPlayer player)
     {
         FriendlyByteBuf buf = PacketByteBufs.create();
-        packet.toBytes(buf);
+        packet.write(buf);
         ServerPlayNetworking.send(player, id, buf);
     }
 }

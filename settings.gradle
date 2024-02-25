@@ -1,10 +1,13 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        mavenLocal()
+
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+
         maven {
             name = 'Sponge Snapshots'
             url = 'https://repo.spongepowered.org/repository/maven-public/'
@@ -16,8 +19,27 @@ pluginManagement {
             name = 'ParchmentMC'
             url = 'https://maven.parchmentmc.org'
         }
+
+        maven {
+            name = 'Forge'
+            url = 'https://maven.minecraftforge.net/'
+        }
+
+        maven {
+            name = 'NeoForge'
+            url = 'https://maven.neoforged.net/releases/'
+        }
+
+        maven {
+            url 'https://maven.blamejared.com'
+        }
+
     }
 }
 
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
 rootProject.name = 'CarryOn'
-include("Common", "Fabric", "Forge")
+include("Common", "Fabric", "Forge", "NeoForge")

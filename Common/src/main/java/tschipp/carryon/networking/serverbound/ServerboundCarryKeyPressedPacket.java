@@ -1,28 +1,23 @@
 package tschipp.carryon.networking.serverbound;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import tschipp.carryon.Constants;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.networking.PacketBase;
 
-public class ServerboundCarryKeyPressedPacket extends PacketBase
+public record ServerboundCarryKeyPressedPacket(boolean pressed) implements PacketBase
 {
-	boolean pressed;
-
 	public ServerboundCarryKeyPressedPacket(FriendlyByteBuf buf)
 	{
-		this.pressed = buf.readBoolean();
-	}
-
-	public ServerboundCarryKeyPressedPacket(boolean pressed)
-	{
-		this.pressed = pressed;
+		this(buf.readBoolean());
 	}
 
 	@Override
-	public void toBytes(FriendlyByteBuf buf)
+	public void write(FriendlyByteBuf buf)
 	{
 		buf.writeBoolean(pressed);
 	}
@@ -33,5 +28,10 @@ public class ServerboundCarryKeyPressedPacket extends PacketBase
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		carry.setKeyPressed(this.pressed);
 		CarryOnDataManager.setCarryData(player, carry);
+	}
+
+	@Override
+	public ResourceLocation id() {
+		return Constants.PACKET_ID_KEY_PRESSED;
 	}
 }

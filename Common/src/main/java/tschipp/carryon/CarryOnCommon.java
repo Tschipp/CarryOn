@@ -22,36 +22,39 @@ import tschipp.carryon.platform.Services;
 
 public class CarryOnCommon
 {
-	public static void registerServerPackets()
+	public static void registerServerPackets(Object... args)
 	{
 		Services.PLATFORM.registerServerboundPacket(
 				Constants.PACKET_ID_KEY_PRESSED,
 				0,
 				ServerboundCarryKeyPressedPacket.class,
-				ServerboundCarryKeyPressedPacket::toBytes,
+				ServerboundCarryKeyPressedPacket::write,
 				ServerboundCarryKeyPressedPacket::new,
-				ServerboundCarryKeyPressedPacket::handle
+				ServerboundCarryKeyPressedPacket::handle,
+				args
 		);
 	}
 
-	public static void registerClientPackets()
+	public static void registerClientPackets(Object... args)
 	{
 		Services.PLATFORM.registerClientboundPacket(
 				Constants.PACKET_ID_START_RIDING,
 				1,
 				ClientboundStartRidingPacket.class,
-				ClientboundStartRidingPacket::toBytes,
+				ClientboundStartRidingPacket::write,
 				ClientboundStartRidingPacket::new,
-				ClientboundStartRidingPacket::handle
+				ClientboundStartRidingPacket::handle,
+				args
 		);
 
 		Services.PLATFORM.registerClientboundPacket(
 				Constants.PACKET_ID_SYNC_SCRIPTS,
 				2,
 				ClientboundSyncScriptsPacket.class,
-				ClientboundSyncScriptsPacket::toBytes,
+				ClientboundSyncScriptsPacket::write,
 				ClientboundSyncScriptsPacket::new,
-				ClientboundSyncScriptsPacket::handle
+				ClientboundSyncScriptsPacket::handle,
+				args
 		);
 	}
 

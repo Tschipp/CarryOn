@@ -27,7 +27,7 @@ public class CarryOnFabricClientMod implements ClientModInitializer
 	public static void sendPacketToServer(ResourceLocation id, PacketBase packet)
 	{
 		FriendlyByteBuf buf = PacketByteBufs.create();
-		packet.toBytes(buf);
+		packet.write(buf);
 		ClientPlayNetworking.send(id, buf);
 	}
 

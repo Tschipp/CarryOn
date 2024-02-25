@@ -1,33 +1,33 @@
 modLoader="javafml" #mandatory
-loaderVersion="[46,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
-license="GNU LGPLv3"
+loaderVersion="${forge_loader_version_range}" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+license="${license}"
 issueTrackerURL="https://github.com/Tschipp/CarryOn/issues"
 
 
 [[mods]] #mandatory
-    modId="carryon" #mandatory
-    version="${file.jarVersion}" #mandatory
-    displayName="Carry On" #mandatory
+    modId="${mod_id}" #mandatory
+    version="${version}" #mandatory
+    displayName="${mod_name}" #mandatory
     displayURL="https://tschipp.ch" #optional
     logoFile="logo.png" #optional
-    authors="Tschipp, Purplicious_Cow, cy4n" #optional
-    description='''Carry On is a simple mod that improves game interaction by allowing players to pick up, carry, and place single block Tile Entities using only their empty hands.'''
+    authors="${mod_author}" #optional
+    description='''${description}'''
 
-[[dependencies.carryon]] #optional
+[[dependencies.${mod_id}]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[46,47.1.3],[47.1.43,)" #mandatory
+    versionRange="${forge_version_range}" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     side="BOTH"
 # Here's another dependency
-[[dependencies.carryon]]
+[[dependencies.${mod_id}]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.20,1.21)"
+    versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"

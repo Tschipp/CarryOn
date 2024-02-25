@@ -1,7 +1,9 @@
 package tschipp.carryon.common.scripting;
 
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -106,7 +108,7 @@ public final class Matchables
 		public boolean matches(ServerPlayer player)
 		{
 			ServerAdvancementManager manager = player.server.getAdvancements();
-			Advancement adv = manager.getAdvancement(new ResourceLocation(advancement.isEmpty() ? "" : advancement));
+			AdvancementHolder adv = manager.get(new ResourceLocation(advancement.isEmpty() ? "" : advancement));
 
 			boolean achievement = adv == null ? true : player.getAdvancements().getOrStartProgress(adv).isDone();
 			return achievement;
@@ -160,19 +162,10 @@ public final class Matchables
 				numb = cond.substring(iL);
 
 			scorename = cond.replace(numb, "");
-			Map<Objective, Score> o = score.getPlayerScores(player.getGameProfile().getName());
-			if (o != null)
-			{
-				Score sc = o.get(score.getObjective(scorename));
-				if (sc != null)
-				{
-					int points = sc.getScore();
+			Object2IntMap<Objective> scores = score.listPlayerScores(player);
+			int scoreVal = scores.getInt(score.getObjective(scorename));
 
-					return new NumberBoundCondition(numb).matches(points);
-				}
-			}
-
-			return false;
+			return new NumberBoundCondition(numb).matches(scoreVal);
 		}
 	}
 
