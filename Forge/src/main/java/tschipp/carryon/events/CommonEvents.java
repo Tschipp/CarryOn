@@ -14,6 +14,7 @@ import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -38,6 +39,7 @@ import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.carry.PickupHandler;
 import tschipp.carryon.common.carry.PlacementHandler;
 import tschipp.carryon.common.scripting.ScriptReloadListener;
+import tschipp.carryon.config.ConfigLoader;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = Constants.MOD_ID)
 public class CommonEvents
@@ -115,7 +117,6 @@ public class CommonEvents
 				MinecraftForge.EVENT_BUS.post(pickupEvent);
 				return !pickupEvent.isCanceled();
 			})) {
-				event.setResult(Result.DENY);
 				event.setCancellationResult(InteractionResult.SUCCESS);
 				event.setCanceled(true);
 				return;
@@ -146,6 +147,12 @@ public class CommonEvents
 				ScriptReloadListener.syncScriptsWithClient(p);
 		} else
 			ScriptReloadListener.syncScriptsWithClient(player);
+	}
+
+	@SubscribeEvent
+	public static void onTagsUpdate(TagsUpdatedEvent event)
+	{
+		ConfigLoader.onConfigLoaded();
 	}
 
 	@SubscribeEvent
