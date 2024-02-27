@@ -28,6 +28,7 @@ pipeline {
         always {
             archive 'Forge/build/libs/**.jar'
             archive 'Fabric/build/libs/**.jar'
+            archive 'NeoForge/build/libs/**.jar'
         }
     }
 }
