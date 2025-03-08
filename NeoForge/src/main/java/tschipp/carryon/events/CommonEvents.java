@@ -21,6 +21,7 @@
 package tschipp.carryon.events;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -51,6 +52,7 @@ import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.carry.PickupHandler;
 import tschipp.carryon.common.carry.PlacementHandler;
+import tschipp.carryon.common.config.CarryConfig;
 import tschipp.carryon.common.scripting.ScriptReloadListener;
 import tschipp.carryon.config.ConfigLoader;
 
@@ -147,9 +149,9 @@ public class CommonEvents
 	}
 
 	@SubscribeEvent
-	public static void onDatapackRegister(AddReloadListenerEvent event)
+	public static void onDatapackRegister(AddServerReloadListenersEvent event)
 	{
-		event.addListener(new ScriptReloadListener());
+		event.addListener(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, Constants.MOD_ID), new ScriptReloadListener());
 	}
 
 	@SubscribeEvent
