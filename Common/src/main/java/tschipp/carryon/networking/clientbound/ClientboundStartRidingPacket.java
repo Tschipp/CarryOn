@@ -47,7 +47,7 @@ public record ClientboundStartRidingPacket(int iden, boolean ride) implements Pa
 		Entity otherPlayer = player.level().getEntity(this.iden);
 		if(otherPlayer != null)
 			if(ride)
-				otherPlayer.startRiding(player);
+				otherPlayer.startRiding(player, true);
 			else
 				otherPlayer.stopRiding();
 	}
