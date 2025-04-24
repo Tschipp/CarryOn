@@ -213,4 +213,32 @@ public class CommonEvents
 			CarryOnCommon.onPlayerAttacked(player);
 	}
 
+	public static void onPlayerDisconnect(ServerPlayer player) {
+		// Clean up carrying state when player disconnects
+		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		if (carry.isCarrying()) {
+			PlacementHandler.placeCarried(player);
+		}
+
+		// Also handle case where player is being carried
+		if (player.isPassenger()) {
+			Entity vehicle = player.getVehicle();
+			if (vehicle instanceof Player carrier) {
+				CarryOnData carrierData = CarryOnDataManager.getCarryData(carrier);
+				if (carrierData.isCarrying(CarryType.PLAYER)) {
+					player.stopRiding();
+					carrierData.clear();
+					CarryOnDataManager.setCarryData(carrier, carrierData);
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+		if (event.getEntity() instanceof ServerPlayer player) {
+			onPlayerDisconnect(player);
+		}
+	}
+
 }

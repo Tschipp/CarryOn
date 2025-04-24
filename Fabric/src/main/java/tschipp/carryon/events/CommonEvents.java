@@ -26,12 +26,15 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import tschipp.carryon.CarryOnCommon;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
@@ -156,6 +159,32 @@ public class CommonEvents {
         }));
 
         //TODO: drop carried when attacked
+    }
+    public static void onPlayerDisconnect(ServerPlayer player) {
+        // Clean up carrying state when player disconnects
+        CarryOnData carry = CarryOnDataManager.getCarryData(player);
+        if (carry.isCarrying()) {
+            PlacementHandler.placeCarried(player);
+        }
+
+        // Also handle case where player is being carried
+        if (player.isPassenger()) {
+            Entity vehicle = player.getVehicle();
+            if (vehicle instanceof Player carrier) {
+                CarryOnData carrierData = CarryOnDataManager.getCarryData(carrier);
+                if (carrierData.isCarrying(CarryType.PLAYER)) {
+                    player.stopRiding();
+                    carrierData.clear();
+                    CarryOnDataManager.setCarryData(carrier, carrierData);
+                }
+            }
+        }
+    }
+
+    static {
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            onPlayerDisconnect(handler.getPlayer());
+        });
     }
 
 }
