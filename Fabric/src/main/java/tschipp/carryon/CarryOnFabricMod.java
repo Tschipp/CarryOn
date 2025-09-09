@@ -39,7 +39,7 @@ public class CarryOnFabricMod implements ModInitializer {
             builder -> builder
                     .initializer(() -> new CarryOnData(new CompoundTag()))
                     .persistent(CarryOnData.CODEC)
-                    .syncWith(CarryOnData.STREAM_CODEC, (t, p) -> p.connection != null)
+                    .syncWith(CarryOnData.STREAM_CODEC, (t, p) -> p.connection != null && !p.isRemoved())
                     .copyOnDeath()
 
     );
