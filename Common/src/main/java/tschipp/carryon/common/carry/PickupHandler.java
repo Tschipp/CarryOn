@@ -47,6 +47,7 @@ import tschipp.carryon.common.scripting.ScriptManager;
 import tschipp.carryon.networking.clientbound.ClientboundStartRidingPacket;
 import tschipp.carryon.platform.Services;
 
+
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
@@ -148,7 +149,6 @@ public class PickupHandler {
     }
 
 
-
     public static boolean tryPickupEntity(ServerPlayer player, Entity entity, @Nullable Function<Entity, Boolean> pickupCallback)
     {
         if(!canCarryGeneral(player, entity.position()))
@@ -175,11 +175,44 @@ public class PickupHandler {
                 return false;
         }
 
+        Optional<CarryOnScript> optionalScript =  ScriptManager.inspectEntity(entity);
+
+        // If a script exists, its general conditions (Gamemode, XP, Achievements, etc.) must be satisfied; otherwise, block the entire pickup.
+        if(optionalScript.isPresent())
+        {
+            CarryOnScript script = optionalScript.get();
+            if(!script.fulfillsConditions(player))
+                return false;
+        }
+
         //Non-Creative only guards
         if(!player.isCreative())
         {
-            if(!Constants.COMMON_CONFIG.settings.pickupHostileMobs && entity.getType().getCategory() == MobCategory.MONSTER)
-                return false;
+            boolean scriptAllowsOverride = false;
+
+            if(optionalScript.isPresent())
+            {
+                CarryOnScript script = optionalScript.get();
+
+                Optional<Boolean> canBeCarried = script.scriptPickup().canBeCarried();
+
+                if (canBeCarried.isPresent()) {
+                    boolean scriptResult = canBeCarried.get();
+
+                    if (!scriptResult) {
+                        return false;
+                    }
+
+                    if (scriptResult) {
+                        scriptAllowsOverride = true;
+                    }
+                }
+            }
+
+            if(entity.getType().getCategory() == MobCategory.MONSTER) {
+                if(!Constants.COMMON_CONFIG.settings.pickupHostileMobs && !scriptAllowsOverride)
+                    return false;
+            }
 
             if(Constants.COMMON_CONFIG.settings.maxEntityHeight < entity.getBbHeight() || Constants.COMMON_CONFIG.settings.maxEntityWidth < entity.getBbWidth())
                 return false;
@@ -198,13 +231,9 @@ public class PickupHandler {
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
-        Optional<CarryOnScript> result =  ScriptManager.inspectEntity(entity);
-        if(result.isPresent())
+        if(optionalScript.isPresent())
         {
-            CarryOnScript script = result.get();
-            if(!script.fulfillsConditions(player))
-                return false;
-
+            CarryOnScript script = optionalScript.get();
             carry.setActiveScript(script);
         }
 
@@ -218,8 +247,8 @@ public class PickupHandler {
             otherPlayer.ejectPassengers();
             otherPlayer.stopRiding();
 
-            if (result.isPresent()) {
-                String cmd = result.get().scriptEffects().commandInit();
+            if (optionalScript.isPresent()) {
+                String cmd = optionalScript.get().scriptEffects().commandInit();
                 if (!cmd.isEmpty())
                     player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
             }
@@ -240,9 +269,9 @@ public class PickupHandler {
             animal.dropLeash(true, true);
         }
 
-        if(result.isPresent())
+        if(optionalScript.isPresent())
         {
-            String cmd = result.get().scriptEffects().commandInit();
+            String cmd = optionalScript.get().scriptEffects().commandInit();
             if(!cmd.isEmpty())
                 player.getServer().getCommands().performPrefixedCommand(player.getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().getName() + " run " + cmd);
         }

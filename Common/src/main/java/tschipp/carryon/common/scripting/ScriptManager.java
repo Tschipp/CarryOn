@@ -39,72 +39,72 @@ import java.util.Optional;
 
 public class ScriptManager
 {
-	public static final List<CarryOnScript> SCRIPTS = new ArrayList<>();
+    public static final List<CarryOnScript> SCRIPTS = new ArrayList<>();
 
-	public static Optional<CarryOnScript> inspectBlock(BlockState state, Level level, BlockPos pos, @Nullable CompoundTag tag)
-	{
-		if (!Constants.COMMON_CONFIG.settings.useScripts)
-			return Optional.empty();
+    public static Optional<CarryOnScript> inspectBlock(BlockState state, Level level, BlockPos pos, @Nullable CompoundTag tag)
+    {
+        if (!Constants.COMMON_CONFIG.settings.useScripts)
+            return Optional.empty();
 
-		Block block = state.getBlock();
-		float hardness = state.getDestroySpeed(level, pos);
-		float resistance = block.getExplosionResistance();
+        Block block = state.getBlock();
+        float hardness = state.getDestroySpeed(level, pos);
+        float resistance = block.getExplosionResistance();
 
-		for (CarryOnScript script : SCRIPTS)
-		{
-			if (script.isBlock() && matchesAll(script, block, hardness, resistance, tag))
-				return Optional.of(script);
-		}
+        for (CarryOnScript script : SCRIPTS)
+        {
+            if (script.isBlock() && matchesAll(script, block, hardness, resistance, tag))
+                return Optional.of(script);
+        }
 
-		return Optional.empty();
-	}
+        return Optional.empty();
+    }
 
-	public static Optional<CarryOnScript> inspectEntity(Entity entity)
-	{
-		if (!Constants.COMMON_CONFIG.settings.useScripts)
-			return Optional.empty();
+    public static Optional<CarryOnScript> inspectEntity(Entity entity)
+    {
+        if (!Constants.COMMON_CONFIG.settings.useScripts)
+            return Optional.empty();
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
-		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;
-		CompoundTag tag = new CompoundTag();
-		entity.save(tag);
+        float height = entity.getBbHeight();
+        float width = entity.getBbWidth();
+        float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;
+        CompoundTag tag = new CompoundTag();
+        entity.save(tag);
 
-		for (CarryOnScript script : SCRIPTS)
-		{
-			if (script.isEntity() && matchesAll(script, entity, height, width, health, tag))
-				return Optional.of(script);
-		}
+        for (CarryOnScript script : SCRIPTS)
+        {
+            if (script.isEntity() && matchesAll(script, entity, height, width, health, tag))
+                return Optional.of(script);
+        }
 
-		return Optional.empty();
-	}
+        return Optional.empty();
+    }
 
-	private static boolean matchesAll(CarryOnScript script, Entity entity, float height, float width, float health, CompoundTag tag)
-	{
-		ScriptObjectEntity scEntity = script.scriptObject().entity();
+    private static boolean matchesAll(CarryOnScript script, Entity entity, float height, float width, float health, CompoundTag tag)
+    {
+        ScriptObjectEntity scEntity = script.scriptObject().entity();
 
-		boolean matchname = true;
-		if(scEntity.typeNameEntity().isPresent())
-			matchname = entity.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(scEntity.typeNameEntity().get()));
-		boolean matchheight = scEntity.typeHeight().matches(height);
-		boolean matchwidth = scEntity.typeWidth().matches(width);
-		boolean matchhealth = scEntity.typeHealth().matches(health);
-		boolean matchnbt = scEntity.typeEntityTag().matches(tag);
+        boolean matchname = true;
+        if(scEntity.typeNameEntity().isPresent())
+            matchname = entity.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(scEntity.typeNameEntity().get()));
+        boolean matchheight = scEntity.typeHeight().matches(height);
+        boolean matchwidth = scEntity.typeWidth().matches(width);
+        boolean matchhealth = scEntity.typeHealth().matches(health);
+        boolean matchnbt = scEntity.typeEntityTag().matches(tag);
 
-		return matchname && matchheight && matchwidth && matchhealth && matchnbt;
-	}
+        return matchname && matchheight && matchwidth && matchhealth && matchnbt;
+    }
 
-	private static boolean matchesAll(CarryOnScript script, Block block, float hardness, float resistance, CompoundTag nbt)
-	{
-		ScriptObjectBlock scBlock = script.scriptObject().block();
+    private static boolean matchesAll(CarryOnScript script, Block block, float hardness, float resistance, CompoundTag nbt)
+    {
+        ScriptObjectBlock scBlock = script.scriptObject().block();
 
-		boolean matchblock = true;
-		if(scBlock.typeNameBlock().isPresent())
-			matchblock = block == BuiltInRegistries.BLOCK.get(scBlock.typeNameBlock().get());
-		boolean matchnbt = scBlock.typeBlockTag().matches(nbt);
-		boolean matchhardness = scBlock.typeHardness().matches(hardness);
-		boolean matchresistance = scBlock.typeResistance().matches(resistance);
+        boolean matchblock = true;
+        if(scBlock.typeNameBlock().isPresent())
+            matchblock = block == BuiltInRegistries.BLOCK.get(scBlock.typeNameBlock().get());
+        boolean matchnbt = scBlock.typeBlockTag().matches(nbt);
+        boolean matchhardness = scBlock.typeHardness().matches(hardness);
+        boolean matchresistance = scBlock.typeResistance().matches(resistance);
 
-		return matchnbt && matchblock && matchhardness && matchresistance;
-	}
+        return matchnbt && matchblock && matchhardness && matchresistance;
+    }
 }
