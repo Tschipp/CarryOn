@@ -171,13 +171,20 @@ public class CarryOnData {
         if(this.type != CarryType.ENTITY)
             throw new IllegalStateException("Called getEntity on data that contained " + this.type);
 
-        var optionalEntity = EntityType.create(nbt.getCompound("entity"), level);
-        if(optionalEntity.isPresent())
-            return optionalEntity.get();
+	var optionalEntity = EntityType.create(nbt.getCompound("entity"), level);
+	if(optionalEntity.isPresent())
+		return optionalEntity.get();
 
-        Constants.LOG.error("Called EntityType#create even though no entity data was present. Data: " + nbt.toString());
-        this.clear();
-        return new AreaEffectCloud(level, 0, 0, 0);
+	try
+	{
+		Constants.LOG.error("Called EntityType#create even though no entity data was present. Data: " + nbt.toString());
+	}
+	catch (NullPointerException e)
+	{
+		Constants.LOG.error("Called EntityType#create even though no entity data was present. NBT contains null values and cannot be converted to string.");
+	}
+	this.clear();
+	return new AreaEffectCloud(level, 0, 0, 0);
     }
 
     public Optional<CarryOnScript> getActiveScript()

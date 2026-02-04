@@ -75,12 +75,19 @@ public class CommandCarryOn
 				ServerPlayer player = source.getPlayerOrException();
 
 				CarryOnData carry = CarryOnDataManager.getCarryData(player);
-				if (carry.isCarrying(CarryType.BLOCK))
+			if (carry.isCarrying(CarryType.BLOCK))
+			{
+				BlockState block = carry.getBlock();
+				log(source,"Block: " + block.getBlock());
+				log(source,"BlockState: " + block);
+				try
 				{
-					BlockState block = carry.getBlock();
-					log(source,"Block: " + block.getBlock());
-					log(source,"BlockState: " + block);
 					log(source,"NBT: " + carry.getNbt());
+				}
+				catch (NullPointerException e)
+				{
+					log(source,"NBT: [Error: NBT contains null values and cannot be converted to string]");
+				}
 
 					Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(block, carry.getContentNbt());
 					if(ov.isPresent())
@@ -93,12 +100,19 @@ public class CommandCarryOn
 
 					return 1;
 				}
-				else if (carry.isCarrying(CarryType.ENTITY))
+			else if (carry.isCarrying(CarryType.ENTITY))
+			{
+				Entity entity = carry.getEntity(player.level());
+				log(source,"Entity: " + entity);
+				log(source,"Entity Name: " + entity.getType());
+				try
 				{
-					Entity entity = carry.getEntity(player.level());
-					log(source,"Entity: " + entity);
-					log(source,"Entity Name: " + entity.getType());
 					log(source,"NBT: " + carry.getNbt());
+				}
+				catch (NullPointerException e)
+				{
+					log(source,"NBT: [Error: NBT contains null values and cannot be converted to string]");
+				}
 
 					Optional<PickupCondition> cond = PickupConditionHandler.getPickupCondition(entity);
 					if(cond.isPresent())

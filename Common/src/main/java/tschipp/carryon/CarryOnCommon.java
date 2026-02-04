@@ -26,6 +26,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -206,9 +207,15 @@ public class CarryOnCommon
 				i = 1;
 			return (int) (i * Constants.COMMON_CONFIG.settings.entitySlownessMultiplier);
 		}
-		if(carry.isCarrying(CarryType.BLOCK))
+	if(carry.isCarrying(CarryType.BLOCK))
+	{
+		try
 		{
-			String nbt = carry.getNbt().toString();
+			CompoundTag nbtTag = carry.getNbt();
+			if(nbtTag == null)
+				return (int) Constants.COMMON_CONFIG.settings.blockSlownessMultiplier;
+			
+			String nbt = nbtTag.toString();
 			int i = nbt.length() / 500;
 
 			if (i > 4)
@@ -219,6 +226,14 @@ public class CarryOnCommon
 
 			return (int) (i * Constants.COMMON_CONFIG.settings.blockSlownessMultiplier);
 		}
+		catch (NullPointerException e)
+		{
+			// Handle case where NBT contains null values that cause sorting to fail
+			// Return default slowness level to prevent crash
+			Constants.LOG.warn("Failed to calculate potion level from NBT due to null values, using default", e);
+			return (int) Constants.COMMON_CONFIG.settings.blockSlownessMultiplier;
+		}
+	}
 		return 0;
 	}
 }
