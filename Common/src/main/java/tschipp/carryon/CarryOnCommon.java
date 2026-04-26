@@ -30,7 +30,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
@@ -42,6 +41,7 @@ import tschipp.carryon.networking.clientbound.ClientboundStartRidingPacket;
 import tschipp.carryon.networking.clientbound.ClientboundSyncScriptsPacket;
 import tschipp.carryon.networking.serverbound.ServerboundCarryKeyPressedPacket;
 import tschipp.carryon.platform.Services;
+import tschipp.carryon.utils.SizeHelper;
 
 public class CarryOnCommon
 {
@@ -176,17 +176,17 @@ public class CarryOnCommon
 	}
 
 
-	public static int potionLevel(CarryOnData carry, Level level)
+	public static int potionLevel(CarryOnData carry, Player player)
 	{
 		if(carry.isCarrying(CarryType.PLAYER))
 			return 1;
 		if(carry.isCarrying(CarryType.ENTITY))
 		{
-			Entity entity = carry.getEntity(level);
-			int i = (int) (entity.getBbHeight() * entity.getBbWidth());
-			if (i > 4)
-				i = 4;
-			if (!Constants.COMMON_CONFIG.settings.heavyEntities)
+			Entity entity = carry.getEntity(player.level());
+			int i = (int) (SizeHelper.getRelativeEntityArea(player, entity));
+				if (i > 4)
+					i = 4;
+			if (!Constants.COMMON_CONFIG.settings.heavyEntities) // why not check this first?
 				i = 1;
 			return (int) (i * Constants.COMMON_CONFIG.settings.entitySlownessMultiplier);
 		}

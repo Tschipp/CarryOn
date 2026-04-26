@@ -51,6 +51,7 @@ import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.ScriptManager;
 import tschipp.carryon.networking.clientbound.ClientboundStartRidingOtherPlayerPacket;
 import tschipp.carryon.platform.Services;
+import tschipp.carryon.utils.SizeHelper;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -184,7 +185,7 @@ public class PickupHandler {
         level.playSound(null, pos, state.getSoundType().getHitSound(), SoundSource.BLOCKS, 1.0f, 0.5f);
         player.swing(InteractionHand.MAIN_HAND, true);
         if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
-            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player.level()), false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
         return true;
     }
 
@@ -231,7 +232,7 @@ public class PickupHandler {
             if(!overrideChecks && (!Constants.COMMON_CONFIG.settings.pickupHostileMobs && entity.getType().getCategory() == MobCategory.MONSTER))
                 return false;
 
-            if(Constants.COMMON_CONFIG.settings.maxEntityHeight < entity.getBbHeight() || Constants.COMMON_CONFIG.settings.maxEntityWidth < entity.getBbWidth())
+            if(Constants.COMMON_CONFIG.settings.maxEntityHeight < SizeHelper.getRelativeEntityHeight(player, entity) || Constants.COMMON_CONFIG.settings.maxEntityWidth < SizeHelper.getRelativeEntityWidth(player, entity))
                 return false;
         }
 
@@ -280,7 +281,7 @@ public class PickupHandler {
             player.level().playSound(null, player.getOnPos(), SoundEvents.ARMOR_EQUIP_GENERIC.value(), SoundSource.AMBIENT, 1.0f, 0.5f);
             CarryOnDataManager.setCarryData(player, carry);
             if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
-                player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player.level()), false, false));
+                player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
             return true;
 
         }
@@ -305,7 +306,7 @@ public class PickupHandler {
         CarryOnDataManager.setCarryData(player, carry);
         player.swing(InteractionHand.MAIN_HAND, true);
         if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
-            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player.level()), false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
         return true;
     }
 

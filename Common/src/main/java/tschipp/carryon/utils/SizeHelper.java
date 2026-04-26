@@ -21,15 +21,16 @@
 package tschipp.carryon.utils;
 
 import tschipp.carryon.Constants;
-
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
+// consistent way to get entity scale that will hopefully account for all weird edge cases
+// if we ever add compatibility for other scaling mods like Pehkui, we would add it here
 
 public class SizeHelper
 {
-	public static float getPlayerScaleFactor(ServerPlayer player)
+	public static float getPlayerScaleFactor(Player player)
 	{
 		if (Constants.COMMON_CONFIG.settings.relativePlayerScale)
 			return 1;
@@ -51,7 +52,7 @@ public class SizeHelper
 		return result;
 	}
 
-	public static float getRelativeEntityWidth(ServerPlayer player, Entity entity)
+	public static float getRelativeEntityWidth(Player player, Entity entity)
 	{
 		return getEntityWidth(entity) * getPlayerScaleFactor(player);
 	}
@@ -65,17 +66,17 @@ public class SizeHelper
 		}
 		else // otherwise this is correct
 		{
-			result = entity.getBbWidth();
+			result = entity.getBbHeight();
 		}
 		return result;
 	}
 
-	public static float getRelativeEntityHeight(ServerPlayer player, Entity entity)
+	public static float getRelativeEntityHeight(Player player, Entity entity)
 	{
 		return getEntityHeight(entity) * getPlayerScaleFactor(player);
 	}
 
-	public static float getRelativeEntityArea(ServerPlayer player, Entity entity)
+	public static float getRelativeEntityArea(Player player, Entity entity)
 	{
 		return getEntityHeight(entity) * getEntityWidth(entity) * getPlayerScaleFactor(player);
 	}
