@@ -49,6 +49,12 @@ public class CarryConfig
 			public double maxDistance = 2.5;
 
 			@Property(
+					type = PropertyType.BOOLEAN,
+					description = "Pickup distance scales with player reach"
+			)
+			public boolean scaleDistance = true;
+
+			@Property(
 					type = PropertyType.DOUBLE,
 					description = "Max width of entities that can be picked up in survival mode",
 					minD = 0,

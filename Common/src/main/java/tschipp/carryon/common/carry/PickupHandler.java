@@ -29,6 +29,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.animal.Animal;
@@ -59,12 +60,9 @@ import java.util.function.Function;
 
 public class PickupHandler {
 
-    public static boolean canCarryGeneral(ServerPlayer player, Vec3 pos)
+    public static boolean canCarryGeneral(ServerPlayer player)
     {
         if(!player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty())
-            return false;
-
-        if(player.position().distanceTo(pos) > Constants.COMMON_CONFIG.settings.maxDistance)
             return false;
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
@@ -86,10 +84,38 @@ public class PickupHandler {
         return true;
     }
 
+    // more complex distance check that accounts for scaling player reach based on block or entity interaction range
+    private static boolean isInDistance(ServerPlayer player, Vec3 pos, double distanceScale)
+    {
+        return (player.position().distanceTo(pos) < Constants.COMMON_CONFIG.settings.maxDistance * distanceScale);
+    }
+
+    private static boolean isBlockInDistance(ServerPlayer player, BlockPos pos)
+    {
+        double distanceScale = 1.0d;
+        if (Constants.COMMON_CONFIG.settings.scaleDistance)
+        {
+            distanceScale = player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE) / player.getAttributeBaseValue(Attributes.BLOCK_INTERACTION_RANGE);
+        }
+        return isInDistance(player, Vec3.atCenterOf(pos), distanceScale);
+    }
+
+    private static boolean isEntityInDistance(ServerPlayer player, Entity entity)
+    {
+        double distanceScale = 1.0d;
+        if (Constants.COMMON_CONFIG.settings.scaleDistance)
+        {
+            distanceScale = player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE) / player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE);
+        }
+        return isInDistance(player, entity.position(), distanceScale);
+    }
 
     public static boolean tryPickUpBlock(ServerPlayer player, BlockPos pos, Level level, @Nullable BiFunction<BlockState, BlockPos, Boolean> pickupCallback)
     {
-        if(!canCarryGeneral(player, Vec3.atCenterOf(pos)))
+        if(!isBlockInDistance(player, pos))
+            return false;
+
+        if(!canCarryGeneral(player))
             return false;
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
@@ -166,7 +192,10 @@ public class PickupHandler {
 
     public static boolean tryPickupEntity(ServerPlayer player, Entity entity, @Nullable Function<Entity, Boolean> pickupCallback)
     {
-        if(!canCarryGeneral(player, entity.position()))
+        if(!isEntityInDistance(player, entity))
+            return false;
+
+        if(!canCarryGeneral(player))
             return false;
 
         if (entity.invulnerableTime != 0)
