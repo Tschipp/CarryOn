@@ -71,6 +71,12 @@ public class CarryConfig
 			public double maxEntityHeight = 2.5;
 
 			@Property(
+					type = PropertyType.BOOLEAN,
+					description = "Size of entities is considered relative to player scale"
+			)
+			public boolean relativePlayerScale = true;
+
+			@Property(
 					type = PropertyType.DOUBLE,
 					description = "Slowness multiplier for blocks",
 					minD = 0
