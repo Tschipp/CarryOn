@@ -32,9 +32,9 @@ public class SizeHelper
 {
 	public static float getPlayerScaleFactor(Player player)
 	{
-		if (Constants.COMMON_CONFIG.settings.relativePlayerScale)
+		if (!Constants.COMMON_CONFIG.settings.relativePlayerScale)
 			return 1;
-		double result = player.getAttributeValue(Attributes.SCALE) / player.getAttributeBaseValue(Attributes.SCALE);
+		double result = player.getAttributeBaseValue(Attributes.SCALE) / Math.max(player.getAttributeValue(Attributes.SCALE), 0.01);
 		return (float) result;
 	}
 
