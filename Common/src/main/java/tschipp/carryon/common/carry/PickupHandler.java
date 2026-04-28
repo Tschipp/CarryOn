@@ -64,7 +64,8 @@ public class PickupHandler {
         if(!player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty())
             return false;
 
-        if(player.position().distanceTo(pos) > Constants.COMMON_CONFIG.settings.maxDistance)
+        double maxDistance = Constants.COMMON_CONFIG.settings.maxDistance;
+        if(player.distanceToSqr(pos) > maxDistance * maxDistance)
             return false;
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
