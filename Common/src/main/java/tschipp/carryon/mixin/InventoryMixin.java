@@ -40,7 +40,9 @@ import tschipp.carryon.common.carry.CarryOnDataManager;
 public class InventoryMixin
 {
 	@Unique
-	private static final ItemStack DUMMY_STACK = new ItemStack(Blocks.COBBLESTONE, 1);
+	private static ItemStack getDummyStack() {
+		return new ItemStack(Blocks.COBBLESTONE, 1);
+	}
 
 	@Shadow
 	public Player player;
@@ -56,7 +58,7 @@ public class InventoryMixin
 	{
 		if(slot == selected && CarryOnDataManager.getCarryData(player).isCarrying())
 		{
-			return DUMMY_STACK;
+			return getDummyStack();
 		}
 		else
 			return original.call(instance, slot);
