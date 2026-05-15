@@ -61,7 +61,7 @@ public class PickupHandler {
 
     public static boolean canCarryGeneral(ServerPlayer player, Vec3 pos)
     {
-        if(!player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty())
+        if(!player.getMainHandItem().isEmpty())
             return false;
 
         if(player.position().distanceTo(pos) > Constants.COMMON_CONFIG.settings.maxDistance)
