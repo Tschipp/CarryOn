@@ -42,6 +42,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import tschipp.carryon.Constants;
+import tschipp.carryon.client.compat.RealCameraCompat;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
@@ -201,7 +202,7 @@ public class CarriedObjectRender
 
 				CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
-				if (perspective == 0 && player == mc.player && !(Services.PLATFORM.isModLoaded("firstperson") || Services.PLATFORM.isModLoaded("firstpersonmod") || Services.PLATFORM.isModLoaded("realcamera")))
+				if (perspective == 0 && player == mc.player && !(Services.PLATFORM.isModLoaded("firstperson") || Services.PLATFORM.isModLoaded("firstpersonmod") || RealCameraCompat.isRendering()))
 					continue;
 
 				light = manager.getPackedLightCoords(player, partialticks);
@@ -281,4 +282,3 @@ public class CarriedObjectRender
 	}
 
 }
-
