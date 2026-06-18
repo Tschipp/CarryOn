@@ -117,13 +117,24 @@ public class CarriedObjectRender
 
         try {
             EntityRenderState renderState = manager.extractEntity(entity, partialTicks);
+            // Prevent blob-shadow geometry for an entity held in the player's hands.
             renderState.shadowPieces.clear();
-			renderState.displayFireAnimation = false;
-			renderState.nameTag = null;
-			renderState.scoreText = null;
-			renderState.leashStates = null;
-			renderState.lightCoords = light;
-			manager.submit(renderState, new CameraRenderState(), 0.0, 0.0, 0.0, matrix, nodeCollector);
+            // Entity is never on fire while being carried; clearing also avoids accessing
+            // camera.orientation in the flame billboard path.
+            renderState.displayFireAnimation = false;
+            // A name tag floating above the player's hands would look wrong, and
+            // submitNameDisplay() fires extra text-geometry work we don't need here.
+            renderState.nameTag = null;
+            renderState.scoreText = null;
+            // Entity is not leashed while being carried.
+            renderState.leashStates = null;
+            renderState.lightCoords = light;
+            // Pass (0,0,0) as the camera position — matching what vanilla GuiEntityRenderer
+            // does. Passing the real world-space camera coordinates caused
+            // EntityRenderDispatcher.submit() to add a large world-coordinate translation to
+            // the poseStack, which flooded the deferred pipeline's Dynamic Transforms and
+            // Chunk Sections UBOs with resize events every frame, tanking FPS.
+            manager.submit(renderState, new CameraRenderState(), 0.0, 0.0, 0.0, matrix, nodeCollector);
         }
         catch (Exception ignored)
         {
