@@ -51,10 +51,13 @@ public class CarriedObjectRender
 
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		try {
-			if (carry.isCarrying(CarryType.BLOCK))
-				drawBlock(player,  matrix, light, CarryRenderHelper.getRenderState(player), nodeCollector, firstPerson, partialTicks);
-			else if (carry.isCarrying(CarryType.ENTITY))
+			if (carry.isCarrying(CarryType.ENTITY))
 				drawEntity(player, matrix, light, partialTicks, nodeCollector, firstPerson);
+			else {
+				CarryRenderHelper.clearRenderEntity(player);
+				if (carry.isCarrying(CarryType.BLOCK))
+					drawBlock(player,  matrix, light, CarryRenderHelper.getRenderState(player), nodeCollector, firstPerson, partialTicks);
+			}
 		}
 		catch (Exception e)
 		{
@@ -113,10 +116,14 @@ public class CarriedObjectRender
             ((LivingEntity) entity).hurtTime = 0;
 
         try {
-            EntityRenderState renderState = manager.extractEntity(entity, 0);
+            EntityRenderState renderState = manager.extractEntity(entity, partialTicks);
             renderState.shadowPieces.clear();
+			renderState.displayFireAnimation = false;
+			renderState.nameTag = null;
+			renderState.scoreText = null;
+			renderState.leashStates = null;
 			renderState.lightCoords = light;
-			manager.submit(renderState, new CameraRenderState(), 0, 0, 0, matrix, nodeCollector);
+			manager.submit(renderState, new CameraRenderState(), 0.0, 0.0, 0.0, matrix, nodeCollector);
         }
         catch (Exception ignored)
         {

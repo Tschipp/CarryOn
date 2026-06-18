@@ -43,7 +43,8 @@ public class ScreenMixin
 		{
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
 			if(carry.isCarrying())
-				mc.setScreen((Screen)null);
+				// MC 26.2: Minecraft#setScreen moved to Minecraft.gui#setScreen.
+				mc.gui.setScreen((Screen)null);
 		}
 	}
 }

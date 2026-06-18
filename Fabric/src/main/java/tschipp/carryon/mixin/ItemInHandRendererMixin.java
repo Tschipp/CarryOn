@@ -35,8 +35,9 @@ import tschipp.carryon.client.render.CarriedObjectRender;
 @Mixin(ItemInHandRenderer.class)
 public class ItemInHandRendererMixin
 {
-	@Inject(at = @At(value = "HEAD"), method = "renderArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V", cancellable = true)
-	private void renderArmWithItem(AbstractClientPlayer player, float partialTick, float pitch, InteractionHand hand, float swingProgress, ItemStack item, float equippedProgress, PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, CallbackInfo ci)
+	// MC 26.2: renderArmWithItem was renamed to submitArmWithItem (same parameters).
+	@Inject(at = @At(value = "HEAD"), method = "submitArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V", cancellable = true)
+	private void submitArmWithItem(AbstractClientPlayer player, float partialTick, float pitch, InteractionHand hand, float swingProgress, ItemStack item, float equippedProgress, PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, CallbackInfo ci)
 	{
 		if(CarriedObjectRender.draw(player, poseStack, packedLight, partialTick,nodeCollector,true))
 			ci.cancel();

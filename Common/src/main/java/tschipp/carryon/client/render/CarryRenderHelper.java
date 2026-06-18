@@ -24,6 +24,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -31,6 +32,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -49,10 +51,25 @@ import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public class CarryRenderHelper
 {
+	// Client-side cache of the reconstructed carried entity, keyed by carrying player.
+	// The carried entity is static while held, so rebuild it from NBT only when that NBT
+	// (or the level) changes, instead of on every render frame.
+	private record CachedRenderEntity(CompoundTag nbt, Level level, Entity entity) {}
+	private static final Map<UUID, CachedRenderEntity> RENDER_ENTITY_CACHE = new HashMap<>();
+
+	public static void clearRenderEntity(Player player)
+	{
+		RENDER_ENTITY_CACHE.remove(player.getUUID());
+	}
+
 	public static Vec3 getExactPos(Entity entity, float partialticks)
 	{
 		return new Vec3(entity.xOld + (entity.getX() - entity.xOld) * partialticks, entity.yOld + (entity.getY() - entity.yOld) * partialticks, entity.zOld + (entity.getZ() - entity.zOld) * partialticks);
@@ -144,7 +161,7 @@ public class CarryRenderHelper
 
 	public static void setupEntityTransformations(Player player, PoseStack matrix, CarryOnData carry, boolean firstPerson) {
 
-		Entity entity = carry.getEntity(player.level());
+		Entity entity = getRenderEntity(player);
 
 		float height = entity.getBbHeight();
 		float width = entity.getBbWidth();
@@ -339,6 +356,15 @@ public class CarryRenderHelper
 	public static Entity getRenderEntity(Player player)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+
+		// Reuse the cached entity while the carried NBT (and level) are unchanged.
+		CompoundTag entityNbt = carry.getContentNbt();
+		CachedRenderEntity cached = RENDER_ENTITY_CACHE.get(player.getUUID());
+		if(cached != null && cached.level() == player.level() && Objects.equals(cached.nbt(), entityNbt))
+		{
+			return cached.entity();
+		}
+
 		Entity entity = carry.getEntity(player.level());
 
 		if(carry.getActiveScript().isPresent())
@@ -354,6 +380,7 @@ public class CarryRenderHelper
 			}
 		}
 
+		RENDER_ENTITY_CACHE.put(player.getUUID(), new CachedRenderEntity(entityNbt == null ? null : entityNbt.copy(), player.level(), entity));
 		return entity;
 	}
 

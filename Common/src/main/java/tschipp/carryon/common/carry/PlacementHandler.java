@@ -343,7 +343,8 @@ public class PlacementHandler
 			}
 		}
 
-		potentialPositions.sort(Comparator.comparingDouble(posA -> player.distanceToSqr(posA.getCenter())));
+		// MC 26.2: BlockPos#getCenter() was removed; use Vec3.atCenterOf(BlockPos) instead.
+		potentialPositions.sort(Comparator.comparingDouble(posA -> player.distanceToSqr(Vec3.atCenterOf(posA))));
 
 		for(BlockPos potential : potentialPositions)
 		{
