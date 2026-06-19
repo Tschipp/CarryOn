@@ -56,7 +56,8 @@ public class ForgePlatformHelper implements IPlatformHelper {
     @Override
     public boolean isModLoaded(String modId) {
 
-        return ModList.get().isLoaded(modId);
+        // Forge 65.0.0: ModList is now a fully static class; no more get() singleton.
+        return ModList.isLoaded(modId);
     }
 
     @Override

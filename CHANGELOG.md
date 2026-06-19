@@ -1,5 +1,45 @@
 # Changelog — CarryOn
 
+## [3.2.0 → 3.2.1] — 2026-06-20 — Minecraft 26.2 — Forge 65.0.0
+
+### Platform
+- Added **Forge** subproject targeting Forge 65.0.0 (MC 26.2). First working Forge build.
+- Build: ForgeGradle 7 (`[7.0.17,8)`) via MinecraftForge maven in `pluginManagement`.
+
+### Changed (build system — `Forge/build.gradle`, `settings.gradle`, `gradle.properties`)
+- `settings.gradle`: added `"Forge"` to `include(...)` and MinecraftForge maven to `pluginManagement`.
+- `gradle.properties`: added `forge_version=65.0.0`, `forge_loader_version_range=[65,)`, and
+  `net.minecraftforge.gradle.merge-source-sets=true` (required for the multiloader Common pattern).
+- `buildSrc/multiloader-common.gradle`: added `forge_loader_version_range` to `processResources` expand props.
+- `Forge/build.gradle`: full rewrite for ForgeGradle 7:
+  - New repository DSL: `minecraft.mavenizer(it)`, `maven fg.forgeMaven`, `maven fg.minecraftLibsMaven`.
+  - New dependency DSL: `minecraft.dependency("net.minecraftforge:forge:...")`.
+  - Removed `org.spongepowered.mixin` (MixinGradle 0.7-SNAPSHOT) — incompatible with Gradle 9.5.1
+    (`org.gradle.util.VersionNumber` was removed); FG7 handles refmap generation internally.
+  - Removed Mixin AP (`org.spongepowered:mixin:0.8.5-SNAPSHOT:processor`) — AP version 0.8.5 tries to
+    generate SRG/notch obfuscation refmaps which don't exist for unobfuscated MC 26.2 and causes compile
+    errors. FG7 MDK omits it. Mixin annotations are processed at runtime by Forge's loader.
+  - Removed `jarJar.enable()` — FG7 dropped the old JarInJar API; switched to `compileOnly` for MixinExtras.
+  - MixinExtras AP kept for `@ModifyExpressionValue` / `@WrapOperation` bootstrap.
+
+### Fixed
+- **`PlayerInteractEvent.EntityInteract` removed in Forge 65.0.0** (`CommonEvents.java`):
+  `PlayerInteractEvent` is now a `sealed abstract class`; `EntityInteract` no longer exists.
+  Replaced with `PlayerInteractEvent.EntityInteractSpecific` — fires on right-click with known hit vector.
+  `getTarget()` still available on `EntityInteractSpecific`, so handler body is unchanged.
+- **`ModList.get()` removed in Forge 65.0.0** (`ForgePlatformHelper.java`):
+  `ModList` is now a fully static utility class (no singleton). `ModList.get().isLoaded(id)` →
+  `ModList.isLoaded(id)`.
+- **`mc.screen = null` removed in MC 26.2** (`ClientEvents.java`):
+  Screen ownership moved from `Minecraft` to `Minecraft.gui`. Updated to `mc.gui.setScreen(null)`.
+
+### Bugs / Known limitations
+- `ForgePlatformHelper.java`: `PacketDistributor` API usage (`SERVER.noArg()`, `PLAYER.with(player)`)
+  may need verification against Forge 65.0.0 network API at runtime.
+- Capabilities: `CarryOnDataCapabilityProvider` not yet tested with Forge 65.0.0 caps pipeline.
+
+---
+
 ## [3.1.2 → 3.1.7] — 2026-06-19 — Minecraft 26.2
 
 ### Platform

@@ -66,8 +66,8 @@ public class ClientEvents {
             if (carry.isCarrying())
             {
                 mc.player.closeContainer();
-                mc.screen = null;
-                mc.mouseHandler.grabMouse();
+                // MC 26.2: screen ownership moved from Minecraft to Minecraft.gui.
+                mc.gui.setScreen(null);
                 return true;
             }
         }
