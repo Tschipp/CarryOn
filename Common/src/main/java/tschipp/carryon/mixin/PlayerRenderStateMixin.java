@@ -7,6 +7,9 @@ import org.spongepowered.asm.mixin.Unique;
 import tschipp.carryon.client.render.ICarryOnRenderState;
 import tschipp.carryon.common.carry.CarryOnData;
 
+// MC 26.2: Injects carry fields into HumanoidRenderState (the player's deferred render state).
+// The deferred pipeline creates this state during extraction and consumes it during submission;
+// these fields bridge EntityRendererMixin (writer) and CarryingItemRenderLayer (reader).
 @Mixin(HumanoidRenderState.class)
 public class PlayerRenderStateMixin implements ICarryOnRenderState {
 

@@ -242,34 +242,6 @@ public class CarryRenderHelper
 		matrix.scale((float) scale.x, (float) scale.y, (float) scale.z);
 	}
 
-	/*
-	@Deprecated
-	public static void renderBakedModel(ItemStack stack, PoseStack matrix, MultiBufferSource buffer, int light, BakedModel model)
-	{
-		ItemStackRenderState state = new ItemStackRenderState();
-
-		try {
-
-
-			ItemStackRenderState.LayerRenderState layer = state.newLayer();
-			if(stack.hasFoil())
-				layer.setFoilType(ItemStackRenderState.FoilType.STANDARD);
-			layer.setupBlockModel(model, RenderType.translucent());
-
-			state.render(matrix, buffer, light, OverlayTexture.NO_OVERLAY);
-
-
-			ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
-			renderer.renderStatic(stack, ItemDisplayContext.NONE, light, OverlayTexture.NO_OVERLAY, matrix, buffer, null, model, 0);
-			renderer.render(stack, ItemDisplayContext.NONE, false, matrix, buffer, light, OverlayTexture.NO_OVERLAY, model);
-
-		}
-		catch (Exception e)
-		{
-		}
-	}
-	*/
-
 	public static ItemStack getRenderItemStack(Player player)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
@@ -325,33 +297,6 @@ public class CarryRenderHelper
 		return state;
 	}
 
-
-	/*
-	@Deprecated
-	public static BakedModel getRenderBlock(Player player)
-	{
-		CarryOnData carry = CarryOnDataManager.getCarryData(player);
-		ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
-		Minecraft.getInstance().getModelManager().specialBlockModelRenderer().get().
-		BlockState state = getRenderState(player);
-		BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-
-		if(state.getRenderShape() != RenderShape.MODEL || model.isCustomRenderer() || model.getQuads(state, null, RandomSource.create()).size() <= 0) {
-			ItemStack stack = new ItemStack(state.getBlock());
-			model = renderer.getModel(stack, player.level(), player, 0);
-		}
-
-		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
-		if(ov.isPresent())
-		{
-			var renderObj = ov.get().getRenderObject();
-			if(renderObj.left().isPresent())
-				model = renderer.getModel(renderObj.left().get(), player.level(), player, 0);
-		}
-
-		return model;
-	}
-	 */
 
 	public static Entity getRenderEntity(Player player)
 	{

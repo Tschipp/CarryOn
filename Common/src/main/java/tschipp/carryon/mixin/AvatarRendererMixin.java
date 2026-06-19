@@ -23,7 +23,9 @@ public abstract class AvatarRendererMixin<AvatarlikeEntity extends Avatar & Clie
    
     @Inject(method = "<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Z)V", at = @At("RETURN"))
     public void init(EntityRendererProvider.Context context, boolean slim, CallbackInfo info) {
-        //Player
+        // MC 26.2: The deferred render pipeline removed event-based player render hooks
+        // (RenderPlayerEvent on NeoForge, equivalent on Fabric). Render layers added to
+        // AvatarRenderer are called instead. This registers our carry render layer.
         this.addLayer(new CarryingItemRenderLayer<>(this));
     }
 }

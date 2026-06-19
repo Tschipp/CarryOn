@@ -35,6 +35,8 @@ import tschipp.carryon.client.render.ICarryOnRenderState;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
 
+// MC 26.2: setupAnim() now takes HumanoidRenderState instead of the entity. Carry data is
+// read via ICarryOnRenderState, which is populated by EntityRendererMixin during extraction.
 @Mixin(HumanoidModel.class)
 public class HumanoidModelMixin {
 

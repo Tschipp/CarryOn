@@ -24,6 +24,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -34,8 +35,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import tschipp.carryon.Constants;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
@@ -56,7 +57,7 @@ public class CarriedObjectRender
 			else {
 				CarryRenderHelper.clearRenderEntity(player);
 				if (carry.isCarrying(CarryType.BLOCK))
-					drawBlock(player,  matrix, light, CarryRenderHelper.getRenderState(player), nodeCollector, firstPerson, partialTicks);
+					drawBlock(player, matrix, light, nodeCollector, firstPerson, partialTicks);
 			}
 		}
 		catch (Exception e)
@@ -77,7 +78,7 @@ public class CarriedObjectRender
 		return carry.isCarrying();
 	}
 
-	private static void drawBlock(Player player, PoseStack matrix, int light, BlockState state, SubmitNodeCollector nodeCollector, boolean firstPerson, float partialTicks)
+	private static void drawBlock(Player player, PoseStack matrix, int light, SubmitNodeCollector nodeCollector, boolean firstPerson, float partialTicks)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		ItemStackRenderState renderState = new ItemStackRenderState();
@@ -103,10 +104,40 @@ public class CarriedObjectRender
 
         Vec3 playerpos = CarryRenderHelper.getExactPos(player, partialTicks);
 
-        entity.setPos(playerpos.x, playerpos.y, playerpos.z);
+        // Use the player's X,Z so extractShadow() probes an already-loaded chunk, but cap Y
+        // at a safe in-world height. The player may be far above the world's block range
+        // (e.g. test world at Y=6.4 M). extractShadow() calls level.getBlockState() for
+        // blocks near the entity's Y; a Y outside the normal section range causes Sodium to
+        // allocate a new Chunk Sections UBO slot (section index ~400 000), which invalidates
+        // its visibility graph and forces every section to re-render in one frame — collapsing
+        // FPS to ~10 and spiking GPU to 100%. Y=64 is valid in every normal dimension
+        // (-64 to 320 for overworld); shadow pieces are cleared immediately after extraction.
+        entity.setPos(playerpos.x, 64.0, playerpos.z);
+        entity.xOld = playerpos.x;
+        entity.yOld = 64.0;
+        entity.zOld = playerpos.z;
         entity.xRotO = 0.0f;
         entity.yRotO = 0.0f;
         entity.setYHeadRot(0.0f);
+        // LivingEntityRenderer.extractRenderState() reads yBodyRotO/yBodyRot via
+        // solveBodyRot() and yHeadRotO directly to compute state.bodyRot. A non-zero
+        // bodyRot causes setupRotations() to apply rotate(180 - bodyRot) — rotating the
+        // entity to its NBT-captured world-facing direction instead of the poseStack-relative
+        // forward direction set up by setupEntityTransformations(). That rotation can point
+        // the entity away from the camera, making it appear invisible.
+        if (entity instanceof LivingEntity le) {
+            le.yBodyRot = 0.0f;
+            le.yBodyRotO = 0.0f;
+            le.yHeadRotO = 0.0f;
+        }
+        // EntityType.create() constructs the entity without adding it to the world, so
+        // no entity ID is ever assigned. LivingEntityRenderer.extractRenderState() calls
+        // ItemModelResolver.updateForLiving() which calls entity.getId() — this throws
+        // IllegalStateException every frame, preventing any model submission and
+        // generating a full JVM stack trace at 60 Hz (severe CPU overhead).
+        // Use the player's ID as a stable fake: cows hold no items so the ID is only
+        // used as a seed for item-model variation and the exact value doesn't matter.
+        entity.setId(player.getId());
 
         matrix.pushPose();
 
@@ -129,15 +160,22 @@ public class CarriedObjectRender
             // Entity is not leashed while being carried.
             renderState.leashStates = null;
             renderState.lightCoords = light;
-            // Pass (0,0,0) as the camera position — matching what vanilla GuiEntityRenderer
-            // does. Passing the real world-space camera coordinates caused
-            // EntityRenderDispatcher.submit() to add a large world-coordinate translation to
-            // the poseStack, which flooded the deferred pipeline's Dynamic Transforms and
-            // Chunk Sections UBOs with resize events every frame, tanking FPS.
-            manager.submit(renderState, new CameraRenderState(), 0.0, 0.0, 0.0, matrix, nodeCollector);
+            // Call renderer.submit() directly, bypassing EntityRenderDispatcher.submit().
+            // EntityRenderDispatcher.submit() internally translates the poseStack by
+            // (state.x - cameraX), which with camera=(0,0,0) and state.x at the entity's
+            // real world coordinate (~60) shifts the entity ~60 units from the poseStack
+            // origin — out of the player's hands entirely.
+            // Zeroing state.x/y/z to fix that offset caused the shadow system to probe
+            // world-origin chunks, triggering expensive shadow map updates (100% GPU, 13 FPS).
+            // renderer.submit() applies only entity-local transforms (rotation, scale) and
+            // adds the model node — no world-space translation, no shadow map side-effects.
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            EntityRenderer renderer = manager.getRenderer(entity);
+            renderer.submit(renderState, matrix, nodeCollector, new CameraRenderState());
         }
-        catch (Exception ignored)
+        catch (Exception e)
         {
+            Constants.LOG.warn("CarryOn: entity carry render error", e);
         }
 
         matrix.popPose();
