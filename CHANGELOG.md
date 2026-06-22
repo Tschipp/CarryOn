@@ -1,5 +1,21 @@
 # Changelog — CarryOn
 
+## [3.2.2] — 2026-06-20 — Minecraft 26.2
+
+### Fixed
+- **`Pack declares support for version newer than 64, but is missing mandatory fields min_format and max_format`**
+  (render-thread WARN on every launch, `pack.mcmeta`):
+  MC 26.2 split pack format into independent client-resource and server-data epochs (resource major 88,
+  data major 107) and deprecated the bare `pack_format` int for formats above the legacy threshold (64) —
+  packs on the modern epoch must also declare `min_format`/`max_format`. Confirmed against vanilla's own
+  bundled datapacks (e.g. `trade_rebalance`, which now ships `"max_format": 107, "min_format": [107, 1]`).
+  Our `pack_format` was a stale `34` left over from a much older MC version. Updated to `88` (current
+  resource-pack epoch, matching the render-thread/client resource loader that emitted the warning) with
+  explicit `min_format`/`max_format: [88, 0]`. Warning was cosmetic (engine fell back successfully either
+  way) but the declared format was genuinely out of date.
+
+---
+
 ## [3.2.0 → 3.2.1] — 2026-06-20 — Minecraft 26.2 — Forge 65.0.0
 
 ### Platform
