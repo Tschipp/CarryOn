@@ -3,14 +3,7 @@ plugins {
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
 
-subprojects {
-    
-    apply plugin: 'java'
-    
-    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-    java.withSourcesJar()
-    java.withJavadocJar()
-
+project(":NeoForge") {
     configurations.all {
         resolutionStrategy {
             // Force the version of ASM that NeoForge wants (9.8 in your error log)
@@ -21,6 +14,15 @@ subprojects {
             force 'org.ow2.asm:asm-util:9.8'
         }
     }
+}
+
+subprojects {
+    
+    apply plugin: 'java'
+    
+    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+    java.withSourcesJar()
+    java.withJavadocJar()
 
     jar {
         from(rootProject.file("LICENSE")) {
