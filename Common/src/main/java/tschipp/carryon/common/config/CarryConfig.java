@@ -297,7 +297,7 @@ public class CarryConfig
 					"modern_industrialization:fluid_pipe",
 					"modern_industrialization:*_fluid_pipe",
 					"yigd:*", "domum_ornamentum:*", "connectiblechains:*",
-					"cobblemon:*", "snowrealmagic:*", "forbidden_arcanus:black_hole", "domum_ornamentum:*", "sgjourney:*", "copycats:*", "expandedstorage:*", "replication:*"
+					"cobblemon:*", "snowrealmagic:*", "forbidden_arcanus:black_hole", "domum_ornamentum:*", "sgjourney:*", "copycats:*", "expandedstorage:*", "replication:*", "coloreditemframes:*",
 			};
 
 			@Property(
@@ -315,7 +315,7 @@ public class CarryConfig
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
 					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*",
 					"connectiblechains:*", "cobblemon:*", "create:*", "swem:*", "toms_mobs:*",
-					"simulated:*", "aeronautics:*", "offroad:*"
+					"simulated:*", "aeronautics:*", "offroad:*", "coloreditemframes:*"
 			};
 
 			@Property(
