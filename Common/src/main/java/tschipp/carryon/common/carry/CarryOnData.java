@@ -100,16 +100,7 @@ public class CarryOnData {
 
     public CompoundTag getNbt()
     {
-        nbt.putString("type", type.toString());
-        nbt.putBoolean("keyPressed", keyPressed);
-        if(activeScript != null)
-        {
-            DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, activeScript);
-            Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
-            nbt.put("activeScript", tag);
-        }
-        nbt.putInt("selected", this.selectedSlot);
-        return nbt;
+        return nbt.copy();
     }
 
     public CompoundTag getContentNbt()
@@ -124,6 +115,7 @@ public class CarryOnData {
     public void setBlock(BlockState state, @Nullable BlockEntity tile)
     {
         this.type = CarryType.BLOCK;
+        this.nbt.putString("type", this.type.toString());
 
         if(state.hasProperty(BlockStateProperties.WATERLOGGED))
             state = state.setValue(BlockStateProperties.WATERLOGGED, false);
@@ -161,6 +153,7 @@ public class CarryOnData {
     public void setEntity(Entity entity)
     {
         this.type = CarryType.ENTITY;
+        this.nbt.putString("type", this.type.toString());
         CompoundTag entityData = new CompoundTag();
         entity.save(entityData);
         nbt.put("entity", entityData);
@@ -190,10 +183,17 @@ public class CarryOnData {
     public void setActiveScript(CarryOnScript script)
     {
         this.activeScript = script;
+        if(script != null)
+        {
+            DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, script);
+            Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
+            this.nbt.put("activeScript", tag);
+        }
     }
 
     public void setCarryingPlayer() {
         this.type = CarryType.PLAYER;
+        this.nbt.putString("type", this.type.toString());
     }
 
     public boolean isCarrying()
@@ -215,6 +215,7 @@ public class CarryOnData {
 
     public void setSelected(int selectedSlot) {
         this.selectedSlot = selectedSlot;
+        this.nbt.putInt("selected", selectedSlot);
     }
 
     public int getSelected() {
