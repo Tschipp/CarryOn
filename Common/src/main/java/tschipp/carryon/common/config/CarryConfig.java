@@ -279,7 +279,8 @@ public class CarryConfig
 					"modern_industrialization:*_item_pipe",
 					"modern_industrialization:fluid_pipe",
 					"modern_industrialization:*_fluid_pipe",
-					"snowrealmagic:*"
+					"snowrealmagic:*",
+					"coloreditemframes:*",
 			};
 
 			@Property(
@@ -294,7 +295,8 @@ public class CarryConfig
 					"minecraft:interaction", "minecraft:marker", "minecraft:block_display", "minecraft:item_display", "minecraft:text_display",
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
-					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*"
+					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*",
+					"coloreditemframes:*"
 			};
 
 			@Property(
