@@ -62,7 +62,7 @@ public class SizeHelper
 		float result = 1;
 		if (entity.tickCount == 0) // catch this specific edge case
 		{
-			result = entity.getDimensions(entity.getPose()).width();
+			result = entity.getDimensions(entity.getPose()).height();
 		}
 		else // otherwise this is correct
 		{
@@ -78,6 +78,7 @@ public class SizeHelper
 
 	public static float getRelativeEntityArea(Player player, Entity entity)
 	{
-		return getEntityHeight(entity) * getEntityWidth(entity) * getPlayerScaleFactor(player);
+		double playerScaleFactor = getPlayerScaleFactor(player);
+		return getEntityHeight(entity) * getEntityWidth(entity) * playerScaleFactor * playerScaleFactor;
 	}
 }
