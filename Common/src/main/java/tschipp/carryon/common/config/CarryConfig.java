@@ -314,7 +314,8 @@ public class CarryConfig
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
 					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*",
-					"connectiblechains:*", "cobblemon:*", "create:*", "swem:*", "toms_mobs:*"
+					"connectiblechains:*", "cobblemon:*", "create:*", "swem:*", "toms_mobs:*",
+					"simulated:*", "aeronautics:*", "offroad:*"
 			};
 
 			@Property(

@@ -88,7 +88,8 @@ public class PickupHandler {
     // more complex distance check that accounts for scaling player reach based on block or entity interaction range
     private static boolean isInDistance(ServerPlayer player, Vec3 pos, double distanceScale)
     {
-        return (player.position().distanceTo(pos) < Constants.COMMON_CONFIG.settings.maxDistance * distanceScale);
+        double maxDistance = Constants.COMMON_CONFIG.settings.maxDistance;
+        return player.distanceToSqr(pos) < maxDistance * maxDistance * distanceScale * distanceScale;
     }
 
     private static boolean isBlockInDistance(ServerPlayer player, BlockPos pos)
