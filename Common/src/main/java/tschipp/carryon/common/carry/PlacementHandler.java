@@ -278,6 +278,8 @@ public class PlacementHandler
 					carry.clear();
 					CarryOnDataManager.setCarryData(player, carry);
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.HORSE_SADDLE, SoundSource.PLAYERS, 0.5F, 1.5F);
+					if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
+						player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
 				} else {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.LAVA_POP, SoundSource.PLAYERS, 0.5F, 0.5F);
 				}

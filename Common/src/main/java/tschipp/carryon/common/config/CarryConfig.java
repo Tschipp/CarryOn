@@ -280,7 +280,7 @@ public class CarryConfig
 					"modern_industrialization:fluid_pipe",
 					"modern_industrialization:*_fluid_pipe",
 					"snowrealmagic:*",
-					"coloreditemframes:*",
+					"coloreditemframes:*", "replication:*"
 			};
 
 			@Property(
@@ -296,7 +296,7 @@ public class CarryConfig
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
 					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*",
-					"coloreditemframes:*"
+					"coloreditemframes:*", "wan_ancient_beasts:*"
 			};
 
 			@Property(
