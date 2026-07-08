@@ -183,25 +183,29 @@ public class CarryOnCommon
 		if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = carry.getEntity(player.level());
-			int i = (int) (SizeHelper.getRelativeEntityArea(player, entity));
-				if (i > 4)
-					i = 4;
-			if (!Constants.COMMON_CONFIG.settings.heavyEntities) // why not check this first?
-				i = 1;
-			return (int) (i * Constants.COMMON_CONFIG.settings.entitySlownessMultiplier);
+			int i = 1;
+			if (Constants.COMMON_CONFIG.settings.heavyEntities)
+				i = (int) (SizeHelper.getRelativeEntityArea(player, entity));
+
+			i = (int) (i * Constants.COMMON_CONFIG.settings.entitySlownessMultiplier);
+			if (i > 4)
+				i = 4;
+			return i;
 		}
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
-			String nbt = carry.getNbt().toString();
-			int i = nbt.length() / 500;
+			int i = 1;
+			if (Constants.COMMON_CONFIG.settings.heavyTiles) 
+			{
+				String nbt = carry.getNbt().toString();
+				i = nbt.length() / 500;
+			}
+
+			i = (int) (i * Constants.COMMON_CONFIG.settings.blockSlownessMultiplier);
 
 			if (i > 4)
 				i = 4;
-
-			if (!Constants.COMMON_CONFIG.settings.heavyTiles)
-				i = 1;
-
-			return (int) (i * Constants.COMMON_CONFIG.settings.blockSlownessMultiplier);
+			return i;
 		}
 		return 0;
 	}
