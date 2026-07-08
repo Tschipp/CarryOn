@@ -48,6 +48,7 @@ import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
+import tschipp.carryon.utils.SizeHelper;
 
 import java.util.Optional;
 
@@ -146,8 +147,8 @@ public class CarryRenderHelper
 
 		Entity entity = carry.getEntity(player.level());
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
+		float height = SizeHelper.getEntityHeight(entity);
+		float width = SizeHelper.getEntityWidth(entity);
 
 		if(firstPerson) {
 			matrix.mulPose(Axis.YP.rotationDegrees(180));
@@ -178,8 +179,8 @@ public class CarryRenderHelper
 		matrix.translate(0, -3.1, -0.65);
 		matrix.scale(1.666f, 1.666f, 1.666f);
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
+		float height = SizeHelper.getEntityHeight(entity);
+		float width = SizeHelper.getEntityWidth(entity);
 		float multiplier = Math.min(9.9f, height * width) ;
 		entity.yo = 0.0f;
 		entity.yRotO = 0.0f;
@@ -379,7 +380,7 @@ public class CarryRenderHelper
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
-			float w =  entity.getBbWidth();
+			float w =  SizeHelper.getEntityWidth(entity);
 			if (Constants.CLIENT_CONFIG.rotateEntitiesSideways)
 				return w - (w*w) * 0.35f;
 			return w * 0.9f;
@@ -410,7 +411,7 @@ public class CarryRenderHelper
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
-			return entity.getBbHeight();
+			return SizeHelper.getEntityHeight(entity);
 		}
 		else
 			return 1f;

@@ -29,6 +29,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.animal.Animal;
@@ -50,6 +51,7 @@ import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.ScriptManager;
 import tschipp.carryon.networking.clientbound.ClientboundStartRidingOtherPlayerPacket;
 import tschipp.carryon.platform.Services;
+import tschipp.carryon.utils.SizeHelper;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -59,13 +61,9 @@ import java.util.function.Function;
 
 public class PickupHandler {
 
-    public static boolean canCarryGeneral(ServerPlayer player, Vec3 pos)
+    public static boolean canCarryGeneral(ServerPlayer player)
     {
         if(!player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty())
-            return false;
-
-        double maxDistance = Constants.COMMON_CONFIG.settings.maxDistance;
-        if(player.distanceToSqr(pos) > maxDistance * maxDistance)
             return false;
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
@@ -87,10 +85,39 @@ public class PickupHandler {
         return true;
     }
 
+    // more complex distance check that accounts for scaling player reach based on block or entity interaction range
+    private static boolean isInDistance(ServerPlayer player, Vec3 pos, double distanceScale)
+    {
+        double maxDistance = Constants.COMMON_CONFIG.settings.maxDistance;
+        return player.distanceToSqr(pos) < maxDistance * maxDistance * distanceScale * distanceScale;
+    }
+
+    private static boolean isBlockInDistance(ServerPlayer player, BlockPos pos)
+    {
+        double distanceScale = 1.0d;
+        if (Constants.COMMON_CONFIG.settings.scaleDistance)
+        {
+            distanceScale = player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE) / player.getAttributeBaseValue(Attributes.BLOCK_INTERACTION_RANGE);
+        }
+        return isInDistance(player, Vec3.atCenterOf(pos), distanceScale);
+    }
+
+    private static boolean isEntityInDistance(ServerPlayer player, Entity entity)
+    {
+        double distanceScale = 1.0d;
+        if (Constants.COMMON_CONFIG.settings.scaleDistance)
+        {
+            distanceScale = player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE) / player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE);
+        }
+        return isInDistance(player, entity.position(), distanceScale);
+    }
 
     public static boolean tryPickUpBlock(ServerPlayer player, BlockPos pos, Level level, @Nullable BiFunction<BlockState, BlockPos, Boolean> pickupCallback)
     {
-        if(!canCarryGeneral(player, Vec3.atCenterOf(pos)))
+        if(!isBlockInDistance(player, pos))
+            return false;
+
+        if(!canCarryGeneral(player))
             return false;
 
         CarryOnData carry = CarryOnDataManager.getCarryData(player);
@@ -159,7 +186,7 @@ public class PickupHandler {
         level.playSound(null, pos, state.getSoundType().getHitSound(), SoundSource.BLOCKS, 1.0f, 0.5f);
         player.swing(InteractionHand.MAIN_HAND, true);
         if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
-            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player.level()), false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
         return true;
     }
 
@@ -167,7 +194,10 @@ public class PickupHandler {
 
     public static boolean tryPickupEntity(ServerPlayer player, Entity entity, @Nullable Function<Entity, Boolean> pickupCallback)
     {
-        if(!canCarryGeneral(player, entity.position()))
+        if(!isEntityInDistance(player, entity))
+            return false;
+
+        if(!canCarryGeneral(player))
             return false;
 
         if (entity.invulnerableTime != 0)
@@ -203,7 +233,7 @@ public class PickupHandler {
             if(!overrideChecks && (!Constants.COMMON_CONFIG.settings.pickupHostileMobs && entity.getType().getCategory() == MobCategory.MONSTER))
                 return false;
 
-            if(Constants.COMMON_CONFIG.settings.maxEntityHeight < entity.getBbHeight() || Constants.COMMON_CONFIG.settings.maxEntityWidth < entity.getBbWidth())
+            if(Constants.COMMON_CONFIG.settings.maxEntityHeight < SizeHelper.getRelativeEntityHeight(player, entity) || Constants.COMMON_CONFIG.settings.maxEntityWidth < SizeHelper.getRelativeEntityWidth(player, entity))
                 return false;
         }
 
@@ -252,7 +282,7 @@ public class PickupHandler {
             player.level().playSound(null, player.getOnPos(), SoundEvents.ARMOR_EQUIP_GENERIC.value(), SoundSource.AMBIENT, 1.0f, 0.5f);
             CarryOnDataManager.setCarryData(player, carry);
             if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
-                player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player.level()), false, false));
+                player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
             return true;
 
         }
@@ -277,7 +307,7 @@ public class PickupHandler {
         CarryOnDataManager.setCarryData(player, carry);
         player.swing(InteractionHand.MAIN_HAND, true);
         if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
-            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player.level()), false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
         return true;
     }
 
