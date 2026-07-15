@@ -1,5 +1,31 @@
 # Changelog — CarryOn
 
+## [3.2.4] — 2026-07-16 — Minecraft 26.2
+
+### Fixed
+- **Fabric: server/client crash on startup with `JsonSyntaxException: Unterminated array`**
+  (`ConfigLoaderImpl.java`) — two bugs fixed:
+
+  1. **Malformed config not caught.** `GSON.fromJson()` throws `JsonSyntaxException` when
+     the config file is malformed or truncated (e.g. the JVM was killed mid-write during a
+     previous crash, leaving a partial JSON file on disk — as observed in crash report
+     `crash-2026-07-16_01.05.53`). That exception was not caught, so it propagated and
+     crashed the game on the next startup before any world was loaded. Fix: wrap `fromJson()`
+     in a try-catch; on `JsonSyntaxException`, log a warning and regenerate the config from
+     defaults, same as when the file doesn't exist.
+
+  2. **Null fallthrough after empty-file recovery.** When `fromJson()` returned `null`
+     (empty file), the code wrote default config but had no `else` guard — it then
+     immediately fell through to `loadConfig(entry.getValue(), null)` causing a
+     `NullPointerException`. Fix: `else`-guard the `loadConfig` branch so it only runs
+     when a valid `JsonObject` was parsed.
+
+  Root cause of the truncated file: the previous server crash (3.2.3, NPE in
+  `CarryOnData.getNbt()`) killed the JVM while `FileUtils.write()` was mid-write during
+  shutdown, truncating `carryon.json` at `$.whitelist.allowedEntities[3]`.
+
+---
+
 ## [3.2.3] — 2026-07-15 — Minecraft 26.2
 
 ### Fixed
