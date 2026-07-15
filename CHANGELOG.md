@@ -1,5 +1,35 @@
 # Changelog — CarryOn
 
+## [3.2.3] — 2026-07-15 — Minecraft 26.2
+
+### Fixed
+- **Server crash: `NullPointerException` in `CompoundTag.copy()` when a player interacts with a block while carrying** (`CarryOnData.java`):
+
+  Root cause was a thread-safety race in `CarryOnData.getNbt()`. Fabric's
+  `fabric:attachment_sync_v1` calls `getNbt()` on a **Netty IO thread** to serialize the
+  attachment for client sync. The original implementation wrote directly into `this.nbt`
+  (`putString("type", ...)`, `putBoolean("keyPressed", ...)`, `putInt("selected", ...)`)
+  while the **server tick thread** simultaneously called `clone()` → `nbt.copy()`, which
+  iterates the same `Object2ObjectOpenHashMap`. Concurrent write-from-Netty +
+  read-from-server-thread on a non-thread-safe fastutil map corrupts the backing array
+  (`this.wrapped == null`) → NPE that propagates from the Netty encoder and kills the server.
+
+  Observed crash sequence (from MegumiHime's session, `crash-2026-07-15_13.32.29`):
+  1. `ServerboundUseItemOnPacket` → `clone()` → NPE suppressed on server thread
+  2. Same NPE in Netty IO threads #43 and #47 during attachment sync encode (fatal
+     `EncoderException`, not catchable)
+  3. NPE in `onCarryTick` → uncaught on server thread → server stops
+
+  **Fix (`CarryOnData.getNbt()`):** write into a `nbt.copy()` snapshot instead of mutating
+  `this.nbt`. The live backing store is now never written from the Netty IO thread;
+  concurrent reads (server clone + Netty encode) are safe on fastutil maps.
+
+  **Safety net (`CarryOnData.clone()`):** NPE guard added — returns an empty `CarryOnData`
+  instead of propagating, so any remaining edge-case race drops the carry state (player
+  appears to put down what they were carrying) rather than crashing the server.
+
+---
+
 ## [3.2.2] — 2026-06-20 — Minecraft 26.2
 
 ### Fixed

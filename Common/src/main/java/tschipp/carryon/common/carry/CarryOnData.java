@@ -113,16 +113,24 @@ public class CarryOnData {
 
     public CompoundTag getNbt()
     {
-        nbt.putString("type", type.toString());
-        nbt.putBoolean("keyPressed", keyPressed);
+        // ROOT FIX for server crash (crash-2026-07-15_13.32.29):
+        // Fabric's fabric:attachment_sync_v1 calls this method on a Netty IO thread.
+        // The original code wrote directly to this.nbt (putString/putBoolean/putInt),
+        // which raced with server-thread reads of this.nbt in clone() → nbt.copy().
+        // Concurrent write+read on a fastutil Object2ObjectOpenHashMap (non-thread-safe)
+        // corrupts its backing array → NPE: "this.wrapped is null".
+        // Fix: write into a snapshot copy only, never mutating the live this.nbt here.
+        CompoundTag out = nbt.copy();
+        out.putString("type", type.toString());
+        out.putBoolean("keyPressed", keyPressed);
         if(activeScript != null)
         {
             DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, activeScript);
             Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
-            nbt.put("activeScript", tag);
+            out.put("activeScript", tag);
         }
-        nbt.putInt("selected", this.selectedSlot);
-        return nbt;
+        out.putInt("selected", this.selectedSlot);
+        return out;
     }
 
     public CompoundTag getContentNbt()
@@ -259,7 +267,15 @@ public class CarryOnData {
     }
 
     public CarryOnData clone() {
-        return new CarryOnData(nbt.copy());
+        try {
+            return new CarryOnData(nbt.copy());
+        } catch (NullPointerException e) {
+            // Safety net: nbt.copy() iterates a fastutil Object2ObjectOpenHashMap whose
+            // backing array can be null if a concurrent write raced with this read. Returning
+            // empty carry data drops the carried item but prevents a server crash.
+            Constants.LOG.error("CarryOnData.clone() caught NPE in nbt.copy() — returning empty carry state to prevent server crash", e);
+            return new CarryOnData(new CompoundTag());
+        }
     }
 
     public int getTick()
