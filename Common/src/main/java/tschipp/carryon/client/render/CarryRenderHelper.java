@@ -51,6 +51,7 @@ import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
+import tschipp.carryon.utils.SizeHelper;
 
 import java.util.Optional;
 
@@ -201,9 +202,9 @@ public class CarryRenderHelper
 			matrix.translate(0, -1.6, -0.65);
 		matrix.scale(1.666f, 1.666f, 1.666f);
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
-		float multiplier = height * width;
+		float height = SizeHelper.getEntityHeight(entity);
+		float width = SizeHelper.getEntityWidth(entity);
+		float multiplier = Math.min(9.9f, height * width) ;
 		entity.yo = 0.0f;
 		entity.yRotO = 0.0f;
 		entity.setYHeadRot(0.0f);
@@ -349,7 +350,8 @@ public class CarryRenderHelper
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
-			return entity.getBbWidth();
+			float w =  SizeHelper.getEntityWidth(entity);
+			return w * 0.9f;
 		}
 		else
 			return 1f;
@@ -377,7 +379,7 @@ public class CarryRenderHelper
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
-			return entity.getBbHeight();
+			return SizeHelper.getEntityHeight(entity);
 		}
 		else
 			return 1f;

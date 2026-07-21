@@ -49,6 +49,7 @@ import tschipp.carryon.common.config.ListHandler;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptEffects;
 import tschipp.carryon.networking.clientbound.ClientboundStartRidingOtherPlayerPacket;
 import tschipp.carryon.platform.Services;
+import tschipp.carryon.utils.SizeHelper;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -233,7 +234,7 @@ public class PlacementHandler
 		if(entityHeld == null)
 			return;
 
-		double sizeHeldEntity = entityHeld.getBbHeight() * entityHeld.getBbWidth();
+		double sizeHeldEntity = SizeHelper.getEntityHeight(entityHeld) * SizeHelper.getEntityWidth(entityHeld);
 		double distance = entityClicked.blockPosition().distSqr(player.blockPosition());
 		Entity lowestEntity = entityClicked.getRootVehicle();
 		int numPassengers = getPassengerCount(lowestEntity);
@@ -244,7 +245,7 @@ public class PlacementHandler
 				return;
 
 			if (ListHandler.isStackingPermitted(topEntity)) {
-				double sizeEntity = topEntity.getBbHeight() * topEntity.getBbWidth();
+				double sizeEntity = SizeHelper.getEntityHeight(topEntity) * SizeHelper.getEntityWidth(topEntity);
 				if (!Constants.COMMON_CONFIG.settings.entitySizeMattersStacking || sizeHeldEntity <= sizeEntity) {
 					if (topEntity instanceof Horse horse)
 						horse.setTamed(true);

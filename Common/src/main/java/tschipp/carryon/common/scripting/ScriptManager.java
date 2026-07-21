@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import tschipp.carryon.Constants;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptObject.ScriptObjectBlock;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptObject.ScriptObjectEntity;
+import tschipp.carryon.utils.SizeHelper;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -64,8 +65,8 @@ public class ScriptManager
 		if (!Constants.COMMON_CONFIG.settings.useScripts)
 			return Optional.empty();
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
+		float height = SizeHelper.getEntityHeight(entity);
+		float width = SizeHelper.getEntityWidth(entity);
 		float health = entity instanceof LivingEntity ? ((LivingEntity) entity).getHealth() : 0.0f;
 		CompoundTag tag = new CompoundTag();
 		entity.save(tag);

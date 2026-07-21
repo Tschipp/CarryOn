@@ -49,6 +49,12 @@ public class CarryConfig
 			public double maxDistance = 2.5;
 
 			@Property(
+					type = PropertyType.BOOLEAN,
+					description = "Pickup distance scales with player reach"
+			)
+			public boolean scaleDistance = true;
+
+			@Property(
 					type = PropertyType.DOUBLE,
 					description = "Max width of entities that can be picked up in survival mode",
 					minD = 0,
@@ -63,6 +69,12 @@ public class CarryConfig
 					maxD = 10
 			)
 			public double maxEntityHeight = 2.5;
+
+			@Property(
+					type = PropertyType.BOOLEAN,
+					description = "Size of entities is considered relative to player scale"
+			)
+			public boolean relativePlayerScale = true;
 
 			@Property(
 					type = PropertyType.DOUBLE,
@@ -279,6 +291,8 @@ public class CarryConfig
 					"modern_industrialization:*_item_pipe",
 					"modern_industrialization:fluid_pipe",
 					"modern_industrialization:*_fluid_pipe",
+					"yigd:*", "domum_ornamentum:*", "connectiblechains:*",
+					"cobblemon:*", "snowrealmagic:*", "forbidden_arcanus:black_hole", "domum_ornamentum:*", "sgjourney:*", "copycats:*", "expandedstorage:*", "replication:*",
 					"snowrealmagic:*",
 					"coloreditemframes:*", "replication:*"
 			};
@@ -296,7 +310,8 @@ public class CarryConfig
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
 					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*",
-					"coloreditemframes:*", "wan_ancient_beasts:*"
+					"connectiblechains:*", "cobblemon:*", "create:*", "swem:*", "toms_mobs:*",
+					"simulated:*", "aeronautics:*", "offroad:*", "coloreditemframes:*", "wan_ancient_beasts:*"
 			};
 
 			@Property(
@@ -304,7 +319,8 @@ public class CarryConfig
 					description = "Entities that cannot have other entities stacked on top of them"
 			)
 			public String[] forbiddenStacking = {
-					"minecraft:horse"
+					"minecraft:horse",
+					"minecraft:ender_dragon"
 			};
 		}
 
