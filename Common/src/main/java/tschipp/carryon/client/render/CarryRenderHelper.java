@@ -97,12 +97,13 @@ public class CarryRenderHelper
 		matrix.pushPose();
 		matrix.scale(0.6f, 0.6f, 0.6f);
 
+		float playerScaleFactor = SizeHelper.getPlayerScaleFactor(player);
 		if (perspective == 2)
-			matrix.translate(0, 0, -1.35);
+			matrix.translate(0, 0, -1.35 / playerScaleFactor);
 
 		if (doSneakCheck(player))
 		{
-			matrix.translate(0, -0.4, 0);
+			matrix.translate(0, -0.4 / playerScaleFactor, 0);
 		}
 
 		if (pose == Pose.SWIMMING)
@@ -118,9 +119,9 @@ public class CarryRenderHelper
 			else
 				matrix.mulPose(Axis.XN.rotationDegrees(f4));
 
-			matrix.translate(0, -1.5, -1.848);
+			matrix.translate(0, -1.5 / playerScaleFactor, -1.848 / playerScaleFactor);
 			if (perspective == 2)
-				matrix.translate(0, 0, 2.38);
+				matrix.translate(0, 0, 2.38 / playerScaleFactor);
 		}
 
 		if (pose == Pose.FALL_FLYING)
@@ -151,11 +152,11 @@ public class CarryRenderHelper
 			}
 
 			if (perspective != 2)
-				matrix.translate(0, 0, -1.35);
-			matrix.translate(0, -0.2, 0);
+				matrix.translate(0, 0, -1.35 / playerScaleFactor);
+			matrix.translate(0, -0.2 / playerScaleFactor, 0);
 		}
 
-		matrix.translate(0, 1.6, 0.65);
+		matrix.translate(0, 1.6 / playerScaleFactor, 0.65 / playerScaleFactor);
 	}
 
 	public static void applyBlockTransformations(Player player, float partialticks, PoseStack matrix, Block block)
@@ -183,23 +184,25 @@ public class CarryRenderHelper
 		//matrix.mulPose(Axis.YP.rotationDegrees(180));
 
 
+		float playerScaleFactor = SizeHelper.getPlayerScaleFactor(player);
 
 		float height = getRenderHeight(player);
 		float offset = (height - 1f) / 1.2f;
-		matrix.translate(0, -offset, 0);
+		matrix.translate(0, -offset / playerScaleFactor, 0);
 	}
 
 	public static void applyEntityTransformations(Player player, float partialticks, PoseStack matrix, Entity entity)
 	{
 		int perspective = CarryRenderHelper.getPerspective();
 		Pose pose = player.getPose();
+		float playerScaleFactor = SizeHelper.getPlayerScaleFactor(player);
 
 		applyGeneralTransformations(player, partialticks, matrix);
 
 		if (perspective == 2)
-			matrix.translate(0, -1.6, 0.65);
+			matrix.translate(0, -1.6 / playerScaleFactor, 0.65 / playerScaleFactor);
 		else
-			matrix.translate(0, -1.6, -0.65);
+			matrix.translate(0, -1.6 / playerScaleFactor, -0.65 / playerScaleFactor);
 		matrix.scale(1.666f, 1.666f, 1.666f);
 
 		float height = SizeHelper.getEntityHeight(entity);
@@ -215,9 +218,16 @@ public class CarryRenderHelper
 			matrix.mulPose(Axis.YP.rotationDegrees(180));
 
 		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
-		matrix.translate(0.0, height / 2 + -(height / 2) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
 
-		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
+		float playerScale = 1f / playerScaleFactor;
+		double zPos = width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1;
+		boolean horizontal = pose == Pose.SWIMMING || pose == Pose.FALL_FLYING;
+		matrix.translate(
+			0.0,
+			horizontal ? playerScale : playerScale + (height / 2f) * (playerScale - 1f),
+			horizontal ? zPos * playerScale : zPos * playerScale - (width / 2f) * (playerScale - 1f));
+
+		if (horizontal)
 		{
 			matrix.mulPose(Axis.XN.rotationDegrees(90));
 			matrix.translate(0, -0.2 * height, 0);
@@ -331,12 +341,13 @@ public class CarryRenderHelper
 	public static float getRenderWidth(Player player)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
+		float playerScaleFactor = SizeHelper.getPlayerScaleFactor(player);
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
 			BlockState state = getRenderState(player);
 			VoxelShape shape = state.getShape(player.level(), player.blockPosition());
 			if(shape == null || shape.isEmpty())
-				return 1f;
+				return playerScaleFactor;
 			Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
 			if(ov.isPresent())
 			{
@@ -345,16 +356,16 @@ public class CarryRenderHelper
 					return 0.8f;
 			}
 			float width = (float)Math.abs(shape.bounds().maxX - shape.bounds().minX);
-			return width;
+			return width * playerScaleFactor;
 		}
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
 			float w =  SizeHelper.getEntityWidth(entity);
-			return w * 0.9f;
+			return w * 0.9f * playerScaleFactor;
 		}
 		else
-			return 1f;
+			return playerScaleFactor;
 	}
 
 	public static float getRenderHeight(Player player)
