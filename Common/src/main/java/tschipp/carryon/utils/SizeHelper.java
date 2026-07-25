@@ -34,8 +34,8 @@ public class SizeHelper
 	{
 		if (!Constants.COMMON_CONFIG.settings.relativePlayerScale)
 			return 1;
-		double result = player.getAttributeBaseValue(Attributes.SCALE) / Math.max(player.getAttributeValue(Attributes.SCALE), 0.01);
-		return (float) result;
+		double actualScale = Math.max(player.getAttributeValue(Attributes.SCALE), 0.001);
+        return 1 / (float) actualScale;
 	}
 
 	public static float getEntityWidth(Entity entity)
@@ -78,7 +78,7 @@ public class SizeHelper
 
 	public static float getRelativeEntityArea(Player player, Entity entity)
 	{
-		double playerScaleFactor = getPlayerScaleFactor(player);
+		float playerScaleFactor = getPlayerScaleFactor(player);
 		return getEntityHeight(entity) * getEntityWidth(entity) * playerScaleFactor * playerScaleFactor;
 	}
 }
