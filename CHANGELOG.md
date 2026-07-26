@@ -1,5 +1,29 @@
 # Changelog — CarryOn
 
+## [3.2.5] — 2026-07-16 — Minecraft 26.2
+
+### Fixed
+- **Carried entity/block disappears immediately after pickup** (`CarryOnData.java`) —
+  regression introduced in 3.2.3.
+
+  Root cause: the 3.2.3 thread-safety fix for `getNbt()` stopped writing `"type"` into
+  `this.nbt` (it now writes to a snapshot copy only). No other code path wrote the `"type"`
+  key back into `this.nbt` after `setBlock()` / `setEntity()` / `setCarryingPlayer()` — those
+  methods only updated the Java field `this.type`. So `clone()` → `new CarryOnData(nbt.copy())`
+  always read a tag with no `"type"` key, defaulting to `CarryType.INVALID`.
+
+  Consequence: every call to `getCarryData(player)` returned a clone with `isCarrying() == false`.
+  When the player then right-clicked a block, `CommonEvents` saw "not carrying" → entered the
+  pickup branch → `tryPickUpBlock()` succeeded → overwrote the entity carry with a block carry
+  (or cleared it if no block was found). Entity gone, no crash, no log.
+
+  Fix: `setBlock()`, `setEntity()`, and `setCarryingPlayer()` now write `"type"` into `this.nbt`
+  immediately, keeping `this.nbt` consistent with `this.type` at all times — the same pattern
+  `setKeyPressed()` already used for `"keyPressed"`. `clone()` now always produces a correctly-
+  typed `CarryOnData`.
+
+---
+
 ## [3.2.4] — 2026-07-16 — Minecraft 26.2
 
 ### Fixed

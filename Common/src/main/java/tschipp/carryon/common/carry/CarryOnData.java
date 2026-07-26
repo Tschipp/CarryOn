@@ -145,6 +145,8 @@ public class CarryOnData {
     public void setBlock(BlockState state, @Nullable BlockEntity tile, ServerPlayer player, BlockPos pos)
     {
         this.type = CarryType.BLOCK;
+        // Keep this.nbt in sync with this.type so clone() (which reads from nbt) produces the correct type.
+        nbt.putString("type", CarryType.BLOCK.toString());
 
         if(state.hasProperty(BlockStateProperties.WATERLOGGED))
             state = state.setValue(BlockStateProperties.WATERLOGGED, false);
@@ -184,6 +186,8 @@ public class CarryOnData {
     public void setEntity(Entity entity)
     {
         this.type = CarryType.ENTITY;
+        // Keep this.nbt in sync with this.type so clone() (which reads from nbt) produces the correct type.
+        nbt.putString("type", CarryType.ENTITY.toString());
         TagValueOutput output = TagValueOutput.createWithContext(new ProblemReporter.ScopedCollector(Constants.LOG), entity.registryAccess());
         entity.save(output);
         Tag entityData = output.buildResult();
@@ -218,9 +222,11 @@ public class CarryOnData {
         this.activeScript = script;
     }
 
-    public void setCarryingPlayer(Player player) 
+    public void setCarryingPlayer(Player player)
     {
         this.type = CarryType.PLAYER;
+        // Keep this.nbt in sync with this.type so clone() (which reads from nbt) produces the correct type.
+        nbt.putString("type", CarryType.PLAYER.toString());
         nbt.putString("player",  player.getStringUUID().toString());
     }
 
