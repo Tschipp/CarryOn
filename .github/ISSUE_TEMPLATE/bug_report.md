@@ -21,7 +21,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Game Information (please complete the following information):**
 - Minecraft Version:
-- Mod Loader:
+- Mod Loader and Version:
 - Carry On Version:
 
 **Additional context, logs**

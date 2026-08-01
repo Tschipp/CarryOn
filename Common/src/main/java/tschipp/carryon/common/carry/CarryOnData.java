@@ -112,16 +112,7 @@ public class CarryOnData {
 
     public CompoundTag getNbt()
     {
-        nbt.putString("type", type.toString());
-        nbt.putBoolean("keyPressed", keyPressed);
-        if(activeScript != null)
-        {
-            DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, activeScript);
-            Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
-            nbt.put("activeScript", tag);
-        }
-        nbt.putInt("selected", this.selectedSlot);
-        return nbt;
+        return nbt.copy();
     }
 
     public CompoundTag getContentNbt()
@@ -136,6 +127,7 @@ public class CarryOnData {
     public void setBlock(BlockState state, @Nullable BlockEntity tile, ServerPlayer player, BlockPos pos)
     {
         this.type = CarryType.BLOCK;
+        this.nbt.putString("type", this.type.toString());
 
         if(state.hasProperty(BlockStateProperties.WATERLOGGED))
             state = state.setValue(BlockStateProperties.WATERLOGGED, false);
@@ -175,6 +167,7 @@ public class CarryOnData {
     public void setEntity(Entity entity)
     {
         this.type = CarryType.ENTITY;
+        this.nbt.putString("type", this.type.toString());
         TagValueOutput output = TagValueOutput.createWithContext(new ProblemReporter.ScopedCollector(Constants.LOG), entity.registryAccess());
         entity.save(output);
         Tag entityData = output.buildResult();
@@ -206,15 +199,22 @@ public class CarryOnData {
     public void setActiveScript(CarryOnScript script)
     {
         this.activeScript = script;
+        if(activeScript != null)
+        {
+            DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, activeScript);
+            Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
+            nbt.put("activeScript", tag);
+        }
     }
 
-    public void setCarryingPlayer(Player player) 
+    public void setCarryingPlayer(Player player)
     {
         this.type = CarryType.PLAYER;
         nbt.putString("player",  player.getStringUUID().toString());
+        this.nbt.putString("type", this.type.toString());
     }
 
-    public Player getCarryingPlayer(Level level) 
+    public Player getCarryingPlayer(Level level)
     {
         if(this.type != CarryType.PLAYER)
             throw new IllegalStateException("Called getCarryingPlayer on data that contained " + this.type);
@@ -243,6 +243,7 @@ public class CarryOnData {
 
     public void setSelected(int selectedSlot) {
         this.selectedSlot = selectedSlot;
+        this.nbt.putInt("selected", selectedSlot);
     }
 
     public int getSelected() {
