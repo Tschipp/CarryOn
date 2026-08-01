@@ -30,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import tschipp.carryon.Constants;
@@ -129,6 +130,9 @@ public class CommandCarryOn
 		{
 
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
+			if (carry.isCarrying()) {
+				player.removeEffect(MobEffects.SLOWNESS);
+			}
 			carry.clear();
 			CarryOnDataManager.setCarryData(player, carry);
 

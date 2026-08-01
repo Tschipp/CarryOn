@@ -43,4 +43,4 @@ if (System.getenv('BUILD_NUMBER') != null) {
 }
 
 rootProject.name = 'CarryOn'
-include("Common", "Fabric", "NeoForge")
+include("Common", "Fabric", "NeoForge", "Forge")

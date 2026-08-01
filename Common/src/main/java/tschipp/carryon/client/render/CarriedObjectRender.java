@@ -83,7 +83,7 @@ public class CarriedObjectRender
 
 		PoseStack renderPose = CarryRenderHelper.setupBlockTransformations(player, matrix, carry, firstPerson);
 
-		ItemStack renderStack = CarryRenderHelper.getRenderItemStack(player);
+		ItemStack renderStack = CarryRenderHelper.getRenderItemStack(player).create();
 		Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, renderStack, ItemDisplayContext.NONE, player.level(), null, 0);
 		renderState.submit(renderPose, nodeCollector, light,  OverlayTexture.NO_OVERLAY, 0);
 		matrix.popPose();

@@ -91,6 +91,7 @@ processResources {
             'credits'                      : credits,
             'java_version'                 : java_version,
             'minecraft_version_range_fabric' : minecraft_version_range_fabric,
+            "forge_loader_version_range" : forge_loader_version_range
     ]
 
     var jsonExpandProps = expandProps.collectEntries {

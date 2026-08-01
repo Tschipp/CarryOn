@@ -30,7 +30,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -253,7 +253,7 @@ public class CarryRenderHelper
 	}
 	*/
 
-	public static ItemStack getRenderItemStack(Player player)
+	public static ItemStackTemplate getRenderItemStack(Player player)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		BlockState state = carry.getBlock().getBlock().defaultBlockState();
@@ -266,7 +266,7 @@ public class CarryRenderHelper
 			}
 		}
 
-		ItemStack renderStack = ItemStack.EMPTY;
+		ItemStackTemplate renderStack = null;
 
 		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
 		if(ov.isPresent())
@@ -278,8 +278,8 @@ public class CarryRenderHelper
 				renderStack = renderObj.left().get();
 		}
 
-		if(renderStack.isEmpty())
-			renderStack = new ItemStack(state.getBlock());
+		if(renderStack == null)
+			renderStack = new ItemStackTemplate(state.getBlock().asItem(), 1);
 
 		return renderStack;
 	}
