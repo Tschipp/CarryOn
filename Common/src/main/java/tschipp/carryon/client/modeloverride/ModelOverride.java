@@ -26,12 +26,12 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.arguments.blocks.BlockStateParser.BlockResult;
+import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.commands.arguments.item.ItemParser;
-import net.minecraft.commands.arguments.item.ItemParser.ItemResult;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import tschipp.carryon.common.scripting.Matchables.NBTCondition;
@@ -41,16 +41,14 @@ import java.util.Map;
 
 public class ModelOverride {
 	private BlockResult parsedBlock;
-	private Either<ItemStack, BlockState> renderObject;
+	private Either<ItemStackTemplate, BlockState> renderObject;
 
-	private ModelOverride(String raw, BlockResult parsedBlock, Type type, Either<ItemResult, BlockResult> parsedRHS)
+	private ModelOverride(String raw, BlockResult parsedBlock, Type type, Either<ItemInput, BlockResult> parsedRHS)
 	{
 		this.parsedBlock = parsedBlock;
 
 		parsedRHS.ifLeft(res -> {
-			ItemStack stack = new ItemStack(res.item());
-			if(res.components() != null)
-				stack.applyComponents(res.components());
+			ItemStackTemplate stack = new ItemStackTemplate(res.item(), 1, res.components());
 			this.renderObject = Either.left(stack);
 		});
 
@@ -86,7 +84,7 @@ public class ModelOverride {
 			to = to.substring(to.indexOf(")") + 1);
 		}
 
-		Either<ItemResult, BlockResult> either;
+		Either<ItemInput, BlockResult> either;
 		try {
 			if(type == Type.ITEM)
 				either = Either.left(new ItemParser(provider).parse(new StringReader(to)));
@@ -112,7 +110,7 @@ public class ModelOverride {
 		return false;
 	}
 
-	public Either<ItemStack, BlockState> getRenderObject()
+	public Either<ItemStackTemplate, BlockState> getRenderObject()
 	{
 		return this.renderObject;
 	}

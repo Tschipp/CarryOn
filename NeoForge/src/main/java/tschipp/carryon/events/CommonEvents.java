@@ -46,6 +46,7 @@ import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import tschipp.carryon.CarryOnCommon;
 import tschipp.carryon.Constants;
@@ -78,7 +79,7 @@ public class CommonEvents
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		if (!carry.isCarrying()) {
 			if (PickupHandler.tryPickUpBlock((ServerPlayer) player, pos, level, (pState, pPos) -> {
-				BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pPos, pState, player);
+				BreakBlockEvent breakEvent = new BreakBlockEvent(level, pPos, pState, player);
 				NeoForge.EVENT_BUS.post(breakEvent);
 				return !breakEvent.isCanceled();
 			})) {
@@ -201,7 +202,7 @@ public class CommonEvents
 	}
 
 	@SubscribeEvent
-	public static void onBreakBlock(BlockEvent.BreakEvent event)
+	public static void onBreakBlock(BreakBlockEvent event)
 	{
 		if (!CarryOnCommon.onTryBreakBlock(event.getPlayer())) {
 			event.setCanceled(true);

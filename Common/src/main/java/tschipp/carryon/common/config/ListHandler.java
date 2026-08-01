@@ -98,7 +98,7 @@ public class ListHandler {
         if(regular.contains(name))
             return true;
         for(TagKey<EntityType<?>> tag : tags)
-            if(entity.getType().is(tag))
+            if(entity.getType().builtInRegistryHolder().is(tag))
                 return true;
         return false;
     }

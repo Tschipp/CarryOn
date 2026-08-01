@@ -68,7 +68,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
     @Override
     public <T extends PacketBase, B extends FriendlyByteBuf> void  registerServerboundPacket(CustomPacketPayload.Type<T> type, Class<T> clazz, StreamCodec<B, T> codec, BiConsumer<T, Player> handler, Object... args)
     {
-        PayloadTypeRegistry.playC2S().register(type, (StreamCodec<RegistryFriendlyByteBuf, T>)codec);
+        PayloadTypeRegistry.serverboundPlay().register(type, (StreamCodec<RegistryFriendlyByteBuf, T>)codec);
 
         ServerPlayNetworking.registerGlobalReceiver(type, (T packet, ServerPlayNetworking.Context context) -> {
             context.server().execute(() -> {
@@ -84,7 +84,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
         boolean client = (boolean)args[0];
 
         if(!client)
-            PayloadTypeRegistry.playS2C().register(type, (StreamCodec<RegistryFriendlyByteBuf, T>)codec);
+            PayloadTypeRegistry.clientboundPlay().register(type, (StreamCodec<RegistryFriendlyByteBuf, T>)codec);
         else
             CarryOnFabricClientMod.registerClientboundPacket(type, handler);
     }

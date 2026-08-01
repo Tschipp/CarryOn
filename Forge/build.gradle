@@ -1,20 +1,21 @@
 plugins {
     id 'multiloader-loader'
-    id 'net.minecraftforge.gradle' version '[6.0.46,6.2)'
-    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
+    id 'net.minecraftforge.jarjar' version '0.2.3'
+    id 'idea'
 }
 
 base {
     archivesName = "${mod_id}-forge-${minecraft_version}"
 }
 
+/*
 mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
 
     config "${mod_id}.mixins.json"
     config "${mod_id}.forge.mixins.json"
-}
+}*/
 
 tasks.named('jar', Jar).configure {
     manifest {
@@ -24,13 +25,17 @@ tasks.named('jar', Jar).configure {
     }
 }
 
-jarJar.enable()
+jarJar.register()
 build.dependsOn tasks.jarJar
+tasks.named('jar') {
+    archiveClassifier = 'slim'
+}
+tasks.named('jarJar') {
+    archiveClassifier = null
+}
 
 minecraft {
-    mappings channel: 'parchment', version: parchment_mappings
-    copyIdeResources = true
-    reobf = false
+    mappings channel: 'official', version: minecraft_version
 
     def at = file('src/main/resources/META-INF/accesstransformer.cfg')
     if (at.exists()) {
@@ -38,14 +43,10 @@ minecraft {
     }
 
     runs {
-        client {
-            workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Client'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'eventbus.api.strictRuntimeChecks', 'true'
-            args "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}.forge.mixins.json"
+        configureEach {
+            workingDir.convention layout.projectDirectory.dir('run')
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+            args "--mixin.config=${mod_id}.mixins.json", "--mixin.config=${mod_id}.forge.mixins.json"
             mods {
                 modClientRun {
                     source sourceSets.main
@@ -54,37 +55,16 @@ minecraft {
             }
         }
 
-        server {
-            workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Server'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'eventbus.api.strictRuntimeChecks', 'true'
-            args "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}.forge.mixins.json"
-            mods {
-                modServerRun {
-                    source sourceSets.main
-                    source project(":Common").sourceSets.main
-                }
-            }
+        register('client') {
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
         }
 
-        data {
-            workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
+        register('server') {
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        register('data') {
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            taskName 'Data'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'eventbus.api.strictRuntimeChecks', 'true'
-            args "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}.forge.mixins.json"
-            mods {
-                modDataRun {
-                    source sourceSets.main
-                    source project(":Common").sourceSets.main
-                }
-            }
         }
     }
 }
@@ -92,6 +72,10 @@ minecraft {
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
 repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+
     maven {
         name = "Shedaniel"
         url "https://maven.shedaniel.me/"
@@ -107,21 +91,22 @@ repositories {
 
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     compileOnly project(":Common")
-    annotationProcessor 'org.spongepowered:mixin:0.8.5-SNAPSHOT:processor'
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
+    //annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
 // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transitive dependencies request 6.0+
-    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
+    //implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 
     testCompileOnly(compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}")))
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixinextras_version}")) {
-        jarJar.ranged(it, "[${mixinextras_version},)")
+        jarJar.configure(it) {
+            range = "[${mixinextras_version},)"
+        }
     }
 
     //implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
 
-    compileOnly(fg.deobf("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"))
+    compileOnly("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}")
 
     fileTree("libs").matching {
         include "*.jar"
@@ -130,18 +115,10 @@ dependencies {
         filename = filename.substring(0, filename.length() - 4);
         int lastDash = filename.lastIndexOf("-");
         filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
-        implementation fg.deobf("blank:${filename}")
+        implementation "blank:${filename}"
     }
 
 
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            fg.component(it)
-        }
-    }
 }
 
 sourceSets.each {

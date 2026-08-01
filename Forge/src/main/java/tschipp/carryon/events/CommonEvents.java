@@ -114,7 +114,7 @@ public class CommonEvents
 	}
 
 	@SubscribeEvent(priority = Priority.HIGH)
-	public static boolean onEntityRightClick(PlayerInteractEvent.EntityInteract event)
+	public static boolean onEntityRightClick(PlayerInteractEvent.EntityInteractSpecific event)
 	{
 		Player player = event.getEntity();
 		Level level = event.getLevel();
