@@ -31,7 +31,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -50,6 +50,7 @@ import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 import tschipp.carryon.common.scripting.CarryOnScript;
 import tschipp.carryon.common.scripting.CarryOnScript.ScriptRender;
+import tschipp.carryon.utils.SizeHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,9 +60,6 @@ import java.util.UUID;
 
 public class CarryRenderHelper
 {
-	// Client-side cache of the reconstructed carried entity, keyed by carrying player.
-	// The carried entity is static while held, so rebuild it from NBT only when that NBT
-	// (or the level) changes, instead of on every render frame.
 	private record CachedRenderEntity(CompoundTag nbt, Level level, Entity entity) {}
 	private static final Map<UUID, CachedRenderEntity> RENDER_ENTITY_CACHE = new HashMap<>();
 
@@ -163,8 +161,8 @@ public class CarryRenderHelper
 
 		Entity entity = getRenderEntity(player);
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
+		float height = SizeHelper.getEntityHeight(entity);
+		float width = SizeHelper.getEntityWidth(entity);
 
 		if(firstPerson) {
 			matrix.mulPose(Axis.YP.rotationDegrees(180));
@@ -195,8 +193,8 @@ public class CarryRenderHelper
 		matrix.translate(0, -3.1, -0.65);
 		matrix.scale(1.666f, 1.666f, 1.666f);
 
-		float height = entity.getBbHeight();
-		float width = entity.getBbWidth();
+		float height = SizeHelper.getEntityHeight(entity);
+		float width = SizeHelper.getEntityWidth(entity);
 		float multiplier = Math.min(9.9f, height * width) ;
 		entity.yo = 0.0f;
 		entity.yRotO = 0.0f;
@@ -242,7 +240,7 @@ public class CarryRenderHelper
 		matrix.scale((float) scale.x, (float) scale.y, (float) scale.z);
 	}
 
-	public static ItemStack getRenderItemStack(Player player)
+	public static ItemStackTemplate getRenderItemStack(Player player)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		BlockState state = carry.getBlock().getBlock().defaultBlockState();
@@ -255,7 +253,7 @@ public class CarryRenderHelper
 			}
 		}
 
-		ItemStack renderStack = ItemStack.EMPTY;
+		ItemStackTemplate renderStack = null;
 
 		Optional<ModelOverride> ov = ModelOverrideHandler.getModelOverride(state, carry.getContentNbt());
 		if(ov.isPresent())
@@ -267,8 +265,8 @@ public class CarryRenderHelper
 				renderStack = renderObj.left().get();
 		}
 
-		if(renderStack.isEmpty())
-			renderStack = new ItemStack(state.getBlock());
+		if(renderStack == null)
+			renderStack = new ItemStackTemplate(state.getBlock().asItem(), 1);
 
 		return renderStack;
 	}
@@ -302,7 +300,6 @@ public class CarryRenderHelper
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 
-		// Reuse the cached entity while the carried NBT (and level) are unchanged.
 		CompoundTag entityNbt = carry.getContentNbt();
 		CachedRenderEntity cached = RENDER_ENTITY_CACHE.get(player.getUUID());
 		if(cached != null && cached.level() == player.level() && Objects.equals(cached.nbt(), entityNbt))
@@ -351,7 +348,7 @@ public class CarryRenderHelper
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
-			float w =  entity.getBbWidth();
+			float w =  SizeHelper.getEntityWidth(entity);
 			if (Constants.CLIENT_CONFIG.rotateEntitiesSideways)
 				return w - (w*w) * 0.35f;
 			return w * 0.9f;
@@ -382,7 +379,7 @@ public class CarryRenderHelper
 		else if(carry.isCarrying(CarryType.ENTITY))
 		{
 			Entity entity = getRenderEntity(player);
-			return entity.getBbHeight();
+			return SizeHelper.getEntityHeight(entity);
 		}
 		else
 			return 1f;

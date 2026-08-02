@@ -30,7 +30,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
@@ -42,6 +41,7 @@ import tschipp.carryon.networking.clientbound.ClientboundStartRidingPacket;
 import tschipp.carryon.networking.clientbound.ClientboundSyncScriptsPacket;
 import tschipp.carryon.networking.serverbound.ServerboundCarryKeyPressedPacket;
 import tschipp.carryon.platform.Services;
+import tschipp.carryon.utils.SizeHelper;
 
 public class CarryOnCommon
 {
@@ -176,32 +176,36 @@ public class CarryOnCommon
 	}
 
 
-	public static int potionLevel(CarryOnData carry, Level level)
+	public static int potionLevel(CarryOnData carry, Player player)
 	{
 		if(carry.isCarrying(CarryType.PLAYER))
 			return 1;
 		if(carry.isCarrying(CarryType.ENTITY))
 		{
-			Entity entity = carry.getEntity(level);
-			int i = (int) (entity.getBbHeight() * entity.getBbWidth());
+			Entity entity = carry.getEntity(player.level());
+			int i = 1;
+			if (Constants.COMMON_CONFIG.settings.heavyEntities)
+				i = (int) (SizeHelper.getRelativeEntityArea(player, entity));
+
+			i = (int) (i * Constants.COMMON_CONFIG.settings.entitySlownessMultiplier);
 			if (i > 4)
 				i = 4;
-			if (!Constants.COMMON_CONFIG.settings.heavyEntities)
-				i = 1;
-			return (int) (i * Constants.COMMON_CONFIG.settings.entitySlownessMultiplier);
+			return i;
 		}
 		if(carry.isCarrying(CarryType.BLOCK))
 		{
-			String nbt = carry.getNbt().toString();
-			int i = nbt.length() / 500;
+			int i = 1;
+			if (Constants.COMMON_CONFIG.settings.heavyTiles) 
+			{
+				String nbt = carry.getNbt().toString();
+				i = nbt.length() / 500;
+			}
+
+			i = (int) (i * Constants.COMMON_CONFIG.settings.blockSlownessMultiplier);
 
 			if (i > 4)
 				i = 4;
-
-			if (!Constants.COMMON_CONFIG.settings.heavyTiles)
-				i = 1;
-
-			return (int) (i * Constants.COMMON_CONFIG.settings.blockSlownessMultiplier);
+			return i;
 		}
 		return 0;
 	}

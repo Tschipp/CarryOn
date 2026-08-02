@@ -113,24 +113,7 @@ public class CarryOnData {
 
     public CompoundTag getNbt()
     {
-        // ROOT FIX for server crash (crash-2026-07-15_13.32.29):
-        // Fabric's fabric:attachment_sync_v1 calls this method on a Netty IO thread.
-        // The original code wrote directly to this.nbt (putString/putBoolean/putInt),
-        // which raced with server-thread reads of this.nbt in clone() → nbt.copy().
-        // Concurrent write+read on a fastutil Object2ObjectOpenHashMap (non-thread-safe)
-        // corrupts its backing array → NPE: "this.wrapped is null".
-        // Fix: write into a snapshot copy only, never mutating the live this.nbt here.
-        CompoundTag out = nbt.copy();
-        out.putString("type", type.toString());
-        out.putBoolean("keyPressed", keyPressed);
-        if(activeScript != null)
-        {
-            DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, activeScript);
-            Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
-            out.put("activeScript", tag);
-        }
-        out.putInt("selected", this.selectedSlot);
-        return out;
+        return nbt.copy();
     }
 
     public CompoundTag getContentNbt()
@@ -145,8 +128,7 @@ public class CarryOnData {
     public void setBlock(BlockState state, @Nullable BlockEntity tile, ServerPlayer player, BlockPos pos)
     {
         this.type = CarryType.BLOCK;
-        // Keep this.nbt in sync with this.type so clone() (which reads from nbt) produces the correct type.
-        nbt.putString("type", CarryType.BLOCK.toString());
+        this.nbt.putString("type", this.type.toString());
 
         if(state.hasProperty(BlockStateProperties.WATERLOGGED))
             state = state.setValue(BlockStateProperties.WATERLOGGED, false);
@@ -186,8 +168,7 @@ public class CarryOnData {
     public void setEntity(Entity entity)
     {
         this.type = CarryType.ENTITY;
-        // Keep this.nbt in sync with this.type so clone() (which reads from nbt) produces the correct type.
-        nbt.putString("type", CarryType.ENTITY.toString());
+        this.nbt.putString("type", this.type.toString());
         TagValueOutput output = TagValueOutput.createWithContext(new ProblemReporter.ScopedCollector(Constants.LOG), entity.registryAccess());
         entity.save(output);
         Tag entityData = output.buildResult();
@@ -200,7 +181,6 @@ public class CarryOnData {
             throw new IllegalStateException("Called getEntity on data that contained " + this.type);
 
         ValueInput in = TagValueInput.create(problemReporter, level.registryAccess(), nbt.getCompoundOrEmpty("entity"));
-        // MC 26.2: EntityType#create now takes an EntitySpawnRequest instead of a raw EntitySpawnReason.
         var optionalEntity = EntityType.create(in, level, new EntitySpawnRequest(EntitySpawnReason.BUCKET, false));
         if(optionalEntity.isPresent())
             return optionalEntity.get();
@@ -220,17 +200,22 @@ public class CarryOnData {
     public void setActiveScript(CarryOnScript script)
     {
         this.activeScript = script;
+        if(activeScript != null)
+        {
+            DataResult<Tag> res = CarryOnScript.CODEC.encodeStart(NbtOps.INSTANCE, activeScript);
+            Tag tag = res.getOrThrow((s) -> {throw new RuntimeException("Failed to encode activeScript during CarryOnData serialization: " + s);});
+            nbt.put("activeScript", tag);
+        }
     }
 
     public void setCarryingPlayer(Player player)
     {
         this.type = CarryType.PLAYER;
-        // Keep this.nbt in sync with this.type so clone() (which reads from nbt) produces the correct type.
-        nbt.putString("type", CarryType.PLAYER.toString());
         nbt.putString("player",  player.getStringUUID().toString());
+        this.nbt.putString("type", this.type.toString());
     }
 
-    public Player getCarryingPlayer(Level level) 
+    public Player getCarryingPlayer(Level level)
     {
         if(this.type != CarryType.PLAYER)
             throw new IllegalStateException("Called getCarryingPlayer on data that contained " + this.type);
@@ -259,6 +244,7 @@ public class CarryOnData {
 
     public void setSelected(int selectedSlot) {
         this.selectedSlot = selectedSlot;
+        this.nbt.putInt("selected", selectedSlot);
     }
 
     public int getSelected() {
@@ -273,15 +259,7 @@ public class CarryOnData {
     }
 
     public CarryOnData clone() {
-        try {
-            return new CarryOnData(nbt.copy());
-        } catch (NullPointerException e) {
-            // Safety net: nbt.copy() iterates a fastutil Object2ObjectOpenHashMap whose
-            // backing array can be null if a concurrent write raced with this read. Returning
-            // empty carry data drops the carried item but prevents a server crash.
-            Constants.LOG.error("CarryOnData.clone() caught NPE in nbt.copy() — returning empty carry state to prevent server crash", e);
-            return new CarryOnData(new CompoundTag());
-        }
+        return new CarryOnData(nbt.copy());
     }
 
     public int getTick()

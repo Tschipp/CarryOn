@@ -1,9 +1,8 @@
 plugins {
     id 'multiloader-loader'
     id 'net.minecraftforge.gradle' version '[7.0.17,8)'
-    // NOTE: org.spongepowered.mixin (MixinGradle) 0.7-SNAPSHOT is incompatible with Gradle 9.x
-    // (references the removed org.gradle.util.VersionNumber). ForgeGradle 7 handles mixin
-    // refmap generation internally, so the separate Sponge plugin is not needed.
+    id 'net.minecraftforge.jarjar' version '0.2.3'
+    id 'idea'
 }
 
 base {
@@ -18,18 +17,47 @@ tasks.named('jar', Jar).configure {
     }
 }
 
+jarJar.register()
+build.dependsOn tasks.jarJar
+tasks.named('jar') {
+    archiveClassifier = 'slim'
+}
+tasks.named('jarJar') {
+    archiveClassifier = null
+}
+
 minecraft {
-    // MC 26.1+ ships unobfuscated; ForgeGradle 7 uses official mappings by default — no mappings block needed.
+    mappings channel: 'official', version: minecraft_version
+
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformer = at
+    }
+
     runs {
         configureEach {
-            workingDir = layout.projectDirectory.dir('run')
+            workingDir.convention layout.projectDirectory.dir('run')
             systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
             systemProperty 'mixin.env.remapRefMap', 'true'
-            args "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}.forge.mixins.json"
+            args "--mixin.config=${mod_id}.mixins.json", "--mixin.config=${mod_id}.forge.mixins.json"
+            mods {
+                modClientRun {
+                    source sourceSets.main
+                    source project(":Common").sourceSets.main
+                }
+            }
         }
-        register('client')
+
+        register('client') {
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
+        }
+
         register('server') {
-            args '--nogui'
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        register('data') {
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
 }
@@ -38,26 +66,55 @@ repositories {
     minecraft.mavenizer(it)
     maven fg.forgeMaven
     maven fg.minecraftLibsMaven
+
     maven {
         name = 'Shedaniel'
         url 'https://maven.shedaniel.me/'
     }
     maven { url 'https://jitpack.io' }
+
+    flatDir {
+        dirs 'libs'
+    }
+
 }
+
 
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
-    // NOTE: The Mixin AP (org.spongepowered:mixin:processor) is NOT included here.
-    // MC 26.1+ is unobfuscated, so refmap generation is a no-op, but the AP version 0.8.5
-    // still tries to look up SRG/notch obfuscation tables and fails with compile errors.
-    // FG7 MDK omits it too. Mixin annotations are processed at runtime by Forge's own loader.
+    compileOnly project(":Common")
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
 
-    // MixinExtras AP still needed for @ModifyExpressionValue / @WrapOperation bootstrap.
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}"))
+    testCompileOnly(compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}")))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixinextras_version}")) {
+        jarJar.configure(it) {
+            range = "[${mixinextras_version},)"
+        }
+    }
 
-    // Forge and NeoForge share the same cloth-config artifact for MC 26.x
-    compileOnly "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
+    //implementation fg.deobf("net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
+
+    compileOnly("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}")
+
+    fileTree("libs").matching {
+        include "*.jar"
+    }.each {
+        String filename = it.getName();
+        filename = filename.substring(0, filename.length() - 4);
+        int lastDash = filename.lastIndexOf("-");
+        filename = filename.substring(0, lastDash) + ":" + filename.substring(lastDash+1, filename.length());
+        implementation "blank:${filename}"
+    }
+
+
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            fg.component(it)
+        }
+    }
 }
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
