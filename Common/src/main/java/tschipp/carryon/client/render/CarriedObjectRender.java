@@ -24,6 +24,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -34,8 +35,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import tschipp.carryon.Constants;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnData.CarryType;
 import tschipp.carryon.common.carry.CarryOnDataManager;
@@ -51,10 +52,13 @@ public class CarriedObjectRender
 
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		try {
-			if (carry.isCarrying(CarryType.BLOCK))
-				drawBlock(player,  matrix, light, CarryRenderHelper.getRenderState(player), nodeCollector, firstPerson, partialTicks);
-			else if (carry.isCarrying(CarryType.ENTITY))
+			if (carry.isCarrying(CarryType.ENTITY))
 				drawEntity(player, matrix, light, partialTicks, nodeCollector, firstPerson);
+			else {
+				CarryRenderHelper.clearRenderEntity(player);
+				if (carry.isCarrying(CarryType.BLOCK))
+					drawBlock(player, matrix, light, nodeCollector, firstPerson, partialTicks);
+			}
 		}
 		catch (Exception e)
 		{
@@ -74,7 +78,7 @@ public class CarriedObjectRender
 		return carry.isCarrying();
 	}
 
-	private static void drawBlock(Player player, PoseStack matrix, int light, BlockState state, SubmitNodeCollector nodeCollector, boolean firstPerson, float partialTicks)
+	private static void drawBlock(Player player, PoseStack matrix, int light, SubmitNodeCollector nodeCollector, boolean firstPerson, float partialTicks)
 	{
 		CarryOnData carry = CarryOnDataManager.getCarryData(player);
 		ItemStackRenderState renderState = new ItemStackRenderState();
@@ -101,9 +105,19 @@ public class CarriedObjectRender
         Vec3 playerpos = CarryRenderHelper.getExactPos(player, partialTicks);
 
         entity.setPos(playerpos.x, playerpos.y, playerpos.z);
+        entity.xOld = playerpos.x;
+        entity.yOld = playerpos.y;
+        entity.zOld = playerpos.z;
         entity.xRotO = 0.0f;
         entity.yRotO = 0.0f;
         entity.setYHeadRot(0.0f);
+
+        if (entity instanceof LivingEntity le) {
+            le.yBodyRot = 0.0f;
+            le.yBodyRotO = 0.0f;
+            le.yHeadRotO = 0.0f;
+        }
+        entity.setId(-1);
 
         matrix.pushPose();
 
@@ -113,13 +127,20 @@ public class CarriedObjectRender
             ((LivingEntity) entity).hurtTime = 0;
 
         try {
-            EntityRenderState renderState = manager.extractEntity(entity, 0);
-            renderState.shadowPieces.clear();
-			renderState.lightCoords = light;
-			manager.submit(renderState, new CameraRenderState(), 0, 0, 0, matrix, nodeCollector);
+            EntityRenderState renderState = manager.extractEntity(entity, partialTicks);
+
+            renderState.nameTag = null;
+            renderState.scoreText = null;
+            renderState.leashStates = null;
+            renderState.lightCoords = light;
+			
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            EntityRenderer renderer = manager.getRenderer(entity);
+            renderer.submit(renderState, matrix, nodeCollector, new CameraRenderState());
         }
-        catch (Exception ignored)
+        catch (Exception e)
         {
+            Constants.LOG.warn("CarryOn: entity carry render error", e);
         }
 
         matrix.popPose();

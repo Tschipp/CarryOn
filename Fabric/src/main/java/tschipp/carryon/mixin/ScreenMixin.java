@@ -43,7 +43,7 @@ public class ScreenMixin
 		{
 			CarryOnData carry = CarryOnDataManager.getCarryData(player);
 			if(carry.isCarrying())
-				mc.setScreen((Screen)null);
+				mc.gui.setScreen((Screen)null);
 		}
 	}
 }

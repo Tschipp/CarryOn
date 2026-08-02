@@ -344,7 +344,7 @@ public class PlacementHandler
 			}
 		}
 
-		potentialPositions.sort(Comparator.comparingDouble(posA -> player.distanceToSqr(posA.getCenter())));
+		potentialPositions.sort(Comparator.comparingDouble(posA -> player.distanceToSqr(Vec3.atCenterOf(posA))));
 
 		for(BlockPos potential : potentialPositions)
 		{

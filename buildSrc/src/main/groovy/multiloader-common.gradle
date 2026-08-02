@@ -49,15 +49,19 @@ repositories {
     }
 }
 
+// Captured eagerly: Gradle 9.5.1's configuration cache fails to resolve the
+// extra property `mod_name` when accessed lazily inside these rename closures.
+def modNameForJarRename = mod_name
+
 sourcesJar {
     from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
+        rename { "${it}_${modNameForJarRename}" }
     }
 }
 
 jar {
     from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
+        rename { "${it}_${modNameForJarRename}" }
     }
 
     manifest {
@@ -88,6 +92,7 @@ processResources {
             'description'                  : project.description,
             'neoforge_version'             : neoforge_version,
             'neoforge_loader_version_range': neoforge_loader_version_range,
+            'forge_loader_version_range'   : forge_loader_version_range,
             'credits'                      : credits,
             'java_version'                 : java_version,
             'minecraft_version_range_fabric' : minecraft_version_range_fabric,

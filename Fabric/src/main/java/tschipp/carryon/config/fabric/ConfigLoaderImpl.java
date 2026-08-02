@@ -51,13 +51,21 @@ public class ConfigLoaderImpl {
                 cfgPath.toFile().mkdirs();
                 FileUtils.write(cfgFile, GSON.toJson(entry.getKey()), StandardCharsets.UTF_8);
             } else {
-                JsonObject cfgJson = GSON.fromJson(FileUtils.readFileToString(cfgFile, StandardCharsets.UTF_8), JsonObject.class);
+                JsonObject cfgJson = null;
+                try {
+                    cfgJson = GSON.fromJson(FileUtils.readFileToString(cfgFile, StandardCharsets.UTF_8), JsonObject.class);
+                } catch (JsonSyntaxException e) {
+                    System.err.println("[CarryOn] Config file " + cfgFile.getName() + " is malformed (" + e.getMessage() + ") — regenerating defaults.");
+                }
                 if(cfgJson == null)
                 {
                     cfgPath.toFile().mkdirs();
                     FileUtils.write(cfgFile, GSON.toJson(entry.getKey()), StandardCharsets.UTF_8);
                 }
-                FileUtils.write(cfgFile, GSON.toJson(loadConfig(entry.getValue(), cfgJson)), StandardCharsets.UTF_8);
+                else
+                {
+                    FileUtils.write(cfgFile, GSON.toJson(loadConfig(entry.getValue(), cfgJson)), StandardCharsets.UTF_8);
+                }
             }
         }
     }

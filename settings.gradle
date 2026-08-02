@@ -29,6 +29,10 @@ pluginManagement {
                 includeGroupAndSubgroups("net.neoforged")
             }
         }
+        maven {
+            name = 'MinecraftForge'
+            url = 'https://maven.minecraftforge.net'
+        }
     }
 }
 

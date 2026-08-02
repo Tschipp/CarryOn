@@ -170,7 +170,7 @@ public class CommonEvents
 	@SubscribeEvent
 	public static void onTagsUpdate(TagsUpdatedEvent event)
 	{
-		ConfigLoader.onConfigLoaded(event.getLookupProvider());
+		ConfigLoader.onConfigLoaded(event.getRegistries());
 	}
 
 	@SubscribeEvent

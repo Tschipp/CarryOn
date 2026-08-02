@@ -69,7 +69,7 @@ public class ClientEvents {
 				if (carry.isCarrying())
 				{
 					mc.player.closeContainer();
-					mc.screen = null;
+					mc.gui.setScreen(null);
 					mc.mouseHandler.grabMouse();
 					event.setCanceled(true);
 				}

@@ -37,6 +37,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -180,7 +181,7 @@ public class CarryOnData {
             throw new IllegalStateException("Called getEntity on data that contained " + this.type);
 
         ValueInput in = TagValueInput.create(problemReporter, level.registryAccess(), nbt.getCompoundOrEmpty("entity"));
-        var optionalEntity = EntityType.create(in, level, EntitySpawnReason.BUCKET);
+        var optionalEntity = EntityType.create(in, level, new EntitySpawnRequest(EntitySpawnReason.BUCKET, false));
         if(optionalEntity.isPresent())
             return optionalEntity.get();
 

@@ -9,18 +9,10 @@ base {
     archivesName = "${mod_id}-forge-${minecraft_version}"
 }
 
-/*
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-
-    config "${mod_id}.mixins.json"
-    config "${mod_id}.forge.mixins.json"
-}*/
-
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
-                "MixinConfigs" : "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
+            "MixinConfigs": "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
         ])
     }
 }
@@ -46,6 +38,7 @@ minecraft {
         configureEach {
             workingDir.convention layout.projectDirectory.dir('run')
             systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+            systemProperty 'mixin.env.remapRefMap', 'true'
             args "--mixin.config=${mod_id}.mixins.json", "--mixin.config=${mod_id}.forge.mixins.json"
             mods {
                 modClientRun {
@@ -69,18 +62,15 @@ minecraft {
     }
 }
 
-sourceSets.main.resources.srcDir 'src/generated/resources'
-
 repositories {
     minecraft.mavenizer(it)
     maven fg.forgeMaven
     maven fg.minecraftLibsMaven
 
     maven {
-        name = "Shedaniel"
-        url "https://maven.shedaniel.me/"
+        name = 'Shedaniel'
+        url 'https://maven.shedaniel.me/'
     }
-
     maven { url 'https://jitpack.io' }
 
     flatDir {
@@ -93,9 +83,7 @@ repositories {
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     compileOnly project(":Common")
-    //annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
-// Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transitive dependencies request 6.0+
-    //implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
 
     testCompileOnly(compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}")))
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixinextras_version}")) {
@@ -121,8 +109,4 @@ dependencies {
 
 }
 
-sourceSets.each {
-    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-    it.output.resourcesDir = dir
-    it.java.destinationDirectory = dir
-}
+sourceSets.main.resources.srcDir 'src/generated/resources'
