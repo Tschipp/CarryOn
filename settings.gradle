@@ -29,7 +29,6 @@ pluginManagement {
                 includeGroupAndSubgroups("net.neoforged")
             }
         }
-        // ForgeGradle 7 plugin is published here
         maven {
             name = 'MinecraftForge'
             url = 'https://maven.minecraftforge.net'

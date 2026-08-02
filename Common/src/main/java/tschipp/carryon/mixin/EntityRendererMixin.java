@@ -14,9 +14,6 @@ import tschipp.carryon.client.render.ICarryOnRenderState;
 import tschipp.carryon.common.carry.CarryOnData;
 import tschipp.carryon.common.carry.CarryOnDataManager;
 
-// MC 26.2: The deferred pipeline separates extraction from submission. We inject here so that
-// carry data and the player reference are written into HumanoidRenderState during extraction,
-// making them available when CarryingItemRenderLayer.submit() runs during the submit phase.
 @Mixin(EntityRenderer.class)
 public class EntityRendererMixin {
 

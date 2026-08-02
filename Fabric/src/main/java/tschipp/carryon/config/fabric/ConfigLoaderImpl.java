@@ -55,19 +55,15 @@ public class ConfigLoaderImpl {
                 try {
                     cfgJson = GSON.fromJson(FileUtils.readFileToString(cfgFile, StandardCharsets.UTF_8), JsonObject.class);
                 } catch (JsonSyntaxException e) {
-                    // Config file is malformed/truncated (e.g. from a previous server crash that killed
-                    // the JVM mid-write). Log a warning and fall through to the null branch to regenerate.
                     System.err.println("[CarryOn] Config file " + cfgFile.getName() + " is malformed (" + e.getMessage() + ") — regenerating defaults.");
                 }
                 if(cfgJson == null)
                 {
-                    // Null means an empty file or a parse failure above; regenerate with defaults.
                     cfgPath.toFile().mkdirs();
                     FileUtils.write(cfgFile, GSON.toJson(entry.getKey()), StandardCharsets.UTF_8);
                 }
                 else
                 {
-                    // Only call loadConfig when we have a valid parsed object — avoids NPE fallthrough.
                     FileUtils.write(cfgFile, GSON.toJson(loadConfig(entry.getValue(), cfgJson)), StandardCharsets.UTF_8);
                 }
             }

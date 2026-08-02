@@ -8,9 +8,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 
-// MC 26.2: Render layer registered on AvatarRenderer via AvatarRendererMixin. Replaces the
-// pre-26.2 player render event hooks. submit() is called by LivingEntityRenderer.submit()
-// for each player during the deferred submit phase.
 public class CarryingItemRenderLayer<M extends PlayerModel> extends RenderLayer<AvatarRenderState, M> {
     public CarryingItemRenderLayer(RenderLayerParent<AvatarRenderState, M> renderer) {
         super(renderer);

@@ -113,8 +113,6 @@ public class CommonEvents
 		return false;
 	}
 
-	// Forge 65.0.0: EntityInteract was removed from PlayerInteractEvent (sealed class).
-	// EntityInteractSpecific is the replacement — fires on right-click with a known hit vector.
 	@SubscribeEvent(priority = Priority.HIGH)
 	public static boolean onEntityRightClick(PlayerInteractEvent.EntityInteractSpecific event)
 	{
