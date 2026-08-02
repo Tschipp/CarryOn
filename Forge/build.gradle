@@ -109,12 +109,4 @@ dependencies {
 
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            fg.component(it)
-        }
-    }
-}
-
 sourceSets.main.resources.srcDir 'src/generated/resources'
