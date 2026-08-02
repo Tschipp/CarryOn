@@ -14,6 +14,8 @@ dependencies {
 ```
 Make sure to replace `LOADER`, `MCVERSION` and `MODVERSION` with the appropriate versions. One example would be `tschipp.carryon:carryon-forge-1.19.2:2.0.0.5`  
 
+See [Information for Mod Developers](https://github.com/Tschipp/CarryOn/wiki/Information-for-Mod-Developers) on how to blacklist your own blocks and entities, and which events Carry On fires on pickup and placement.
+
 # Development
 
 This project provides a Gradle project template that can compile mods for both Forge and Fabric using a common sourceset. This project does not require any third party libraries or dependencies.
