@@ -171,16 +171,15 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     doFirst {
         apiToken = resolveToken('CURSEFORGE_TOKEN', curseforgeKeys)
 
-        def uploaded = upload(curseProjectId, tasks.getByName(jarTaskName))
-        uploaded.displayName = "${modName} ${modVersion} - ${loaderName} ${mcVersion}"
+        def jarTask = tasks.getByName(jarTaskName)
+        def uploaded = upload(curseProjectId, jarTask)
+        uploaded.displayName = jarTask.archiveFile.get().asFile.name.replaceFirst(/\.jar$/, '')
         uploaded.releaseType = releaseChannel
         uploaded.changelogType = 'markdown'
         uploaded.changelog = extractChangelog()
         uploaded.addGameVersion(mcVersion)
         uploaded.addModLoader(loaderName)
         uploaded.addJavaVersion("Java ${javaVersion}")
-        // Required by CurseForge - omitting the environment group is rejected with error 1021.
-        // Normally inferred, but disableVersionDetection() above turns that off.
         uploaded.addEnvironment('Client', 'Server')
         uploaded.addOptional('cloth-config')
         if (loaderId == 'fabric') {
