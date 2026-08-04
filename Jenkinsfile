@@ -23,6 +23,15 @@ pipeline {
                 }
             }
         }
+        stage('Publish Mod') {
+            when { buildingTag() }
+            steps {
+                withCredentials([file(credentialsId: 'mod_build_secrets', variable: 'ORG_GRADLE_PROJECT_secretFile')]) {
+                    echo "Publishing tag ${env.TAG_NAME} to CurseForge and Modrinth"
+                    sh './gradlew publishMod --no-configuration-cache'
+                }
+            }
+        }
     }
     post {
         always {

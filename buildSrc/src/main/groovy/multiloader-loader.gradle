@@ -1,5 +1,6 @@
 plugins {
     id 'multiloader-common'
+    id 'multiloader-publish'
 }
 
 configurations {

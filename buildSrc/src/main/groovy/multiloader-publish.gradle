@@ -1,0 +1,220 @@
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
+
+plugins {
+    id 'com.modrinth.minotaur'
+}
+
+// Applied only via 'multiloader-loader', so Common - which is compile-only glue and must never be
+// published - never gets these tasks.
+
+// Captured eagerly for the same reason as multiloader-common.gradle:52 - Gradle 9.5.1's
+// configuration cache fails to resolve extra properties lazily inside closures.
+def loaderName = project.name
+def loaderId = project.name.toLowerCase()
+def modName = mod_name
+def mcVersion = minecraft_version.toString()
+def javaVersion = java_version.toString()
+def modVersion = project.version.toString()
+def curseProjectId = findProperty('curseforge_project_id')
+def modrinthProjectId = findProperty('modrinth_project_id')
+def secretFilePath = findProperty('secretFile')
+def debugPublish = project.hasProperty('publishDebug')
+
+// Referenced by name only. ForgeGradle registers jarJar in its own afterEvaluate, which runs
+// after this plugin's - so the task cannot be resolved at apply time.
+// Fabric uses plain 'jar': Loom 1.17 dropped the separate remapJar task and remaps in 'jar'.
+def jarTaskName = (loaderName == 'Forge')
+        // 'jar' is reclassified '-slim'; jarJar bundles mixinextras and is the shippable one.
+        ? 'jarJar'
+        : 'jar'
+
+// The tag is the release gate. Jenkins sets TAG_NAME on tag builds only.
+def tagName = System.getenv('TAG_NAME')
+
+// v2.11.0 -> release, v2.11.0-beta.1 -> beta, v2.11.0-alpha.1 -> alpha
+def releaseChannel = {
+    def tag = tagName ?: ''
+    if (tag.contains('-alpha')) return 'alpha'
+    if (tag.contains('-beta')) return 'beta'
+    return 'release'
+}()
+
+// Tokens: env var first, then the Jenkins-injected secret file. Never logged.
+// The file may be JSON or .properties - the Jenkins credential is secrets.json today.
+def secrets = [:]
+if (secretFilePath) {
+    def secretFile = file(secretFilePath)
+    if (secretFile.exists()) {
+        def text = secretFile.text.trim()
+        if (text.startsWith('{')) {
+            secrets = new groovy.json.JsonSlurper().parseText(text) as Map
+        } else {
+            def props = new Properties()
+            secretFile.withInputStream { props.load(it) }
+            secrets = props
+        }
+    }
+}
+
+// First name in each list is the MinecraftModDevelopment/Gradle-Collection convention, which is
+// what secrets.json files in this ecosystem normally use. The rest are accepted as aliases.
+def curseforgeKeys = ['curseforge_api_token', 'curseforgeAPI', 'curseforge_token']
+def modrinthKeys = ['modrinth_api_token', 'modrinthAPI', 'modrinth_token']
+
+// Also honour plain project properties, so this keeps working if secrets.gradle is ever applied -
+// that script injects every secrets.json key via project.ext.set().
+def propertyTokens = [:]
+(curseforgeKeys + modrinthKeys).each { key ->
+    def value = findProperty(key)
+    if (value) {
+        propertyTokens[key] = value
+    }
+}
+
+def resolveToken = { String envName, List<String> keys ->
+    def token = System.getenv(envName)
+    if (!token) {
+        for (String key : keys) {
+            token = propertyTokens[key] ?: secrets[key]
+            if (token) {
+                break
+            }
+        }
+    }
+    if (!token) {
+        // Key names only - never the values.
+        def available = secrets.keySet().sort().join(', ') ?: '<none>'
+        throw new GradleException("No publish token available. Set the ${envName} environment " +
+                "variable, or add one of [${keys.join(', ')}] to the secret file passed as " +
+                "-PsecretFile (Jenkins credential 'mod_build_secrets'). " +
+                "Keys found in that file: ${available}")
+    }
+    return token.toString()
+}
+
+// Pulls the section for the current version out of CHANGELOG.md. The heading format is
+// load-bearing: '## [<version>]' must match gradle.properties exactly.
+def extractChangelog = {
+    def changelogFile = rootProject.file('CHANGELOG.md')
+    if (!changelogFile.exists()) {
+        throw new GradleException("CHANGELOG.md not found at ${changelogFile}.")
+    }
+
+    def heading = "## [${modVersion}]"
+    def section = []
+    def inSection = false
+
+    for (String line : changelogFile.readLines()) {
+        if (line.startsWith('## ')) {
+            if (inSection) break
+            inSection = line.startsWith(heading)
+            continue
+        }
+        if (inSection) {
+            section << line
+        }
+    }
+
+    if (!inSection) {
+        throw new GradleException("CHANGELOG.md has no '${heading}' section. Add one before " +
+                "releasing ${modVersion}.")
+    }
+
+    def text = section.join('\n').trim()
+    if (text.isEmpty()) {
+        throw new GradleException("The '${heading}' section in CHANGELOG.md is empty.")
+    }
+    return text
+}
+
+// Fails the build before anything is uploaded if the release is inconsistent.
+def checkReleaseVersion = tasks.register('checkReleaseVersion') {
+    group = 'publishing'
+    description = 'Verifies the git tag, project IDs and changelog before publishing.'
+
+    doLast {
+        if (tagName) {
+            def tagVersion = (tagName.startsWith('v') ? tagName.substring(1) : tagName).split('-')[0]
+            if (tagVersion != modVersion) {
+                throw new GradleException("Tag ${tagName} does not match the project version " +
+                        "${modVersion}. Bump 'version' in gradle.properties or retag.")
+            }
+        } else if (!debugPublish) {
+            throw new GradleException('TAG_NAME is not set. Publishing only runs on tag builds; ' +
+                    'use -PpublishDebug for a local dry run.')
+        }
+
+        if (!curseProjectId) {
+            throw new GradleException("'curseforge_project_id' is not set in gradle.properties.")
+        }
+        if (!modrinthProjectId) {
+            throw new GradleException("'modrinth_project_id' is not set in gradle.properties.")
+        }
+
+        extractChangelog()
+        logger.lifecycle("Publishing ${modName} ${modVersion} for ${loaderName} ${mcVersion} " +
+                "as '${releaseChannel}'${debugPublish ? ' (debug, no upload)' : ''}")
+    }
+}
+
+tasks.register('publishCurseForge', TaskPublishCurseForge) {
+    group = 'publishing'
+    description = "Uploads the ${loaderName} jar to CurseForge."
+    dependsOn checkReleaseVersion, jarTaskName
+
+    debugMode = debugPublish
+    // Metadata is declared explicitly below; inference would guess from the project layout.
+    disableVersionDetection()
+
+    // The jar task only exists once the loader plugin has finished evaluating, so the upload is
+    // declared in doFirst - it runs before TaskPublishCurseForge.apply().
+    doFirst {
+        apiToken = resolveToken('CURSEFORGE_TOKEN', curseforgeKeys)
+
+        def uploaded = upload(curseProjectId, tasks.getByName(jarTaskName))
+        uploaded.displayName = "${modName} ${modVersion} - ${loaderName} ${mcVersion}"
+        uploaded.releaseType = releaseChannel
+        uploaded.changelogType = 'markdown'
+        uploaded.changelog = extractChangelog()
+        uploaded.addGameVersion(mcVersion)
+        uploaded.addModLoader(loaderName)
+        uploaded.addJavaVersion("Java ${javaVersion}")
+        uploaded.addOptional('cloth-config')
+        if (loaderId == 'fabric') {
+            uploaded.addRequirement('fabric-api')
+        }
+    }
+}
+
+modrinth {
+    token.set(providers.provider { resolveToken('MODRINTH_TOKEN', modrinthKeys) })
+    projectId.set(modrinthProjectId?.toString())
+    // Modrinth wants unique version numbers per project - the three loaders would collide.
+    versionNumber.set("${modVersion}+${loaderId}".toString())
+    versionName.set("${modName} ${modVersion} - ${loaderName} ${mcVersion}".toString())
+    versionType.set(releaseChannel)
+    uploadFile.set(providers.provider { tasks.getByName(jarTaskName) })
+    gameVersions.set([mcVersion])
+    loaders.set([loaderId])
+    detectLoaders.set(false)
+    changelog.set(providers.provider { extractChangelog() })
+    debugMode.set(debugPublish)
+    // uploadFile is resolved lazily, so Minotaur cannot infer the task dependency itself.
+    autoAddDependsOn.set(false)
+
+    // NOTE: not a 'dependencies { }' block - in Groovy that resolves to Project.dependencies.
+    optional.project('cloth-config')
+    if (loaderId == 'fabric') {
+        required.project('fabric-api')
+    }
+}
+
+tasks.named('modrinth') {
+    dependsOn checkReleaseVersion, jarTaskName
+}
+
+tasks.register('publishMod') {
+    group = 'publishing'
+    description = "Publishes the ${loaderName} jar to CurseForge and Modrinth."
+    dependsOn 'publishCurseForge', 'modrinth'
+}

@@ -1,3 +1,15 @@
 plugins {
     id 'groovy-gradle-plugin'
 }
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation 'com.modrinth.minotaur:com.modrinth.minotaur.gradle.plugin:2.9.0'
+    // Pinned: CurseForgeGradle 1.2.30+ requires a Java 25 Gradle *daemon* (not just toolchain).
+    // 1.1.28 is the newest release that runs on the Java 21 daemon this project builds with.
+    // Bump once the daemon moves to Java 25 (see 'tools { jdk }' in the Jenkinsfile).
+    implementation 'net.darkhax.curseforgegradle:net.darkhax.curseforgegradle.gradle.plugin:1.1.28'
+}

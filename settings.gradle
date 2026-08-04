@@ -42,7 +42,7 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 
-if (System.getenv('BUILD_NUMBER') != null) {
+if (System.getenv('BUILD_NUMBER') != null && System.getenv('TAG_NAME') == null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
 
