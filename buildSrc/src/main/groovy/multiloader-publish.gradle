@@ -179,6 +179,9 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
         uploaded.addGameVersion(mcVersion)
         uploaded.addModLoader(loaderName)
         uploaded.addJavaVersion("Java ${javaVersion}")
+        // Required by CurseForge - omitting the environment group is rejected with error 1021.
+        // Normally inferred, but disableVersionDetection() above turns that off.
+        uploaded.addEnvironment('Client', 'Server')
         uploaded.addOptional('cloth-config')
         if (loaderId == 'fabric') {
             uploaded.addRequirement('fabric-api')
@@ -189,8 +192,9 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 modrinth {
     token.set(providers.provider { resolveToken('MODRINTH_TOKEN', modrinthKeys) })
     projectId.set(modrinthProjectId?.toString())
-    // Modrinth wants unique version numbers per project - the three loaders would collide.
-    versionNumber.set("${modVersion}+${loaderId}".toString())
+    // Plain version number, same across all three loaders. Modrinth allows duplicate version
+    // numbers across versions; the loader is distinguished by versionName and the loaders field.
+    versionNumber.set(modVersion)
     versionName.set("${modName} ${modVersion} - ${loaderName} ${mcVersion}".toString())
     versionType.set(releaseChannel)
     uploadFile.set(providers.provider { tasks.getByName(jarTaskName) })
@@ -211,6 +215,9 @@ modrinth {
 
 tasks.named('modrinth') {
     dependsOn checkReleaseVersion, jarTaskName
+    // CurseForge validates metadata far more strictly, so let it fail before anything reaches
+    // Modrinth. Neither service can be rolled back, so order the fragile one first.
+    mustRunAfter 'publishCurseForge'
 }
 
 tasks.register('publishMod') {
