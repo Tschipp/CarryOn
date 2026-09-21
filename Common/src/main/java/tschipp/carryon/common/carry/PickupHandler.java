@@ -20,6 +20,7 @@
 
 package tschipp.carryon.common.carry;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -184,7 +185,7 @@ public class PickupHandler {
 
         CarryOnDataManager.setCarryData(player, carry);
         level.playSound(null, pos, state.getSoundType().getHitSound(), SoundSource.BLOCKS, 1.0f, 0.5f);
-        player.swing(InteractionHand.MAIN_HAND, true);
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
         if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
             player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
         return true;
@@ -200,7 +201,7 @@ public class PickupHandler {
         if(!canCarryGeneral(player))
             return false;
 
-        if (entity.invulnerableTime != 0)
+        if (entity.getInvulnerableTime() != 0)
             return false;
 
         if(entity.isRemoved())
@@ -278,7 +279,7 @@ public class PickupHandler {
             otherPlayer.startRiding(player, true, false);
             Services.PLATFORM.sendPacketToAllPlayers(Constants.PACKET_ID_START_RIDING_OTHER, new ClientboundStartRidingOtherPlayerPacket(player.getId(), otherPlayer.getId(), true), player.level());
             carry.setCarryingPlayer(otherPlayer);
-            player.swing(InteractionHand.MAIN_HAND, true);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
             player.level().playSound(null, player.getOnPos(), SoundEvents.ARMOR_EQUIP_GENERIC.value(), SoundSource.AMBIENT, 1.0f, 0.5f);
             CarryOnDataManager.setCarryData(player, carry);
             if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
@@ -305,7 +306,7 @@ public class PickupHandler {
 
         player.level().playSound(null, player.getOnPos(), SoundEvents.ARMOR_EQUIP_GENERIC.value(), SoundSource.AMBIENT, 1.0f, 0.5f);
         CarryOnDataManager.setCarryData(player, carry);
-        player.swing(InteractionHand.MAIN_HAND, true);
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
         if (!player.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
             player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100000000, CarryOnCommon.potionLevel(carry, player), false, false));
         return true;

@@ -20,6 +20,7 @@
 
 package tschipp.carryon.common.carry;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -114,7 +115,7 @@ public class PlacementHandler
 		CarryOnDataManager.setCarryData(player, carry);
 		player.playSound(state.getSoundType().getPlaceSound(), 1.0f, 0.5f);
 		level.playSound(null, pos, state.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0f, 0.5f);
-		player.swing(InteractionHand.MAIN_HAND, true);
+		player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
 		player.removeEffect(MobEffects.SLOWNESS);
 		return true;
 	}
@@ -184,7 +185,7 @@ public class PlacementHandler
 			carry.clear();
 			CarryOnDataManager.setCarryData(player, carry);
             otherPlayer.teleportTo(placementPos.x, placementPos.y, placementPos.z);
-			player.swing(InteractionHand.MAIN_HAND, true);
+			player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
 			player.removeEffect(MobEffects.SLOWNESS);
 			return true;
 		}
@@ -207,7 +208,7 @@ public class PlacementHandler
 		if (entity instanceof Mob mob)
 			mob.playAmbientSound();
 
-		player.swing(InteractionHand.MAIN_HAND, true);
+		player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
 		carry.clear();
 		CarryOnDataManager.setCarryData(player, carry);
 		player.removeEffect(MobEffects.SLOWNESS);
@@ -274,7 +275,7 @@ public class PlacementHandler
 							player.level().getServer().getCommands().performPrefixedCommand(player.level().getServer().createCommandSourceStack(), "/execute as " + player.getGameProfile().name() + " run " + cmd);
 					}
 
-					player.swing(InteractionHand.MAIN_HAND, true);
+					player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
 					carry.clear();
 					CarryOnDataManager.setCarryData(player, carry);
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.HORSE_SADDLE, SoundSource.PLAYERS, 0.5F, 1.5F);
