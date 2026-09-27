@@ -106,7 +106,7 @@ public class CarryRenderHelper
 		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
 		{
 			matrix.translate(0, 0, 2.5);
-			matrix.mulPose(Axis.XP.rotationDegrees(90));
+			matrix.rotate(Axis.XP.rotationDegrees(90));
 		}
 
 		matrix.translate(0, -0.5, 0.65);
@@ -118,10 +118,10 @@ public class CarryRenderHelper
 			matrix.translate(0, -0.5, -1);
 
 			if (Constants.CLIENT_CONFIG.facePlayer != CarryRenderHelper.isChest(carry.getBlock().getBlock())) {
-				matrix.mulPose(Axis.YP.rotationDegrees(180));
-				matrix.mulPose(Axis.XN.rotationDegrees(8));
+				matrix.rotate(Axis.YP.rotationDegrees(180));
+				matrix.rotate(Axis.XN.rotationDegrees(8));
 			} else {
-				matrix.mulPose(Axis.XP.rotationDegrees(8));
+				matrix.rotate(Axis.XP.rotationDegrees(8));
 			}
 			carry.getActiveScript().ifPresent(script -> CarryRenderHelper.performScriptTransformation(matrix, script));
 
@@ -141,7 +141,7 @@ public class CarryRenderHelper
 
 	public static void applyBlockTransformations(Player player, PoseStack matrix, Block block)
 	{
-		matrix.mulPose(Axis.ZN.rotationDegrees(180));
+		matrix.rotate(Axis.ZN.rotationDegrees(180));
 		applyGeneralTransformations(player, matrix);
 
 		if (Constants.CLIENT_CONFIG.facePlayer != CarryRenderHelper.isChest(block))
@@ -149,7 +149,7 @@ public class CarryRenderHelper
 			//TODO: RealFirstPersonRender
 			//if ((ModList.get().isLoaded("realrender") || ModList.get().isLoaded("rfpr")) && perspective == 0)
 			//	matrix.translate(0, 0, -0.4);
-			matrix.mulPose(Axis.YP.rotationDegrees(180));
+			matrix.rotate(Axis.YP.rotationDegrees(180));
 		}
 
 		float height = getRenderHeight(player);
@@ -165,7 +165,7 @@ public class CarryRenderHelper
 		float width = SizeHelper.getEntityWidth(entity);
 
 		if(firstPerson) {
-			matrix.mulPose(Axis.YP.rotationDegrees(180));
+			matrix.rotate(Axis.YP.rotationDegrees(180));
 
 			matrix.scale(0.8f, 0.8f, 0.8f);
 			matrix.translate(0.0, -height - .2, width * 1.3 + 0.1);
@@ -173,7 +173,7 @@ public class CarryRenderHelper
 			carry.getActiveScript().ifPresent(script -> CarryRenderHelper.performScriptTransformation(matrix, script));
 
 			if(Constants.CLIENT_CONFIG.rotateEntitiesSideways)
-				matrix.mulPose(Axis.YP.rotationDegrees(90));
+				matrix.rotate(Axis.YP.rotationDegrees(90));
 		}
 		else {
 			applyEntityTransformations(player, matrix, entity);
@@ -188,7 +188,7 @@ public class CarryRenderHelper
 
 		applyGeneralTransformations(player, matrix);
 
-		matrix.mulPose(Axis.XP.rotationDegrees(180));
+		matrix.rotate(Axis.XP.rotationDegrees(180));
 
 		matrix.translate(0, -3.1, -0.65);
 		matrix.scale(1.666f, 1.666f, 1.666f);
@@ -198,9 +198,11 @@ public class CarryRenderHelper
 		float multiplier = Math.min(9.9f, height * width) ;
 		entity.yo = 0.0f;
 		entity.yRotO = 0.0f;
+		entity.setYRot(0.0f);
 		entity.setYHeadRot(0.0f);
 		entity.xo = 0.0f;
 		entity.xRotO = 0.0f;
+		entity.setXRot(0.0f);
 
 		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
 		matrix.translate(0.0, height / 2 + -(height / 4) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
@@ -210,12 +212,12 @@ public class CarryRenderHelper
 
 		if (pose == Pose.SWIMMING || pose == Pose.FALL_FLYING)
 		{
-			matrix.mulPose(Axis.XN.rotationDegrees(180));
+			matrix.rotate(Axis.XN.rotationDegrees(180));
 			matrix.translate(0, 0.2 * height - 2, -0.5);
 		}
 
 		if(Constants.CLIENT_CONFIG.rotateEntitiesSideways)
-			matrix.mulPose(Axis.YP.rotationDegrees(90));
+			matrix.rotate(Axis.YP.rotationDegrees(90));
 
 	}
 
@@ -233,7 +235,7 @@ public class CarryRenderHelper
 		Quaternionf rot = Axis.XP.rotationDegrees((float) rotation.x);
 		rot.mul(Axis.YP.rotationDegrees((float) rotation.y));
 		rot.mul(Axis.ZP.rotationDegrees((float) rotation.z));
-		matrix.mulPose(rot);
+		matrix.rotate(rot);
 
 		matrix.translate(translation.x, translation.y, perspective == 1 && script.isBlock() ? -translation.z : translation.z);
 

@@ -310,7 +310,7 @@ public class CarryConfig
 					"minecraft:end_crystal", "minecraft:ender_dragon", "minecraft:ghast", "minecraft:fireball", "minecraft:small_fireball", "minecraft:whither_skull",
 					"minecraft:shulker", "minecraft:leash_knot", "minecraft:armor_stand", "minecraft:whither_skull_dangerous", "minecraft:dragon_fireball",
 					"minecraft:item_frame", "minecraft:painting", "minecraft:shulker_bullet", "minecraft:evoker_fangs", "minecraft:glow_item_frame", "minecraft:tnt", "minecraft:trident", "minecraft:arrow", "minecraft:spectral_arrow",
-					"minecraft:interaction", "minecraft:marker", "minecraft:block_display", "minecraft:item_display", "minecraft:text_display",
+					"minecraft:interaction", "minecraft:marker", "minecraft:block_display", "minecraft:item_display", "minecraft:text_display", "minecraft:cushion",
 					"animania:hamster", "animania:ferret*", "animania:hedgehog*", "animania:cart",
 					"animania:wagon", "mynko:*", "pixelmon:*", "mocreatures:*", "quark:totem", "vehicle:*",
 					"securitycraft:*", "taterzens:npc", "easy_npc:*", "bodiesbodies:dead_body", "littletiles:*",

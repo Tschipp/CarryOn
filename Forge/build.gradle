@@ -83,7 +83,7 @@ repositories {
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     compileOnly project(":Common")
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.6'
 
     testCompileOnly(compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}")))
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixinextras_version}")) {

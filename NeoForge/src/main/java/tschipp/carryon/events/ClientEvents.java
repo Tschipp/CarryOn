@@ -55,7 +55,7 @@ public class ClientEvents {
 	}
 
 	@SubscribeEvent
-	public static void onGuiInit(ScreenEvent.Init.Pre event)
+	public static void onGuiInit(ScreenEvent.Init.Post event)
 	{
 		if (event.getScreen() != null)
 		{
@@ -71,7 +71,6 @@ public class ClientEvents {
 					mc.player.closeContainer();
 					mc.gui.setScreen(null);
 					mc.mouseHandler.grabMouse();
-					event.setCanceled(true);
 				}
 			}
 		}
