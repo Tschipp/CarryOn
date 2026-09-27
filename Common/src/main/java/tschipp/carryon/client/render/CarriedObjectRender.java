@@ -110,6 +110,8 @@ public class CarriedObjectRender
         entity.zOld = playerpos.z;
         entity.xRotO = 0.0f;
         entity.yRotO = 0.0f;
+        entity.setXRot(0.0f);
+        entity.setYRot(0.0f);
         entity.setYHeadRot(0.0f);
 
         if (entity instanceof LivingEntity le) {

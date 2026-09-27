@@ -54,7 +54,7 @@ public class ClientEvents {
     }
 
 	@SubscribeEvent
-	public static boolean onGuiInit(ScreenEvent.Init.Pre event)
+	public static void onGuiInit(ScreenEvent.Init.Post event)
 	{
         boolean inventory = event.getScreen() instanceof AbstractContainerScreen;
         Minecraft mc = Minecraft.getInstance();
@@ -68,10 +68,8 @@ public class ClientEvents {
                 mc.player.closeContainer();
                 mc.gui.setScreen(null);
                 mc.mouseHandler.grabMouse();
-                return true;
             }
         }
-		return false;
     }
 
 	@SubscribeEvent

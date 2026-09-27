@@ -198,9 +198,11 @@ public class CarryRenderHelper
 		float multiplier = Math.min(9.9f, height * width) ;
 		entity.yo = 0.0f;
 		entity.yRotO = 0.0f;
+		entity.setYRot(0.0f);
 		entity.setYHeadRot(0.0f);
 		entity.xo = 0.0f;
 		entity.xRotO = 0.0f;
+		entity.setXRot(0.0f);
 
 		matrix.scale((10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f, (10 - multiplier) * 0.08f);
 		matrix.translate(0.0, height / 2 + -(height / 4) + 1, width - 0.1 < 0.7 ? width - 0.1 + (0.7 - (width - 0.1)) : width - 0.1);
