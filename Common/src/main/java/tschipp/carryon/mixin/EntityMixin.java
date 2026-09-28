@@ -23,6 +23,7 @@ package tschipp.carryon.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.MoveFunction;
 import net.minecraft.world.entity.LivingEntity;
@@ -85,6 +86,8 @@ public abstract class EntityMixin
 			{
 				carry.clear();
 				CarryOnDataManager.setCarryData(thisPlayer, carry);
+				if (!thisPlayer.isCreative() || Constants.COMMON_CONFIG.settings.slownessInCreative)
+					thisPlayer.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
 				Services.PLATFORM.sendPacketToPlayer(Constants.PACKET_ID_START_RIDING, new ClientboundStartRidingPacket(otherPlayer.getId(), false), (ServerPlayer) thisPlayer);
 			}
 		}
