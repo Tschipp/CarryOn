@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.12.1] - 2026-11-03
+
+- Fixed compatibility with Neoforge >= 26.3.0.37-beta (Thanks to Flat for the PR!)
+
 ## [2.12.0] - 2026-09-27
 
 - Updated to Minecraft 26.3
