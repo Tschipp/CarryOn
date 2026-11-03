@@ -48,7 +48,7 @@ public class ConfigLoaderImpl {
             if(config.fileName.contains("client"))
                 container.registerConfig(ModConfig.Type.CLIENT, spec, config.fileName+".toml");
             else
-                container.registerConfig(ModConfig.Type.COMMON, spec, config.fileName+".toml");
+                container.registerConfig(ModConfig.Type.LOCAL, spec, config.fileName+".toml");
         });
     }
 
