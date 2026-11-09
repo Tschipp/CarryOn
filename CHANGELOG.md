@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.12.2] - 2026-11-09
+
+- Actually fixed compatibility with Neoforge >= 26.3.0.37-beta (Thanks to [lunan0va](https://github.com/lunan0va) for the PR!)
+
 ## [2.12.1] - 2026-11-03
 
 - Fixed compatibility with Neoforge >= 26.3.0.37-beta (Thanks to Flat for the PR!)
